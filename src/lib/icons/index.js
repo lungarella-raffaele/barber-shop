@@ -1,3 +1,10 @@
 export { default as ChevronRight } from 'lucide-svelte/icons/chevron-right';
 export { default as ChevronLeft } from 'lucide-svelte/icons/chevron-left';
 export { default as Instagram } from 'lucide-svelte/icons/instagram';
+export { default as ArrowUpRight } from 'lucide-svelte/icons/arrow-up-right';
+export { default as CalendarDays } from 'lucide-svelte/icons/calendar-days';
+export { default as Moon } from 'lucide-svelte/icons/moon';
+export { default as Sun } from 'lucide-svelte/icons/sun';
+export { default as Send } from 'lucide-svelte/icons/send';
+export { default as CircleDashed } from 'lucide-svelte/icons/circle-dashed';
+export { default as Sunrise } from 'lucide-svelte/icons/sunrise';

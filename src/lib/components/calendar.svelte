@@ -1,14 +1,49 @@
 <script>
 	import { createCalendar, melt } from '@melt-ui/svelte';
 	import { ChevronRight, ChevronLeft } from '$icons/index.js';
+	import { today, getLocalTimeZone, getDayOfWeek } from '@internationalized/date';
+	import { capitalize, DayOfTheWeek, formatToITLocale } from '$lib/utils';
+	import Separator from './generic/separator.svelte';
+
+	/**
+	 * Returs the first Calendar Date available
+	 * @return {import('@internationalized/date').CalendarDate}
+	 */
+	const findFirstAvailableDate = () => {
+		let date = today(getLocalTimeZone());
+		if (getDayOfWeek(date, 'it-IT') === DayOfTheWeek.MONDAY) {
+			date = date.add({ days: 1 });
+		}
+		return date;
+	};
+
+	/**
+	 * Returs the first Calendar Date available
+	 * @param {import('@internationalized/date').DateValue} date
+	 * @returns {boolean}
+	 */
+	const dateMatcher = (date) => {
+		return (
+			getDayOfWeek(date, 'it-IT') === DayOfTheWeek.MONDAY ||
+			date.compare(today(getLocalTimeZone())) < 0
+		);
+	};
 
 	const {
 		elements: { calendar, heading, grid, cell, prevButton, nextButton },
 		states: { months, headingValue, weekdays, value },
 		helpers: { isDateDisabled, isDateUnavailable }
-	} = createCalendar();
+	} = createCalendar({
+		defaultValue: findFirstAvailableDate(),
+		fixedWeeks: true,
+		preventDeselect: true,
+		locale: 'it',
+		isDateUnavailable: (date) => {
+			return dateMatcher(date);
+		}
+	});
 
-	/** @type {{date: import("@internationalized/date").DateValue | undefined}}*/
+	/** @type {{date: import("@internationalized/date").CalendarDate | undefined}}*/
 	let { date = $bindable() } = $props();
 
 	$effect(() => {
@@ -16,14 +51,26 @@
 	});
 </script>
 
-<section>
+<section class="mb-8 rounded-xl border bg-background-alt p-8">
+	<Separator orientation="horizontal">
+		{#if date}
+			<div class="flex flex-col">
+				<div class="flex flex-row items-center">
+					<h1 class="text-3xl font-bold">Data</h1>
+				</div>
+				<h2 class="text-accent-foreground">
+					{formatToITLocale(date.toDate(getLocalTimeZone()))}
+				</h2>
+			</div>
+		{/if}
+	</Separator>
 	<div use:melt={$calendar}>
-		<header>
+		<header class="flex items-center justify-between">
 			<button use:melt={$prevButton}>
 				<ChevronLeft size={24} />
 			</button>
 			<div use:melt={$heading}>
-				{$headingValue}
+				{capitalize($headingValue)}
 			</div>
 			<button use:melt={$nextButton}>
 				<ChevronRight size={24} />
@@ -67,7 +114,7 @@
 
 <style lang="postcss">
 	[data-melt-calendar] {
-		@apply w-full rounded-lg bg-white p-3 text-magnum-800 shadow-sm;
+		@apply w-full rounded-lg p-3;
 	}
 
 	header {
@@ -79,19 +126,19 @@
 	}
 
 	[data-melt-calendar-prevbutton] {
-		@apply rounded-lg p-1 transition-all hover:bg-magnum-100;
+		@apply rounded-lg bg-background-alt p-1 transition-all hover:bg-muted;
 	}
 
 	[data-melt-calendar-nextbutton] {
-		@apply rounded-lg p-1 transition-all hover:bg-magnum-100;
+		@apply rounded-lg bg-background-alt p-1 transition-all hover:bg-muted;
 	}
 
 	[data-melt-calendar-heading] {
-		@apply font-semibold text-magnum-800;
+		@apply font-semibold text-foreground-alt;
 	}
 
 	th {
-		@apply text-sm font-semibold text-magnum-800;
+		@apply text-sm font-bold text-accent-foreground;
 
 		& div {
 			@apply flex h-6 w-6 items-center justify-center p-4;
@@ -103,7 +150,7 @@
 	}
 
 	[data-melt-calendar-cell] {
-		@apply flex h-6 w-6 cursor-pointer select-none items-center justify-center rounded-lg p-4 hover:bg-magnum-100 focus:ring focus:ring-magnum-400 data-[outside-visible-months]:pointer-events-none data-[outside-visible-months]:cursor-default data-[range-highlighted]:bg-magnum-200 data-[selected]:bg-magnum-300 data-[selected]:text-magnum-900 data-[disabled]:opacity-40 data-[outside-visible-months]:opacity-40 data-[outside-visible-months]:hover:bg-transparent;
+		@apply relative inline-flex size-10 items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-transparent p-0 text-sm font-normal text-foreground hover:border-foreground data-[disabled]:pointer-events-none data-[outside-month]:pointer-events-none data-[selected]:bg-foreground data-[selected]:font-medium data-[disabled]:text-foreground/30 data-[selected]:text-background data-[unavailable]:text-muted-foreground data-[unavailable]:line-through;
 	}
 
 	[data-melt-calendar-cell][data-outside-month='true'][data-outside-visible-months='true'] {

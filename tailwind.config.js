@@ -18,18 +18,45 @@ export default {
 		},
 		extend: {
 			colors: {
+				border: {
+					DEFAULT: 'hsl(var(--border-card))',
+					input: 'hsl(var(--border-input))',
+					'input-hover': 'hsl(var(--border-input-hover))'
+				},
+				background: {
+					DEFAULT: 'hsl(var(--background) / <alpha-value>)',
+					alt: 'hsl(var(--background-alt) / <alpha-value>)'
+				},
+				foreground: {
+					DEFAULT: 'hsl(var(--foreground) / <alpha-value>)',
+					alt: 'hsl(var(--foreground-alt) / <alpha-value>)'
+				},
+				muted: {
+					DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
+					foreground: 'hsl(var(--muted-foreground))'
+				},
+				dark: {
+					DEFAULT: 'hsl(var(--dark) / <alpha-value>)',
+					4: 'hsl(var(--dark-04))',
+					10: 'hsl(var(--dark-10))',
+					40: 'hsl(var(--dark-40))'
+				},
+				accent: {
+					DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
+					hover: 'hsl(var(--accent-hover))',
+					foreground: 'hsl(var(--accent-foreground) / <alpha-value>)'
+				},
 				magnum: {
 					50: '#fff9ed',
 					100: '#fef2d6',
 					200: '#fce0ac',
 					300: '#f9c978',
 					400: '#f7b155',
-					500: '#f38d1c',
+					500: '#1E9DEB',
 					600: '#e47312',
 					700: '#bd5711',
-					800: '#964516',
-					900: '#793a15',
-					950: '#411c09'
+					800: '#4F345A',
+					900: '#052538'
 				}
 			},
 			fontFamily: {
