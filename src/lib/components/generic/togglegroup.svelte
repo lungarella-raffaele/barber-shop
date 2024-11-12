@@ -1,37 +1,52 @@
 <script>
 	import { createToggleGroup, melt } from '@melt-ui/svelte';
 
+	/** @typedef {import('../types').ToggleGroup} ToggleGroup*/
+	/** @typedef {import('../types').ToggleItem} ToggleItem*/
+
+	/** @type {{ group: ToggleGroup, type: import('@melt-ui/svelte').ToggleGroupType, snippet?: import('svelte').Snippet<[any]>, selected: unknown, class?: string}} */
+	let { group, type = 'single', snippet, selected = $bindable(), class: className = '' } = $props();
+
 	const {
-		elements: { root, item }
+		elements: { root, item },
+		states: { value }
 	} = createToggleGroup({
-		type: 'single'
+		type
 	});
 
-	/** @type {{ groupItems: import('../types').HourInterval[] }} */
-	let { groupItems } = $props();
+	$effect(() => {
+		selected = $value;
+	});
 </script>
 
 <div
 	use:melt={$root}
-	class="flex flex-wrap items-center data-[orientation='vertical']:flex-col"
+	class="flex data-[orientation='vertical']:flex-col {className} flex-wrap"
 	aria-label="Text alignment"
 >
-	{#each groupItems as gItem}
-		<button
-			type="button"
-			class="toggle-item mb-4 mr-4 font-bold active:scale-90 active:transition-all"
-			use:melt={$item({ value: gItem.label, disabled: !gItem.available })}
-		>
-			{gItem.label}
-		</button>
+	{#each group as groupItem}
+		{@const { value, disabled } = groupItem}
+		{#if value}
+			<button
+				type="button"
+				class="toggle-item mb-4 mr-4 w-full font-bold active:scale-90 active:transition-all md:w-auto"
+				use:melt={$item({ value, disabled })}
+			>
+				{#if snippet}
+					{@render snippet(groupItem)}
+				{:else}
+					{value}
+				{/if}
+			</button>
+		{/if}
 	{/each}
 </div>
 
 <style lang="postcss">
 	.toggle-item {
-		@apply rounded-lg border bg-muted p-4 px-6;
+		@apply rounded-lg border bg-muted;
 		&:hover {
-			@apply bg-background shadow-sm;
+			@apply bg-background shadow-md;
 		}
 
 		&:focus {
@@ -42,8 +57,7 @@
 	.toggle-item[data-disabled] {
 		@apply cursor-not-allowed bg-background-alt line-through hover:bg-muted;
 	}
-
 	.toggle-item[data-state='on'] {
-		@apply bg-accent-foreground;
+		@apply bg-accent text-background;
 	}
 </style>

@@ -2,7 +2,7 @@
 	import Label from './generic/label.svelte';
 	import Separator from './generic/separator.svelte';
 
-	let { name, email, phoneNumber } = $props();
+	let { name = $bindable(''), email = $bindable(''), phoneNumber = $bindable('') } = $props();
 </script>
 
 <section class="mb-8 rounded-xl border bg-background-alt p-8">
