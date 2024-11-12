@@ -58,7 +58,7 @@
 				<div class="flex flex-row items-center">
 					<h1 class="text-3xl font-bold">Data</h1>
 				</div>
-				<h2 class="text-accent-foreground">
+				<h2>
 					{formatToITLocale(date.toDate(getLocalTimeZone()))}
 				</h2>
 			</div>
@@ -138,7 +138,7 @@
 	}
 
 	th {
-		@apply text-sm font-bold text-accent-foreground;
+		@apply text-sm font-bold;
 
 		& div {
 			@apply flex h-6 w-6 items-center justify-center p-4;
@@ -150,7 +150,7 @@
 	}
 
 	[data-melt-calendar-cell] {
-		@apply relative inline-flex size-10 items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-transparent p-0 text-sm font-normal text-foreground hover:border-foreground data-[disabled]:pointer-events-none data-[outside-month]:pointer-events-none data-[selected]:bg-foreground data-[selected]:font-medium data-[disabled]:text-foreground/30 data-[selected]:text-background data-[unavailable]:text-muted-foreground data-[unavailable]:line-through;
+		@apply data-[selected]:bg-accent relative inline-flex size-10 items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-transparent p-0 text-sm font-normal text-foreground hover:border-foreground data-[disabled]:pointer-events-none data-[outside-month]:pointer-events-none data-[selected]:font-medium data-[disabled]:text-foreground/30 data-[selected]:text-background data-[unavailable]:text-muted-foreground data-[unavailable]:line-through;
 	}
 
 	[data-melt-calendar-cell][data-outside-month='true'][data-outside-visible-months='true'] {

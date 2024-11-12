@@ -8,3 +8,6 @@ export { default as Sun } from 'lucide-svelte/icons/sun';
 export { default as Send } from 'lucide-svelte/icons/send';
 export { default as CircleDashed } from 'lucide-svelte/icons/circle-dashed';
 export { default as Sunrise } from 'lucide-svelte/icons/sunrise';
+export { default as Info } from 'lucide-svelte/icons/info';
+export { default as Search } from 'lucide-svelte/icons/search';
+export { default as Scissors } from 'lucide-svelte/icons/scissors';

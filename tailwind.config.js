@@ -42,21 +42,7 @@ export default {
 					40: 'hsl(var(--dark-40))'
 				},
 				accent: {
-					DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
-					hover: 'hsl(var(--accent-hover))',
-					foreground: 'hsl(var(--accent-foreground) / <alpha-value>)'
-				},
-				magnum: {
-					50: '#fff9ed',
-					100: '#fef2d6',
-					200: '#fce0ac',
-					300: '#f9c978',
-					400: '#f7b155',
-					500: '#1E9DEB',
-					600: '#e47312',
-					700: '#bd5711',
-					800: '#4F345A',
-					900: '#052538'
+					DEFAULT: 'var(--accent)'
 				}
 			},
 			fontFamily: {
