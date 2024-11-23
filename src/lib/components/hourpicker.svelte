@@ -1,6 +1,7 @@
 <script>
 	import Separator from './generic/separator.svelte';
 	import Togglegroup from './generic/togglegroup.svelte';
+	import * as m from '$lib/paraglide/messages';
 
 	let { hour = $bindable('') } = $props();
 
@@ -35,12 +36,12 @@
 </script>
 
 {#snippet hourSnippet(/** @type {import('./types').HourInterval} */ hour)}
-	<p class="text-left p-6 py-5">{hour.label}</p>
+	<p class="p-6 py-5 text-left">{hour.label}</p>
 {/snippet}
 
 <section class="mb-8 rounded-xl border bg-background-alt p-8">
 	<Separator orientation="horizontal">
-		<h1 class="text-3xl font-bold">Ora</h1>
+		<h1 class="text-3xl font-bold">{m.lucky_whole_macaw_comfort()}</h1>
 	</Separator>
 	<Togglegroup group={hours} type="single" snippet={hourSnippet} bind:selected={hour} />
 </section>

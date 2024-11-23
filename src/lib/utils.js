@@ -5,8 +5,13 @@
  * @returns {string} - The formatted date string in Italian with capitalization and comma after the day.
  */
 export function formatToITLocale(date) {
-	// Use options to extract individual parts
-	const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+	/** @type {Intl.DateTimeFormatOptions} */
+	const options = {
+		weekday: 'long',
+		day: 'numeric',
+		month: 'long',
+		year: '2-digit'
+	};
 	const formattedDate = new Intl.DateTimeFormat('it-IT', options).format(date);
 
 	// Split the parts based on Italian format (default: "dom 3 novembre 2024")
@@ -18,6 +23,7 @@ export function formatToITLocale(date) {
 	return `${capitalizedWeekday}, ${day} ${capitalizedMonth} ${year}`;
 }
 
+/** @param {string} str */
 export function capitalize(str) {
 	return str.charAt(0).toUpperCase() + str.slice(1);
 }

@@ -1,12 +1,12 @@
 <script>
 	import Calendar from '$components/calendar.svelte';
-	import Name from '$components/name.svelte';
 	import Hourpicker from '$components/hourpicker.svelte';
-	import Button from '$components/generic/button.svelte';
+	import Name from '$components/name.svelte';
 	import Servicepicker from '$components/servicepicker.svelte';
 
-	import { Send } from '$icons';
 	import { enhance } from '$app/forms';
+
+	import * as m from '$lib/paraglide/messages.js';
 
 	/** @type {string} */
 	let name = $state('');
@@ -37,17 +37,10 @@
 
 <section>
 	<form method="post" use:enhance={handleSubmit}>
-		<h1 class="text-4xl font-bold">Prenota il tuo appuntamento</h1>
+		<h1 class="mb-6 text-4xl font-bold">{m.proof_tiny_okapi_aim()}</h1>
 		<Name bind:name bind:email bind:phoneNumber />
 		<Calendar bind:date />
 		<Hourpicker bind:hour />
 		<Servicepicker />
-
-		<div class="flex flex-row-reverse">
-			<Button>
-				Submit
-				<Send class="ml-2" size={20} />
-			</Button>
-		</div>
 	</form>
 </section>

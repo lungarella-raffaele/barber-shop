@@ -1,5 +1,6 @@
 <script>
 	import Modeswitch from '$components/modeswitch.svelte';
+	import Switchlang from './switchlang.svelte';
 </script>
 
 <div class="z-99 sticky top-0">
@@ -9,7 +10,9 @@
 		<div class="flex flex-row items-center">
 			<h1 class="text-xl font-bold">LO RUSSO</h1>
 		</div>
-
-		<Modeswitch />
+		<div class="flex flex-row">
+			<Switchlang />
+			<Modeswitch />
+		</div>
 	</div>
 </div>

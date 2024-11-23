@@ -11,3 +11,5 @@ export { default as Sunrise } from 'lucide-svelte/icons/sunrise';
 export { default as Info } from 'lucide-svelte/icons/info';
 export { default as Search } from 'lucide-svelte/icons/search';
 export { default as Scissors } from 'lucide-svelte/icons/scissors';
+export { default as Check } from 'lucide-svelte/icons/check';
+export { default as Earth } from 'lucide-svelte/icons/earth';

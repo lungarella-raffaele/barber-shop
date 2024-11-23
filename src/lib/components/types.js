@@ -2,10 +2,13 @@
  * @property {string} label - The display value
  */
 
-/** @typedef {ToggleItem & { time: number, cost: number, info: string, label: string}} Service
- * @property {number} time - The time the service will take
- * @property {string} cost - The cost of the service
- * @property {string} label - Name of the service
+/**
+ * Represents a service with timing, cost, and label information
+ * @typedef {ToggleItem & {
+ *   time: number,
+ *   cost: number,
+ *   label: string
+ * }} Service
  */
 
 /** @typedef {Object} ToggleItem
