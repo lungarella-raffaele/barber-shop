@@ -4,6 +4,7 @@
 	import { today, getLocalTimeZone, getDayOfWeek } from '@internationalized/date';
 	import { capitalize, DayOfTheWeek, formatToITLocale } from '$lib/utils';
 	import Separator from './generic/separator.svelte';
+	import * as m from '$lib/paraglide/messages';
 
 	/**
 	 * Returs the first Calendar Date available
@@ -56,7 +57,7 @@
 		{#if date}
 			<div class="flex flex-col">
 				<div class="flex flex-row items-center">
-					<h1 class="text-3xl font-bold">Data</h1>
+					<h1 class="text-3xl font-bold">{m.funny_equal_lemur_gleam()}</h1>
 				</div>
 				<h2>
 					{formatToITLocale(date.toDate(getLocalTimeZone()))}
@@ -150,7 +151,7 @@
 	}
 
 	[data-melt-calendar-cell] {
-		@apply data-[selected]:bg-accent relative inline-flex size-10 items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-transparent p-0 text-sm font-normal text-foreground hover:border-foreground data-[disabled]:pointer-events-none data-[outside-month]:pointer-events-none data-[selected]:font-medium data-[disabled]:text-foreground/30 data-[selected]:text-background data-[unavailable]:text-muted-foreground data-[unavailable]:line-through;
+		@apply relative inline-flex size-10 items-center justify-center whitespace-nowrap rounded-lg border border-transparent bg-transparent p-0 text-sm font-normal text-foreground hover:border-foreground data-[disabled]:pointer-events-none data-[outside-month]:pointer-events-none data-[selected]:bg-accent data-[selected]:font-medium data-[disabled]:text-foreground/30 data-[selected]:text-background data-[unavailable]:text-muted-foreground data-[unavailable]:line-through;
 	}
 
 	[data-melt-calendar-cell][data-outside-month='true'][data-outside-visible-months='true'] {

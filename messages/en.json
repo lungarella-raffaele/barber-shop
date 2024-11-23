@@ -1,4 +1,12 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format",
-  "hello_world": "Hello, {name} from en!"
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"hello_world": "Hello, {name} from en!",
+	"proof_tiny_okapi_aim": "Book your appointment",
+	"funny_equal_lemur_gleam": "Date",
+	"bright_noisy_pony_endure": "Personal information",
+	"polite_brief_lion_jest": "Name and surname",
+	"home_aloof_vulture_drip": "Phone number",
+	"lucky_whole_macaw_comfort": "Hour",
+	"english": "English",
+	"italian": "Italian"
 }

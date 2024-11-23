@@ -1,6 +1,7 @@
 <script>
 	import Separator from './generic/separator.svelte';
 	import Togglegroup from './generic/togglegroup.svelte';
+
 	import { Search } from '$icons';
 
 	/** @type {import ('./types').Service[]}*/

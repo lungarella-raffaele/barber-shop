@@ -1,15 +1,16 @@
 <script>
 	import Label from './generic/label.svelte';
 	import Separator from './generic/separator.svelte';
+	import * as m from '$lib/paraglide/messages';
 
 	let { name = $bindable(''), email = $bindable(''), phoneNumber = $bindable('') } = $props();
 </script>
 
 <section class="mb-8 rounded-xl border bg-background-alt p-8">
 	<Separator orientation="horizontal">
-		<h3 class="text-3xl font-bold">Inserisci nominativo</h3>
+		<h3 class="text-3xl font-bold">{m.bright_noisy_pony_endure()}</h3>
 	</Separator>
-	<Label text="Nome e cognome" class="mb-8">
+	<Label text={m.polite_brief_lion_jest()} class="mb-8">
 		<input
 			type="text"
 			id="name"
@@ -20,7 +21,7 @@
 			placeholder="Mario Rossi"
 		/>
 	</Label>
-	<Label text="Email" class="mb-8">
+	<Label text="E-mail" class="mb-8">
 		<input
 			type="text"
 			id="email"
@@ -31,7 +32,7 @@
 			placeholder="mariorossi@es.com"
 		/>
 	</Label>
-	<Label text="Numero di telefono">
+	<Label text={m.home_aloof_vulture_drip()}>
 		<input
 			type="text"
 			id="phone-number"
