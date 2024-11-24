@@ -13,3 +13,5 @@ export { default as Search } from 'lucide-svelte/icons/search';
 export { default as Scissors } from 'lucide-svelte/icons/scissors';
 export { default as Check } from 'lucide-svelte/icons/check';
 export { default as Earth } from 'lucide-svelte/icons/earth';
+export { default as CircleCheckBig } from 'lucide-svelte/icons/circle-check-big'
+export { default as ArrowRight } from 'lucide-svelte/icons/arrow-right'

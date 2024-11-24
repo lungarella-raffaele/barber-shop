@@ -1,7 +1,7 @@
 <script>
+	import * as m from '$lib/paraglide/messages';
 	import Label from './generic/label.svelte';
 	import Separator from './generic/separator.svelte';
-	import * as m from '$lib/paraglide/messages';
 
 	let { name = $bindable(''), email = $bindable(''), phoneNumber = $bindable('') } = $props();
 </script>
@@ -17,18 +17,18 @@
 			name="book-name"
 			bind:value={name}
 			required
-			class="h-10 w-[240px] rounded-md px-3 py-2"
+			class="h-10 w-[240px] rounded-md bg-muted px-3 py-2"
 			placeholder="Mario Rossi"
 		/>
 	</Label>
 	<Label text="E-mail" class="mb-8">
 		<input
-			type="text"
+			type="email"
 			id="email"
 			name="book-email"
 			bind:value={email}
 			required
-			class="h-10 w-[240px] rounded-md px-3 py-2"
+			class="h-10 w-[240px] rounded-md bg-muted px-3 py-2"
 			placeholder="mariorossi@es.com"
 		/>
 	</Label>
@@ -39,7 +39,7 @@
 			name="book-phone"
 			bind:value={phoneNumber}
 			required
-			class="h-10 w-[240px] rounded-md px-3 py-2"
+			class="h-10 w-[240px] rounded-md bg-muted px-3 py-2"
 			placeholder="333"
 		/>
 	</Label>
