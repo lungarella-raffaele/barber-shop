@@ -29,7 +29,7 @@
 		{#if value}
 			<button
 				type="button"
-				class="toggle-item mb-4 mr-4 w-full font-bold active:scale-90 active:transition-all md:w-auto"
+				class="toggle-item mb-4 mr-4 w-full font-bold transition-all active:scale-90 md:w-auto"
 				use:melt={$item({ value, disabled })}
 			>
 				{#if snippet}

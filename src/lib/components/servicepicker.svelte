@@ -2,8 +2,6 @@
 	import Separator from './generic/separator.svelte';
 	import Togglegroup from './generic/togglegroup.svelte';
 
-	import { Search } from '$icons';
-
 	/** @type {import ('./types').Service[]}*/
 	const services = [
 		{
@@ -79,18 +77,6 @@
 <section class="mb-8 rounded-xl border bg-background-alt p-8">
 	<Separator orientation="horizontal">
 		<h1 class="text-3xl font-bold">Servizi</h1>
-		<div>
-			<Search />
-			<input
-				type="text"
-				id="searchbar"
-				name="search-service"
-				bind:value={searchInput}
-				required
-				class="h-10 w-[240px] rounded-md px-3 py-2"
-				placeholder="mariorossi@es.com"
-			/>
-		</div>
 	</Separator>
 	<Togglegroup
 		group={filteredServices}

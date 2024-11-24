@@ -13,7 +13,7 @@
 
 <ParaglideJS {i18n}>
 	<MenuBar />
-	<main class="my-8 px-8 md:px-24 lg:px-80">
+	<main class="my-8 px-8 md:px-24 lg:px-24 xl:px-64">
 		<ModeWatcher />
 		{@render children()}
 		<Footer />

@@ -1,11 +1,10 @@
 <script>
+	import { enhance } from '$app/forms';
+	import Bookinfo from '$components/bookinfo.svelte';
 	import Calendar from '$components/calendar.svelte';
 	import Hourpicker from '$components/hourpicker.svelte';
 	import Name from '$components/name.svelte';
 	import Servicepicker from '$components/servicepicker.svelte';
-
-	import { enhance } from '$app/forms';
-
 	import * as m from '$lib/paraglide/messages.js';
 
 	/** @type {string} */
@@ -42,5 +41,6 @@
 		<Calendar bind:date />
 		<Hourpicker bind:hour />
 		<Servicepicker />
+		<Bookinfo {name} {email} {phoneNumber} {hour} {date} />
 	</form>
 </section>
