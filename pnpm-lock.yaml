@@ -41,6 +41,9 @@ importers:
       drizzle-orm:
         specifier: ^0.37.0
         version: 0.37.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.12)(better-sqlite3@11.7.0)(mysql2@3.11.5)
+      mode-watcher:
+        specifier: ^0.5.0
+        version: 0.5.0(svelte@5.9.0)
       mysql2:
         specifier: ^3.11.5
         version: 3.11.5
@@ -87,6 +90,9 @@ importers:
       globals:
         specifier: ^15.13.0
         version: 15.13.0
+      lucide-svelte:
+        specifier: ^0.468.0
+        version: 0.468.0(svelte@5.9.0)
       prettier:
         specifier: ^3.4.2
         version: 3.4.2
@@ -2348,6 +2354,11 @@ packages:
     resolution: {integrity: sha512-FbAj6lXil6t8z4z3j0E5mfRlPzxkySotzUHwRXjlpRh10vc6AI6WN62ehZj82VG7M20rqogJ0GLwar2Xa05a8Q==}
     engines: {bun: '>=1.0.0', deno: '>=1.30.0', node: '>=8.0.0'}
 
+  lucide-svelte@0.468.0:
+    resolution: {integrity: sha512-n0ecAFtCY5LEeL+PJ1Xj4n3c2gzj8tMpak0KMGnvoSJEjCsCnRB0mekBtJZAo7beyynW9Qj5Um1KfMBAeTNplw==}
+    peerDependencies:
+      svelte: ^3 || ^4 || ^5.0.0-next.42
+
   magic-string@0.30.14:
     resolution: {integrity: sha512-5c99P1WKTed11ZC0HMJOj6CDIue6F8ySu+bJL+85q1zBEIY8IklrJ1eiKC2NDRh3Ct3FcvmJPyQHb9erXMTJNw==}
 
@@ -2407,6 +2418,11 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
+
+  mode-watcher@0.5.0:
+    resolution: {integrity: sha512-5E6fh/aXhAVv+U+DbeM0hCmskQE9u7WSmvnCRijJB/MJu7HtB73sjiCaZ9n1M8QHmzLrBFo8XBAUcWXkDm8Z9A==}
+    peerDependencies:
+      svelte: ^4.0.0 || ^5.0.0-next.1
 
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
@@ -5211,6 +5227,10 @@ snapshots:
 
   lru.min@1.1.1: {}
 
+  lucide-svelte@0.468.0(svelte@5.9.0):
+    dependencies:
+      svelte: 5.9.0
+
   magic-string@0.30.14:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
@@ -5258,6 +5278,10 @@ snapshots:
   mkdirp-classic@0.5.3: {}
 
   mkdirp@1.0.4: {}
+
+  mode-watcher@0.5.0(svelte@5.9.0):
+    dependencies:
+      svelte: 5.9.0
 
   mri@1.2.0: {}
 
