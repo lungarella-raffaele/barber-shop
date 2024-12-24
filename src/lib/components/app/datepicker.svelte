@@ -6,11 +6,11 @@
 	import { DateFormatter, type DateValue, getLocalTimeZone } from '@internationalized/date';
 	import CalendarIcon from 'lucide-svelte/icons/calendar';
 
-	const df = new DateFormatter('en-US', {
+	const df = new DateFormatter('it-IT', {
 		dateStyle: 'long'
 	});
 
-	let value: DateValue | undefined = undefined;
+	let { value = $bindable() }: { value: DateValue | undefined } = $props();
 </script>
 
 <Popover.Root>

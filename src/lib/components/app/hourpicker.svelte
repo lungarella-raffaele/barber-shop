@@ -23,7 +23,7 @@
 		}
 	];
 
-	let value: string = $state('');
+	let { value = $bindable() } = $props();
 </script>
 
 <ToggleGroup.Root type="single" class="flex flex-col" bind:value>

@@ -16,12 +16,12 @@
 	const { form: formData, enhance } = sForm;
 </script>
 
-<h1 class="text-center text-3xl font-bold">Login</h1>
+<h1 class="text-center text-3xl font-bold">Register</h1>
 <form method="post" use:enhance>
 	<Form.Field form={sForm} name="email">
 		<Form.Control>
 			{#snippet children({ props })}
-				<Form.Label>Email</Form.Label>
+				<Form.Label>Nome</Form.Label>
 				<Input {...props} bind:value={$formData.email} placeholder="Inserisci la tua username" />
 			{/snippet}
 		</Form.Control>
@@ -30,17 +30,11 @@
 	<Form.Field form={sForm} name="password">
 		<Form.Control>
 			{#snippet children({ props })}
-				<Form.Label>Passwords</Form.Label>
-				<Input
-					type="password"
-					{...props}
-					bind:value={$formData.password}
-					placeholder="Inserisci la tua password"
-				/>
+				<Form.Label>Nome</Form.Label>
+				<Input {...props} bind:value={$formData.password} placeholder="Inserisci la tua password" />
 			{/snippet}
 		</Form.Control>
 		<Form.FieldErrors />
 	</Form.Field>
-	<Button type="submit">Login</Button>
-	<Button href="/register" variant="link">or register</Button>
+	<Button type="submit">Register</Button>
 </form>

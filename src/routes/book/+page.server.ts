@@ -18,8 +18,10 @@ export const actions: Actions = {
 				form
 			});
 		}
-		return {
-			form
-		};
+
+		const request = event.request;
+		const data = await request.formData();
+		const booking = data.get('booking') as string;
+		console.log(JSON.parse(booking));
 	}
 };
