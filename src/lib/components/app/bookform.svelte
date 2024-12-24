@@ -5,8 +5,7 @@
 	import { type Infer, superForm, type SuperValidated } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 
-	let { data, class: className = '' }: { data: SuperValidated<Infer<FormSchema>>; class?: string } =
-		$props();
+	let { data }: { data: SuperValidated<Infer<FormSchema>> } = $props();
 
 	const form = superForm(data, {
 		validators: zodClient(bookSchema)
@@ -53,7 +52,7 @@
 	<Form.Field {form} name="email">
 		<Form.Control>
 			{#snippet children({ props })}
-				<Form.Label>E-mail</Form.Label>
+				<Form.Label>Email</Form.Label>
 				<Input {...props} bind:value={$formData.email} placeholder="Inserisci la tua email" />
 			{/snippet}
 		</Form.Control>

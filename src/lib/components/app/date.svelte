@@ -1,7 +1,9 @@
 <script>
 	import DatePicker from './datepicker.svelte';
 	import Hourpicker from './hourpicker.svelte';
-	</script>
 
-<DatePicker/>
-<Hourpicker/>
+	let { date = $bindable(), hour = $bindable() } = $props();
+</script>
+
+<DatePicker bind:value={date} />
+<Hourpicker bind:value={hour} />
