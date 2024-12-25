@@ -7,7 +7,7 @@ import * as table from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { loginSchema } from '$lib/schema/login';
+import { loginSchema } from '$lib/validation/login';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -24,6 +24,7 @@ export const actions: Actions = {
 		const form = await superValidate(event, zod(loginSchema));
 		if (!form.valid) {
 			return fail(400, {
+				message: 'I dati inseriti non sono validi',
 				form
 			});
 		}
@@ -33,6 +34,7 @@ export const actions: Actions = {
 		const existingUser = results.at(0);
 		if (!existingUser) {
 			return fail(400, {
+				message: 'Email o password errati',
 				form
 			});
 		}
@@ -45,6 +47,7 @@ export const actions: Actions = {
 		});
 		if (!validPassword) {
 			return fail(400, {
+				message: 'Email o password errati',
 				form
 			});
 		}
