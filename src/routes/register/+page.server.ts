@@ -1,13 +1,14 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
+import { eq } from 'drizzle-orm';
 import * as table from '$lib/server/db/schema';
 import { hash } from '@node-rs/argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { loginSchema } from '$lib/schema/login';
+import { registerSchema } from '$lib/validation/register';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -15,22 +16,31 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	return {
-		form: await superValidate(zod(loginSchema))
+		form: await superValidate(zod(registerSchema))
 	};
 };
 
 export const actions: Actions = {
 	default: async (event) => {
-		const formData = await event.request.formData();
-		const email = formData.get('email');
-		const password = formData.get('password');
+		const form = await superValidate(event, zod(registerSchema));
+		if (!form.valid) {
+			return fail(400, {
+				message: `Le informazioni che hai inserito non sono valide. Riprova.`,
+				form
+			});
+		}
 
-		if (!validateUsername(email)) {
-			return fail(400, { message: 'Invalid email' });
+		const results = await db.select().from(table.user).where(eq(table.user.email, form.data.email));
+
+		const existingUser = results.at(0);
+		if (existingUser) {
+			return fail(400, {
+				message: `L'email che hai inserito è gia un uso. Prova con un altro indirizzo email.`,
+				form
+			});
 		}
-		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password' });
-		}
+
+		const { email, password, firstName, lastName } = form.data;
 
 		const userId = generateUserId();
 		const passwordHash = await hash(password, {
@@ -42,16 +52,14 @@ export const actions: Actions = {
 		});
 
 		try {
-			await db
-				.insert(table.user)
-				.values({ id: userId, email, passwordHash, lastName: 'Raffaele', firstName: 'Lungarella' });
+			await db.insert(table.user).values({ id: userId, email, passwordHash, lastName, firstName });
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, userId);
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		} catch (e) {
 			console.log(e);
-			return fail(500, { message: 'An error has occurred' });
+			return fail(500, { message: 'Al momento il servizio non risponde. Riprova in seguito.' });
 		}
 		return redirect(302, '/');
 	}
@@ -62,17 +70,4 @@ function generateUserId() {
 	const bytes = crypto.getRandomValues(new Uint8Array(15));
 	const id = encodeBase32LowerCase(bytes);
 	return id;
-}
-
-function validateUsername(username: unknown): username is string {
-	return (
-		typeof username === 'string' &&
-		username.length >= 3 &&
-		username.length <= 31 &&
-		/^[a-z0-9_-]+$/.test(username)
-	);
-}
-
-function validatePassword(password: unknown): password is string {
-	return typeof password === 'string' && password.length >= 6 && password.length <= 255;
 }

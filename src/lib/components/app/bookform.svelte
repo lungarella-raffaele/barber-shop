@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form/index';
 	import { Input } from '$lib/components/ui/input';
-	import { bookSchema, type FormSchema } from '$lib/schema/book';
+	import { bookSchema, type FormSchema } from '$lib/validation/book';
 	import { type Infer, superForm, type SuperValidated } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 

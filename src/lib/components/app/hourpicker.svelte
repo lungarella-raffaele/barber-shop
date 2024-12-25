@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
-	import Checkbox from '../ui/checkbox/checkbox.svelte';
 	import Label from '../ui/label/label.svelte';
 
 	const hourEntries = [
@@ -38,10 +37,7 @@
 		value={hour}
 		disabled={!available}
 	>
-		<div>
-			<Checkbox id={hour} checked={value === hour} class="mr-2" />
-			<Label for={hour}>{hour}</Label>
-		</div>
+		<Label for={hour}>{hour}</Label>
 		{#if available}
 			<Badge>Disponibile</Badge>
 		{:else}

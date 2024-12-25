@@ -1,46 +1,84 @@
 <script lang="ts">
+	import * as Alert from '$lib/components/ui/alert';
 	import Button from '$lib/components/ui/button/button.svelte';
+
+	import * as Card from '$lib/components/ui/card';
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
-	import { loginSchema } from '$lib/schema/login';
+	import { loginSchema } from '$lib/validation/login';
+	import CircleAlert from 'lucide-svelte/icons/circle-alert';
+	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import type { ActionData, PageData } from './$types';
 
-	let { data: pageData }: { form: ActionData; data: PageData } = $props();
+	let { form, data: pageData }: { form: ActionData; data: PageData } = $props();
 
 	const sForm = superForm(pageData.form, {
 		validators: zodClient(loginSchema)
 	});
 
-	const { form: formData, enhance } = sForm;
+	const { form: formData, enhance, delayed } = sForm;
 </script>
 
-<h1 class="text-center text-3xl font-bold">Login</h1>
+{#if form && form.message}
+	<Alert.Root variant="destructive" class="mb-3">
+		<CircleAlert class="size-4" />
+		<Alert.Description>{form.message}</Alert.Description>
+	</Alert.Root>
+{/if}
+
 <form method="post" use:enhance>
-	<Form.Field form={sForm} name="email">
-		<Form.Control>
-			{#snippet children({ props })}
-				<Form.Label>Email</Form.Label>
-				<Input {...props} bind:value={$formData.email} placeholder="Inserisci la tua username" />
-			{/snippet}
-		</Form.Control>
-		<Form.FieldErrors />
-	</Form.Field>
-	<Form.Field form={sForm} name="password">
-		<Form.Control>
-			{#snippet children({ props })}
-				<Form.Label>Passwords</Form.Label>
-				<Input
-					type="password"
-					{...props}
-					bind:value={$formData.password}
-					placeholder="Inserisci la tua password"
-				/>
-			{/snippet}
-		</Form.Control>
-		<Form.FieldErrors />
-	</Form.Field>
-	<Button type="submit">Login</Button>
-	<Button href="/register" variant="link">or register</Button>
+	<Card.Root>
+		<Card.Header>
+			<Card.Title>Log in</Card.Title>
+			<Card.Description>Bentornato! Accedi per continuare.</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			<Form.Field form={sForm} name="email">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>Email</Form.Label>
+						<Input
+							{...props}
+							bind:value={$formData.email}
+							placeholder="Inserisci la tua username"
+						/>
+					{/snippet}
+				</Form.Control>
+				<Form.FieldErrors />
+			</Form.Field>
+			<Form.Field form={sForm} name="password">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>Passwords</Form.Label>
+						<Input
+							type="password"
+							{...props}
+							bind:value={$formData.password}
+							placeholder="Inserisci la tua password"
+						/>
+					{/snippet}
+				</Form.Control>
+				<Form.FieldErrors />
+			</Form.Field>
+		</Card.Content>
+
+		<Card.Footer>
+			<div class="flex w-full flex-col">
+				<Button disabled={$delayed} class="mt-6 w-full" type="submit">
+					{#if !$delayed}
+						Login
+					{:else}
+						<LoaderCircle class="animate-spin" />
+						Please wait
+					{/if}
+				</Button>
+				<p class="mt-3">
+					Non hai un account?
+					<a class="underline" href="/register" aria-label="Sign up">Registrati</a>
+				</p>
+			</div>
+		</Card.Footer>
+	</Card.Root>
 </form>

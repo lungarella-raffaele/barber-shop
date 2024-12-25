@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import Modeswitcher from '$lib/components/app/modeswitcher.svelte';
 	import Profile from '$lib/components/app/profile.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -27,18 +26,17 @@
 			<Button href="/" variant="ghost" size="icon">
 				<House />
 			</Button>
-			<Button href="/book" variant="link">Book</Button>
 		</div>
 
 		<!-- TRAILING -->
 		<div class="flex items-center">
 			{#if !data.user}
-				<Button href="/login" variant="link">Login</Button>
+				<Button href="/login" variant="ghost">Login</Button>
 			{:else}
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger class={buttonVariants({ variant: 'ghost' })}>
 						<span class="font-bold">
-							{data.user.username}
+							{data.user.email.slice(0, 1).toUpperCase()}
 						</span>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content>
@@ -47,9 +45,11 @@
 							<span>Profile</span>
 						</DropdownMenu.Item>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item onSelect={() => goto('/logout')}>
-							<LogOut class="mr-2 size-4" />
-							<span>Log out</span>
+						<DropdownMenu.Item>
+							<a class="flex items-center" href="/logout" data-sveltekit-reload aria-label="Logout">
+								<LogOut class="mr-2 size-4" />
+								<span>Log out</span>
+							</a>
 						</DropdownMenu.Item>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
@@ -60,4 +60,6 @@
 	{@render children()}
 </main>
 
-<Profile bind:open={profileDialog} />
+{#if data.user}
+	<Profile bind:open={profileDialog} user={data.user} />
+{/if}

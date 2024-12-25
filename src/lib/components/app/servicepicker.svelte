@@ -5,7 +5,6 @@
 
 	let api = $state<CarouselAPI>();
 
-	const count = $derived(api ? api.scrollSnapList().length : 0);
 	let current = $state(0);
 
 	$effect(() => {
@@ -16,11 +15,26 @@
 			});
 		}
 	});
+
+	const services = [
+		{
+			name: 'Taglio di capelli',
+			time: 30,
+			price: 20
+		},
+		{
+			name: 'Taglio di capelli per bambini',
+			time: 15,
+			price: 15
+		}
+	];
+
+	// const count = $derived(api ? api.scrollSnapList().length : 0);
 </script>
 
 <Carousel.Root setApi={(emblaApi) => (api = emblaApi)} class="w-full">
 	<Carousel.Content>
-		{#each Array(5) as _, i (i)}
+		{#each services as _, i (i)}
 			<Carousel.Item class="md:basis-1/2 lg:basis-1/3">
 				<Card.Root>
 					<Card.Content class="flex aspect-square items-center justify-center p-6">
@@ -32,7 +46,7 @@
 	</Carousel.Content>
 
 	<div class="flex justify-between py-2 text-center text-sm text-muted-foreground">
-		Slide {current} of {count}
+		Slide {current} of {services.length}
 
 		<div>
 			<Carousel.Previous />
