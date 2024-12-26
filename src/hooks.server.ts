@@ -1,9 +1,14 @@
-import type { Handle } from '@sveltejs/kit';
+import { redirect, type Handle } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth.js';
 
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const sessionToken = event.cookies.get(auth.sessionCookieName);
 	if (!sessionToken) {
+		if (event.route.id && event.route.id.startsWith('/(protected)')) {
+			if (!event.locals.user) {
+				redirect(303, '/login');
+			}
+		}
 		event.locals.user = null;
 		event.locals.session = null;
 		return resolve(event);
