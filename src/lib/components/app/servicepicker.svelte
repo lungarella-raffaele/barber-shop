@@ -2,6 +2,8 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import type { CarouselAPI } from '$lib/components/ui/carousel/context.js';
 	import * as Carousel from '$lib/components/ui/carousel/index.js';
+	import { services } from '$lib/models/service.model';
+
 
 	let api = $state<CarouselAPI>();
 
@@ -15,19 +17,6 @@
 			});
 		}
 	});
-
-	const services = [
-		{
-			name: 'Taglio di capelli',
-			time: 30,
-			price: 20
-		},
-		{
-			name: 'Taglio di capelli per bambini',
-			time: 15,
-			price: 15
-		}
-	];
 
 	// const count = $derived(api ? api.scrollSnapList().length : 0);
 </script>

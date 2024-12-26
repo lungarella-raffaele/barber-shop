@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import Modeswitcher from '$lib/components/app/modeswitcher.svelte';
 	import Profile from '$lib/components/app/profile.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -58,8 +59,18 @@
 		</div>
 	</div>
 	{@render children()}
-</main>
 
-{#if data.user}
-	<Profile bind:open={profileDialog} user={data.user} />
-{/if}
+	<!-- Profile Dialog -->
+	{#if data.user}
+		<Profile bind:open={profileDialog} user={data.user} />
+	{/if}
+
+	<!-- Hovering Book button -->
+	{#if $page.url.pathname !== '/book'}
+		<Button
+			href="/book"
+			class="absolute bottom-0 right-0 mb-10 rounded-none rounded-l p-6 text-lg font-bold"
+			>Prenota</Button
+		>
+	{/if}
+</main>

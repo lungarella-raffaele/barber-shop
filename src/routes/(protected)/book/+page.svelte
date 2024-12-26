@@ -89,3 +89,6 @@
 {#snippet NextButton(target: string)}
 	<Button onclick={() => (tab = target)} class="w-full">Continua</Button>
 {/snippet}
+
+{date}
+{hour}
