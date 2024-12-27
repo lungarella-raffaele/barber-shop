@@ -1,76 +1,37 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import AppSidebar from '$lib/components/app/app-sidebar.svelte';
 	import Modeswitcher from '$lib/components/app/modeswitcher.svelte';
-	import Profile from '$lib/components/app/profile.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';
-	import House from 'lucide-svelte/icons/house';
-	import LogOut from 'lucide-svelte/icons/log-out';
-	import User from 'lucide-svelte/icons/user';
+	import { Instagram } from '$lib/components/icons/index';
+	import { Button } from '$lib/components/ui/button/index';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { ModeWatcher } from 'mode-watcher';
 	import '../app.css';
 
 	let { data, children } = $props();
-
-	let profileDialog = $state(false);
-	const toggleDialog = () => {
-		profileDialog = !profileDialog;
-	};
 </script>
 
-<main class="p-2">
-	<ModeWatcher />
-	<div class="mb-6 flex items-center justify-between py-6">
-		<!-- LEADING -->
-		<div class="flex items-center">
-			<Button href="/" variant="ghost" size="icon">
-				<House />
-			</Button>
+<ModeWatcher />
+
+<Sidebar.Provider>
+	<AppSidebar />
+	<main class="w-full">
+		<div class="mb-4 flex items-center justify-between border-b p-3">
+			<!-- Leading -->
+			<Sidebar.Trigger />
+
+			<!-- Trailing -->
+			<div class="flex items-center">
+				{#if !data.user}
+					<Button href="/login" variant="ghost">Login</Button>
+				{/if}
+
+				<Button href="" target="_blank" variant="ghost" size="icon"><Instagram /></Button>
+				<Modeswitcher />
+			</div>
 		</div>
 
-		<!-- TRAILING -->
-		<div class="flex items-center">
-			{#if !data.user}
-				<Button href="/login" variant="ghost">Login</Button>
-			{:else}
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger class={buttonVariants({ variant: 'ghost' })}>
-						<span class="font-bold">
-							{data.user.email.slice(0, 1).toUpperCase()}
-						</span>
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content>
-						<DropdownMenu.Item onSelect={toggleDialog}>
-							<User class="mr-2 size-4" />
-							<span>Profile</span>
-						</DropdownMenu.Item>
-						<DropdownMenu.Separator />
-						<DropdownMenu.Item>
-							<a class="flex items-center" href="/logout" data-sveltekit-reload aria-label="Logout">
-								<LogOut class="mr-2 size-4" />
-								<span>Log out</span>
-							</a>
-						</DropdownMenu.Item>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
-			{/if}
-			<Modeswitcher />
+		<div class="p-2">
+			{@render children()}
 		</div>
-	</div>
-	{@render children()}
-
-	<!-- Profile Dialog -->
-	{#if data.user}
-		<Profile bind:open={profileDialog} user={data.user} />
-	{/if}
-
-	<!-- Hovering Book button -->
-	{#if $page.url.pathname !== '/book'}
-		<Button
-			href="/book"
-			class="absolute bottom-0 right-0 mb-10 rounded-none rounded-l p-6 text-lg font-bold"
-			>Prenota</Button
-		>
-	{/if}
-</main>
+	</main>
+</Sidebar.Provider>

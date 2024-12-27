@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Menubar as MenubarPrimitive, type WithoutChild } from 'bits-ui';
-	import Circle from 'lucide-svelte/icons/circle';
+	import { Circle } from '$lib/components/icons/index';
 	import { cn } from '$lib/utils.js';
+	import { Menubar as MenubarPrimitive, type WithoutChild } from 'bits-ui';
 
 	let {
 		ref = $bindable(null),
