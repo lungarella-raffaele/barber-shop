@@ -30,6 +30,7 @@
 	};
 </script>
 
+<h1 class="title">Prenotazione</h1>
 <form method="post" use:enhance={submitBooking} id="booking-form"></form>
 
 <Tabs.Root bind:value={tab}>

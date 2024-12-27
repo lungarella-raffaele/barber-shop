@@ -1,4 +1,5 @@
 export type Service = {
+	id: number;
 	name: string;
 	duration: string;
 	price: number;
@@ -7,6 +8,7 @@ export type Service = {
 
 export const services: Service[] = [
 	{
+		id: 1,
 		name: 'Taglio Base',
 		duration: '30',
 		price: 22,
@@ -14,6 +16,7 @@ export const services: Service[] = [
 			'Taglio classico eseguito con tecniche avanzate di precisione geometrica. Comprende shampoo pre e post servizio.'
 	},
 	{
+		id: 2,
 		name: 'Taglio Base + Rifinitura Barba',
 		duration: '30',
 		price: 23,
@@ -21,6 +24,7 @@ export const services: Service[] = [
 			'Ideale per barbe corte rifinite a macchinetta. Include un taglio classico e la definizione accurata della barba.'
 	},
 	{
+		id: 3,
 		name: 'Taglio + Scolpitura Barba',
 		duration: '45',
 		price: 25,
@@ -28,6 +32,7 @@ export const services: Service[] = [
 			'Pensato per barbe lunghe, combina un taglio tradizionale con una scolpitura e definizione dettagliata della barba.'
 	},
 	{
+		id: 4,
 		name: 'Taglio Bambino (0-10 anni)',
 		duration: '15',
 		price: 15,
@@ -35,6 +40,7 @@ export const services: Service[] = [
 			'Taglio studiato per i più piccoli, fino a 10 anni, con un’attenzione particolare al comfort e alla precisione.'
 	},
 	{
+		id: 5,
 		name: 'Taglio Ragazzo (11-13 anni)',
 		duration: '30',
 		price: 18,

@@ -1,8 +1,8 @@
 <script lang="ts">
+	import { ArrowRight } from '$lib/components/icons/index.js';
 	import { Button, type Props } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
 	import type { WithoutChildren } from 'bits-ui';
-	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { getEmblaContext } from './context.js';
 
 	let {

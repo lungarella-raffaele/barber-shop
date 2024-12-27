@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { CircleAlert, LoaderCircle } from '$lib/components/icons/index';
 	import * as Alert from '$lib/components/ui/alert/';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Card from '$lib/components/ui/card';
@@ -6,8 +7,6 @@
 	import { Input } from '$lib/components/ui/input';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { registerSchema } from '$lib/validation/register';
-	import CircleAlert from 'lucide-svelte/icons/circle-alert';
-	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import type { ActionData, PageData } from './$types';
