@@ -8,7 +8,7 @@ import { encodeBase32LowerCase } from '@oslojs/encoding';
 import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { registerSchema } from '$lib/validation/register';
+import { signup } from '$lib/schemas/signup';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -16,13 +16,13 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	return {
-		form: await superValidate(zod(registerSchema))
+		form: await superValidate(zod(signup))
 	};
 };
 
 export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod(registerSchema));
+		const form = await superValidate(event, zod(signup));
 		if (!form.valid) {
 			return fail(400, {
 				message: `Le informazioni che hai inserito non sono valide. Riprova.`,

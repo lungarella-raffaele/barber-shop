@@ -17,7 +17,7 @@
 		},
 		{
 			title: 'Prenota',
-			url: '/book',
+			url: '/newreservation',
 			icon: Calendar
 		}
 	];
