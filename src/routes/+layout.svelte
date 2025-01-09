@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AppSidebar from '$lib/components/app/app-sidebar.svelte';
+	import AppSidebar from '$lib/components/app/appsidebar.svelte';
 	import Modeswitcher from '$lib/components/app/modeswitcher.svelte';
 	import { Instagram } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button/index';

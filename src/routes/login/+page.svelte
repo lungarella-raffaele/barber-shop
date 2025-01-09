@@ -6,7 +6,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
-	import { loginSchema } from '$lib/validation/login';
+	import { login } from '$lib/schemas/login';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import type { ActionData, PageData } from './$types';
@@ -14,7 +14,7 @@
 	let { form, data: pageData }: { form: ActionData; data: PageData } = $props();
 
 	const sForm = superForm(pageData.form, {
-		validators: zodClient(loginSchema)
+		validators: zodClient(login)
 	});
 
 	const { form: formData, enhance, delayed } = sForm;
@@ -75,7 +75,7 @@
 				</Button>
 				<p class="mt-3">
 					Non hai un account?
-					<a class="underline" href="/register" aria-label="Sign up">Registrati</a>
+					<a class="underline" href="/signup" aria-label="Sign up">Registrati</a>
 				</p>
 			</div>
 		</Card.Footer>

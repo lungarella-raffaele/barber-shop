@@ -3,7 +3,11 @@
 	import { buttonVariants } from '$lib/components/ui/button';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Table from '$lib/components/ui/table';
-	import { services } from '$lib/models/service.model';
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
+
+	const { services } = data;
 </script>
 
 <h1 class="title">Listino prezzi</h1>

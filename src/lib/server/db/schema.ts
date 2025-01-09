@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { init } from './init';
 
 export const user = sqliteTable('user', {
 	id: text('id').primaryKey(),
@@ -19,16 +20,24 @@ export const session = sqliteTable('session', {
 
 export const booking = sqliteTable('booking', {
 	id: text('id').primaryKey(),
-	userId: text('user_id')
+	userID: text('user_id')
 		.notNull()
 		.references(() => user.id),
-	date: text('date')
+	date: text('date'),
+	serviceID: text('service_id')
+		.notNull()
+		.references(() => service.id)
 });
 
 export const service = sqliteTable('service', {
 	id: text('id').primaryKey(),
-	name: text('name').notNull().unique()
+	name: text('name').notNull().unique(),
+	duration: integer('duration').notNull(),
+	price: integer('price').notNull(),
+	description: text('description').notNull()
 });
+
+// init();
 
 export type Session = typeof session.$inferSelect;
 export type User = typeof user.$inferSelect;

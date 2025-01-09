@@ -7,7 +7,7 @@ import * as table from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { loginSchema } from '$lib/validation/login';
+import { login } from '$lib/schemas/login';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -15,13 +15,13 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	return {
-		form: await superValidate(zod(loginSchema))
+		form: await superValidate(zod(login))
 	};
 };
 
 export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod(loginSchema));
+		const form = await superValidate(event, zod(login));
 		if (!form.valid) {
 			return fail(400, {
 				message: 'I dati inseriti non sono validi',

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-export const passwordSchema = z
+export const password = z
 	.string()
 	.min(8, { message: 'Troppo corto' })
 	.max(20, { message: 'Troppo lungo' })
