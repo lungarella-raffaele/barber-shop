@@ -22,3 +22,4 @@ export { default as CircleAlert } from 'lucide-svelte/icons/circle-alert';
 export { default as LoaderCircle } from 'lucide-svelte/icons/loader-circle';
 export { default as DollarSign } from 'lucide-svelte/icons/dollar-sign';
 export { default as Instagram } from 'lucide-svelte/icons/instagram';
+export { default as CircleUser } from 'lucide-svelte/icons/circle-user';
