@@ -8,12 +8,14 @@
 	import '../app.css';
 
 	let { data, children } = $props();
+
+	let isLogged = $derived(data.user !== null);
 </script>
 
 <ModeWatcher />
 
 <Sidebar.Provider>
-	<AppSidebar />
+	<AppSidebar {isLogged} />
 	<main class="w-full">
 		<div class="mb-4 flex items-center justify-between border-b p-3">
 			<!-- Leading -->
@@ -23,6 +25,8 @@
 			<div class="flex items-center">
 				{#if !data.user}
 					<Button href="/login" variant="ghost">Login</Button>
+				{:else}
+					<Button href="/profile" variant="ghost">Profile</Button>
 				{/if}
 
 				<Button href="" target="_blank" variant="ghost" size="icon"><Instagram /></Button>
