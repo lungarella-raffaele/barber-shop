@@ -1,13 +1,23 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { Calendar, CircleUser, DollarSign, House, LogOut } from '$lib/components/icons/index';
+	import {
+		Calendar,
+		CircleUser,
+		DollarSign,
+		House,
+		Instagram,
+		Linkedin,
+		LogOut,
+		Cookie,
+		Lock
+	} from '$lib/components/icons/index';
 	import { enhance } from '$app/forms';
 
 	let { isLogged } = $props();
 
 	// Menu items.
-	const items = [
+	const navigation = [
 		{
 			title: 'Home',
 			url: '/',
@@ -25,16 +35,39 @@
 		}
 	];
 
-	const items2 = [
+	const user = [
 		{
 			title: 'Profilo',
 			url: '/profile',
 			icon: CircleUser
 		},
 		{
-			title: 'Esci',
-			url: '/logout',
-			icon: LogOut
+			title: 'Prenotazioni',
+			url: '/profile/reservations',
+			icon: Calendar
+		}
+	];
+
+	const others = [
+		{
+			title: 'instagram',
+			url: '#',
+			icon: Instagram
+		},
+		{
+			title: 'linkedin',
+			url: '#',
+			icon: Linkedin
+		},
+		{
+			title: 'Cookies policy',
+			url: '/cookies',
+			icon: Cookie
+		},
+		{
+			title: 'Privacy policy',
+			url: '/privacy',
+			icon: Lock
 		}
 	];
 </script>
@@ -42,10 +75,10 @@
 <Sidebar.Root>
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel>Navigazione</Sidebar.GroupLabel>
+			<Sidebar.GroupLabel>Vai a</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
-					{#each items as item (item.title)}
+					{#each navigation as item (item.title)}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
@@ -63,35 +96,53 @@
 
 		{#if isLogged}
 			<Sidebar.Group>
-				<Sidebar.GroupLabel>Utente</Sidebar.GroupLabel>
+				<Sidebar.GroupLabel>Area personale</Sidebar.GroupLabel>
 				<Sidebar.GroupContent>
 					<Sidebar.Menu>
-						{#each items2 as item (item.title)}
-							{#if item.url !== '/logout'}
-								<Sidebar.MenuItem>
-									<Sidebar.MenuButton>
-										{#snippet child({ props })}
-											<a href={item.url} {...props}>
-												<item.icon />
-												<span>{item.title}</span>
-											</a>
-										{/snippet}
-									</Sidebar.MenuButton>
-								</Sidebar.MenuItem>
-							{:else}
-								<Sidebar.MenuItem>
-									<form method="post" action="/profile?/logout" use:enhance>
-										<Sidebar.MenuButton class="text-destructive">
+						{#each user as item (item.title)}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton>
+									{#snippet child({ props })}
+										<a href={item.url} {...props}>
 											<item.icon />
 											<span>{item.title}</span>
-										</Sidebar.MenuButton>
-									</form>
-								</Sidebar.MenuItem>
-							{/if}
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
 						{/each}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
 			</Sidebar.Group>
 		{/if}
+
+		<Sidebar.Group>
+			<Sidebar.GroupLabel>Altro</Sidebar.GroupLabel>
+			<Sidebar.GroupContent>
+				<Sidebar.Menu>
+					{#each others as item (item.title)}
+						<Sidebar.MenuItem>
+							<Sidebar.MenuButton>
+								{#snippet child({ props })}
+									<a href={item.url} {...props}>
+										<item.icon />
+										<span>{item.title}</span>
+									</a>
+								{/snippet}
+							</Sidebar.MenuButton>
+						</Sidebar.MenuItem>
+					{/each}
+				</Sidebar.Menu>
+			</Sidebar.GroupContent>
+		</Sidebar.Group>
 	</Sidebar.Content>
+
+	<Sidebar.Footer>
+		<form method="post" action="/profile?/logout" use:enhance>
+			<Sidebar.MenuButton class="text-destructive">
+				<LogOut />
+				<span>Esci</span>
+			</Sidebar.MenuButton>
+		</form>
+	</Sidebar.Footer>
 </Sidebar.Root>
