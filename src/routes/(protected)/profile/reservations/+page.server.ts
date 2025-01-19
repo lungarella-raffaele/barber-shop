@@ -3,6 +3,7 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect, type Actions } from '@sveltejs/kit';
+import { logger } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -13,7 +14,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.select()
 		.from(table.reservation)
 		.where(eq(table.reservation.userID, locals.user.id));
-	console.log(reservations);
+
+	logger.info(`Retrieved ${reservations.length} reservations`);
 
 	return { reservations };
 };
@@ -21,7 +23,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	delete: async ({ request }) => {
 		const data = await request.formData();
-		console.log('Daje');
 
 		const idToDelete = data.get('id') as string;
 
