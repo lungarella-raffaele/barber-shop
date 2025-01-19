@@ -37,14 +37,14 @@ export const actions: Actions = {
 		if (!locals.user) {
 			return fail(404, { message: 'Riprova' });
 		} else {
-			const booking: table.Booking = {
+			const booking: table.Reservation = {
 				date: date,
 				id: crypto.randomUUID(),
 				userID: locals.user.id,
 				serviceID: service
 			};
 
-			await db.insert(table.booking).values(booking);
+			await db.insert(table.reservation).values(booking);
 			return {
 				bookingCreated: true
 			};

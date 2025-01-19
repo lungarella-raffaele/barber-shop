@@ -26,7 +26,7 @@
 			{#each services as service}
 				<Table.Row>
 					<Table.Cell>{service.name}</Table.Cell>
-					<Table.Cell>{service.duration} <span class="text-muted-foreground">Min</span></Table.Cell>
+					<Table.Cell>{service.duration} <span class="text-muted-foreground">min</span></Table.Cell>
 					<Table.Cell
 						>{service.price}
 						<span class="text-muted-foreground">&euro;</span>

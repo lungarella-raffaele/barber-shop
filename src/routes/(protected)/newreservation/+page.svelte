@@ -12,6 +12,7 @@
 	import type { PageData } from './$types';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import ReservationDrawer from '$lib/components/app/reservationdrawer.svelte';
+	import { getLocalTimeZone } from '@internationalized/date';
 
 	let { data }: { data: PageData } = $props();
 
@@ -22,7 +23,7 @@
 			cancel();
 		}
 
-		formData.append('date', JSON.stringify(reservationManager.date));
+		formData.append('date', JSON.stringify(reservationManager.date?.toString()));
 		formData.append('hour', reservationManager.hour);
 		formData.append('service', reservationManager.service);
 

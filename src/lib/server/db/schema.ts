@@ -18,7 +18,7 @@ export const session = sqliteTable('session', {
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull()
 });
 
-export const booking = sqliteTable('booking', {
+export const reservation = sqliteTable('booking', {
 	id: text('id').primaryKey(),
 	userID: text('user_id')
 		.notNull()
@@ -41,5 +41,5 @@ export const service = sqliteTable('service', {
 
 export type Session = typeof session.$inferSelect;
 export type User = typeof user.$inferSelect;
-export type Booking = typeof booking.$inferSelect;
+export type Reservation = typeof reservation.$inferSelect;
 export type Service = typeof service.$inferSelect;

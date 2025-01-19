@@ -6,7 +6,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { ModeWatcher } from 'mode-watcher';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';
-	import { CircleUser, LogOut } from '$lib/components/icons/index';
+	import { CircleUser } from '$lib/components/icons/index';
 	import { enhance } from '$app/forms';
 	import '../app.css';
 
@@ -35,19 +35,17 @@
 							<CircleUser />
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content>
-							<DropdownMenu.Group>
-								<DropdownMenu.GroupHeading>My Account</DropdownMenu.GroupHeading>
-								<DropdownMenu.Separator />
-								<DropdownMenu.Item>
-									{#snippet children()}
-										<a href="/profile">Profile</a>
-									{/snippet}
-								</DropdownMenu.Item>
-								<DropdownMenu.Item>
-									{#snippet children()}
-										<a href="/reservations">Prenotazioni</a>
-									{/snippet}
-								</DropdownMenu.Item>
+							<DropdownMenu.Group class="flex flex-col">
+								<Button
+									class="m-0 justify-start p-2 text-right no-underline hover:bg-muted hover:no-underline"
+									variant="link"
+									href="/profile">Profilo</Button
+								>
+								<Button
+									class="m-0 justify-start p-2 text-right no-underline hover:bg-muted hover:no-underline"
+									variant="link"
+									href="/profile/reservations">Prenotazioni</Button
+								>
 								<DropdownMenu.Separator />
 
 								<DropdownMenu.Item
