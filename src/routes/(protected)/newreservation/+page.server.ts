@@ -2,10 +2,9 @@ import type { Actions, PageServerLoad } from './$types.js';
 import { superValidate } from 'sveltekit-superforms';
 import { reservation } from '$lib/schemas/reservation.js';
 import { zod } from 'sveltekit-superforms/adapters';
-import type { Service } from '$lib/server/db/schema.js';
 import { fail } from '@sveltejs/kit';
-import { db } from '$lib/server/db/index.js';
-import * as table from '$lib/server/db/schema';
+import { insertReservation } from '$lib/server/backend/reservation-service.js';
+import { getAllServices } from '$lib/server/backend/services-service.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -37,14 +36,12 @@ export const actions: Actions = {
 		if (!locals.user) {
 			return fail(404, { message: 'Riprova' });
 		} else {
-			const booking: table.Reservation = {
-				date: date,
+			await insertReservation({
+				date,
 				id: crypto.randomUUID(),
 				userID: locals.user.id,
 				serviceID: service
-			};
-
-			await db.insert(table.reservation).values(booking);
+			});
 			return {
 				bookingCreated: true
 			};
@@ -53,7 +50,7 @@ export const actions: Actions = {
 };
 
 export const load: PageServerLoad = async () => {
-	const services = await db.select().from(table.service);
+	const services = await getAllServices();
 	return {
 		services,
 		form: await superValidate(zod(reservation))

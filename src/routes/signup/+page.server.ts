@@ -1,14 +1,12 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth';
-import { db } from '$lib/server/db';
-import { eq } from 'drizzle-orm';
-import * as table from '$lib/server/db/schema';
 import { hash } from '@node-rs/argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { signup } from '$lib/schemas/signup';
+import { getUser, insertUser } from '$lib/server/backend/user-service';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -30,7 +28,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const results = await db.select().from(table.user).where(eq(table.user.email, form.data.email));
+		const results = await getUser(form.data.email);
 
 		const existingUser = results.at(0);
 		if (existingUser) {
@@ -42,7 +40,7 @@ export const actions: Actions = {
 
 		const { email, password, firstName, lastName } = form.data;
 
-		const userId = generateUserId();
+		const userID = generateUserId();
 		const passwordHash = await hash(password, {
 			// recommended minimum parameters
 			memoryCost: 19456,
@@ -52,10 +50,10 @@ export const actions: Actions = {
 		});
 
 		try {
-			await db.insert(table.user).values({ id: userId, email, passwordHash, lastName, firstName });
+			await insertUser({ id: userID, email, passwordHash, lastName, firstName, phoneNumber: null });
 
 			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, userId);
+			const session = await auth.createSession(sessionToken, userID);
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		} catch (e) {
 			console.log(e);

@@ -1,13 +1,11 @@
 import { verify } from '@node-rs/argon2';
 import { fail, redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
 import * as auth from '$lib/server/auth';
-import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { login } from '$lib/schemas/login';
+import { getUser } from '$lib/server/backend/user-service';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -29,7 +27,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const results = await db.select().from(table.user).where(eq(table.user.email, form.data.email));
+		const results = await getUser(form.data.email);
 
 		const existingUser = results.at(0);
 		if (!existingUser) {

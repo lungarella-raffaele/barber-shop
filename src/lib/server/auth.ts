@@ -4,6 +4,7 @@ import { sha256 } from '@oslojs/crypto/sha2';
 import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
+import { insertSession } from './backend/user-service';
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
@@ -22,7 +23,7 @@ export async function createSession(token: string, userID: string) {
 		userID,
 		expiresAt: new Date(Date.now() + DAY_IN_MS * 30)
 	};
-	await db.insert(table.session).values(session);
+	await insertSession(session);
 	return session;
 }
 
@@ -30,7 +31,6 @@ export async function validateSessionToken(token: string) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const [result] = await db
 		.select({
-			// Adjust user table here to tweak returned data
 			user: table.user,
 			session: table.session
 		})
