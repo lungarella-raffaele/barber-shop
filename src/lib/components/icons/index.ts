@@ -30,3 +30,4 @@ export { default as Lock } from 'lucide-svelte/icons/lock';
 export { default as Phone } from 'lucide-svelte/icons/phone';
 export { default as MapPin } from 'lucide-svelte/icons/map-pin';
 export { default as Ellipsis } from 'lucide-svelte/icons/ellipsis';
+export { default as Library } from 'lucide-svelte/icons/library';

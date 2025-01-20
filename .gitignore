@@ -27,3 +27,9 @@ vite.config.ts.timestamp-*
 
 # Editors
 .zed
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
