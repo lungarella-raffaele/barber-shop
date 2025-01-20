@@ -8,6 +8,7 @@
 		data: TData[];
 	};
 
+	// @ts-expect-error
 	let { data, columns }: DataTableProps<TData, TValue> = $props();
 
 	const table = createSvelteTable({

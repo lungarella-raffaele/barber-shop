@@ -1,12 +1,13 @@
 import { db } from '$lib/server/db';
 import type { Service } from './schema';
 import * as table from '$lib/server/db/schema';
+import { getAllServices, insertService } from '../backend/services-service';
 
 export const init = async () => {
-	const result = await db.select().from(table.service);
+	const result = await getAllServices();
 	if (result.length === 0) {
 		services.forEach(async (ser) => {
-			await db.insert(table.service).values(ser).onConflictDoNothing();
+			await insertService(ser);
 		});
 	}
 
