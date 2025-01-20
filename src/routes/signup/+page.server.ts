@@ -14,7 +14,8 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	return {
-		form: await superValidate(zod(signup))
+		form: await superValidate(zod(signup)),
+		title: 'Sign Up | '
 	};
 };
 

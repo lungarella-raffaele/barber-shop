@@ -53,6 +53,7 @@ export const load: PageServerLoad = async () => {
 	const services = await getAllServices();
 	return {
 		services,
-		form: await superValidate(zod(reservation))
+		form: await superValidate(zod(reservation)),
+		title: 'Nuova prenotazione | '
 	};
 };

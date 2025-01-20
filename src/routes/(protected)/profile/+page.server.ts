@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import * as auth from '$lib/server/auth';
 
 export const load: PageServerLoad = ({ locals }) => {
-	return { user: locals.user };
+	return { user: locals.user, title: 'Profilo | ' };
 };
 
 export const actions: Actions = {
