@@ -10,7 +10,8 @@
 		Linkedin,
 		LogOut,
 		Cookie,
-		Lock
+		Lock,
+		Library
 	} from '$lib/components/icons/index';
 	import { enhance } from '$app/forms';
 
@@ -44,7 +45,7 @@
 		{
 			title: 'Prenotazioni',
 			url: '/profile/reservations',
-			icon: Calendar
+			icon: Library
 		}
 	];
 

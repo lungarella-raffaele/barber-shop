@@ -11,6 +11,9 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
+		"test:e2e": "pnpm exec playwright test",
+		"test:report": "pnpm exec playwright show-report",
+		"test:codegen": "pnpm exec playwright codegen http://localhost:5173",
 		"test": "npm run test:unit -- --run",
 		"db:push": "drizzle-kit push",
 		"db:migrate": "drizzle-kit migrate",
@@ -19,11 +22,13 @@
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
 		"@internationalized/date": "^3.7.0",
+		"@playwright/test": "^1.49.1",
 		"@sveltejs/adapter-auto": "^3.3.1",
 		"@sveltejs/adapter-vercel": "^5.5.3",
 		"@sveltejs/kit": "^2.16.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@types/better-sqlite3": "^7.6.12",
+		"@types/node": "^22.10.7",
 		"autoprefixer": "^10.4.20",
 		"bits-ui": "1.0.0-next.77",
 		"clsx": "^2.1.1",
@@ -49,7 +54,7 @@
 		"typescript-eslint": "^8.20.0",
 		"vaul-svelte": "1.0.0-next.3",
 		"vite": "^6.0.7",
-		"vitest": "^2.1.8",
+		"vitest": "^3.0.0",
 		"zod": "^3.24.1"
 	},
 	"dependencies": {
