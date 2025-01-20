@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
+	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 </script>
 
 <div class="flex flex-col items-center">
@@ -7,5 +8,8 @@
 	<Button href="/newreservation">Prenota Ora</Button>
 
 	<p class="my-3 text-muted-foreground">oppure</p>
-	<a class="underline" href="Tel: 345 678 91011">Chiama</a>
+	<span>
+		<a class="underline" href="Tel: 345 678 91011">Chiama</a>
+		al {BARBER_SHOP_DETAILS.phone}
+	</span>
 </div>

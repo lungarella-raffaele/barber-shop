@@ -13,7 +13,8 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	return {
-		form: await superValidate(zod(login))
+		form: await superValidate(zod(login)),
+		title: 'Sign In | '
 	};
 };
 

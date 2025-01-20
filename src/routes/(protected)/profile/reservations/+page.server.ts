@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	logger.info(`Retrieved ${reservations.length} reservations`);
 
-	return { reservations };
+	return { reservations, title: 'Prenotazioni | ' };
 };
 
 export const actions: Actions = {
@@ -25,10 +25,6 @@ export const actions: Actions = {
 		const data = await request.formData();
 
 		const idToDelete = data.get('id') as string;
-
-		// if (!idToDelete) {
-		// reservationDeleted: false
-		// }
 
 		const deletedReservation = await db
 			.delete(table.reservation)

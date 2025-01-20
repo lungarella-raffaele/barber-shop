@@ -8,6 +8,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';
 	import { CircleUser } from '$lib/components/icons/index';
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import '../app.css';
 
 	let { data, children } = $props();
@@ -16,6 +17,10 @@
 
 	let logoutForm: HTMLFormElement | undefined = $state();
 </script>
+
+<svelte:head>
+	<title>{page.data.title} Emis Barber Shop</title>
+</svelte:head>
 
 <ModeWatcher />
 

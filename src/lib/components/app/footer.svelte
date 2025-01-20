@@ -1,6 +1,7 @@
 <script>
 	import { ArrowUpRight, MapPin, Phone } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button/index';
+	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 
 	const socials = [
 		{
@@ -18,12 +19,12 @@
 	<hr class="mb-3" />
 	<div class="flex justify-between">
 		<Button variant="link" href="Tel: 345 678 91011" class="text-muted-foreground"
-			><Phone />346 678 91011</Button
+			><Phone />{BARBER_SHOP_DETAILS.phone}</Button
 		>
 
 		<Button variant="link" href="#" class="text-muted-foreground"
-			><MapPin />Via San Sviluppo, 3 (PA)</Button
-		>
+			><MapPin />{BARBER_SHOP_DETAILS.street}
+		</Button>
 	</div>
 	<div class="flex">
 		{#each socials as s}
