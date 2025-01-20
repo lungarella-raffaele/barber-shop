@@ -1,4 +1,5 @@
 # Emis Barber Shop
+![example event parameter](https://github.com/lungarella-raffaele/emis-barber-shop/actions/workflows/ci.yml/badge.svg?event=push)
 
 Fullstack application for handling booking of Emiliano Lo russo.
 
