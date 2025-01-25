@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { redirect, type Actions } from '@sveltejs/kit';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { logger } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -26,18 +26,14 @@ export const actions: Actions = {
 
 		const idToDelete = data.get('id') as string;
 
-		const deletedReservation = await db
-			.delete(table.reservation)
-			.where(eq(table.reservation.id, idToDelete));
+		const res = await db.delete(table.reservation).where(eq(table.reservation.id, idToDelete));
 
-		if (deletedReservation) {
+		if (res) {
 			return {
-				reservationDeleted: true
+				success: true
 			};
 		} else {
-			return {
-				reservationDeleted: false
-			};
+			return fail(500, { success: false });
 		}
 	}
 };

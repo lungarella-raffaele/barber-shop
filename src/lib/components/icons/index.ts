@@ -14,6 +14,7 @@ export { default as ChevronLeft } from 'lucide-svelte/icons/chevron-left';
 export { default as ArrowRight } from 'lucide-svelte/icons/arrow-right';
 export { default as ArrowLeft } from 'lucide-svelte/icons/arrow-left';
 export { default as Check } from 'lucide-svelte/icons/check';
+export { default as BadgeCheck } from 'lucide-svelte/icons/badge-check';
 export { default as Minus } from 'lucide-svelte/icons/minus';
 export { default as X } from 'lucide-svelte/icons/x';
 export { default as Circle } from 'lucide-svelte/icons/circle';

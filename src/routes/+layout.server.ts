@@ -1,5 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async (event) => {
-	return { user: event.locals.user, title: 'Home | ' };
+export const load: LayoutServerLoad = async ({ locals, url }) => {
+	const success = url.searchParams.get('success');
+	return { user: locals.user, title: 'Home | ', success };
 };
