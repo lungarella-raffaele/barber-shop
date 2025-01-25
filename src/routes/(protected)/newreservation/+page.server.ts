@@ -5,6 +5,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { fail } from '@sveltejs/kit';
 import { insertReservation } from '$lib/server/backend/reservation-service.js';
 import { getAllServices } from '$lib/server/backend/services-service.js';
+import { logger } from '$lib/server/logger.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -42,8 +43,9 @@ export const actions: Actions = {
 				userID: locals.user.id,
 				serviceID: service
 			});
+			logger.info('New booking created!');
 			return {
-				bookingCreated: true
+				success: true
 			};
 		}
 	}

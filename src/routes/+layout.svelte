@@ -9,6 +9,7 @@
 	import { CircleUser } from '$lib/components/icons/index';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
+	import { Toaster } from '$lib/components/ui/sonner';
 	import '../app.css';
 
 	let { data, children } = $props();
@@ -23,6 +24,7 @@
 </svelte:head>
 
 <ModeWatcher />
+<Toaster richColors position="top-center" />
 
 <Sidebar.Provider>
 	<AppSidebar {isLogged} />

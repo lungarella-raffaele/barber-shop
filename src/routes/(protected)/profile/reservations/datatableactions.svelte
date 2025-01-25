@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { Ellipsis } from '$lib/components/icons/index';
-	import { Button } from '$lib/components/ui/button/index';
 	import * as Dialog from '$lib/components/ui/dialog/index';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';
+	import { toast } from 'svelte-sonner';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import { enhance } from '$app/forms';
 
 	let { id }: { id: string } = $props();
 
 	let isDialogOpen = $state(false);
-	const toggleDialog = () => {
-		isDialogOpen = !isDialogOpen;
-	};
 
 	const openDialog = () => {
 		isDialogOpen = true;
@@ -17,6 +17,18 @@
 
 	const closeDialog = () => {
 		isDialogOpen = false;
+	};
+
+	const submitDelete: SubmitFunction = async () => {
+		return async ({ result }) => {
+			if (result.type === 'success' && result.data) {
+				toast.success('Prenotazione eliminata');
+			} else if (result.type === 'failure') {
+				toast.error(`Errore durante l'eliminazione della prenotazione. Riprova più tardi`);
+			}
+
+			isDialogOpen = false;
+		};
 	};
 </script>
 
@@ -45,12 +57,12 @@
 <Dialog.Root bind:open={isDialogOpen}>
 	<Dialog.Content>
 		<Dialog.Header>
-			<Dialog.Title>Sei sicuro di voler disdire l'appuntamento?</Dialog.Title>
-			<Dialog.Description>L'azione è irreversibile.</Dialog.Description>
+			<Dialog.Title class="text-left">Sei sicuro di voler disdire l'appuntamento?</Dialog.Title>
+			<Dialog.Description class="text-left">L'azione è irreversibile.</Dialog.Description>
 		</Dialog.Header>
 		<Dialog.Footer>
 			<div class="flex flex-row-reverse">
-				<form action="?/delete" method="post">
+				<form action="?/delete" method="post" use:enhance={submitDelete}>
 					<input type="hidden" name="id" value={id} />
 					<Button class="ml-2" aria-label="Conferma" type="submit" variant="destructive"
 						>Conferma</Button

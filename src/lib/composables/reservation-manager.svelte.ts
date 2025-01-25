@@ -1,5 +1,6 @@
 import { type DateValue } from '@internationalized/date';
 import { getContext, hasContext, setContext } from 'svelte';
+import { toast } from 'svelte-sonner';
 
 export default class ReservationManager {
 	static #contextID = 'reservation-manager';
@@ -10,14 +11,12 @@ export default class ReservationManager {
 
 	name: string = $state('');
 	surname: string = $state('');
+	email: string = $state('');
 	date: DateValue | undefined = $state();
 	hour: string = $state('');
-	email: string = $state('');
 
 	//TODO
 	service: string = $state('1');
-
-	message: string | undefined = $state();
 
 	private constructor() {
 		this.date = undefined;
@@ -41,12 +40,16 @@ export default class ReservationManager {
 
 	check(): boolean {
 		if (!this.date || !this.hour) {
-			this.message = 'Devi inserire una data per poter proseguire';
+			toast.error('Devi inserire una data per poter proseguire');
 			this.goToTab('date');
 			return true;
 		} else if (!this.service) {
-			this.message = 'Devi inserire un servizio per poter proseguire';
+			toast.error('Devi inserire un servizio per poter proseguire ');
 			this.goToTab('service');
+			return true;
+		} else if (!this.name || !this.surname || !this.email) {
+			toast.error('Devi inserire i tuoi nominativi');
+			this.goToTab('info');
 			return true;
 		} else {
 			return false;
@@ -54,12 +57,10 @@ export default class ReservationManager {
 	}
 
 	next() {
-		this.message = undefined;
 		this.tab = this.tabs[this.#index + 1].value;
 	}
 
 	back() {
-		this.message = undefined;
 		this.tab = this.tabs[this.#index - 1].value;
 	}
 
