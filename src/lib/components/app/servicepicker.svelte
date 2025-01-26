@@ -5,10 +5,10 @@
 
 	let { services } = $props();
 
-	const reservationManager = ReservationManager.istance();
+	const reservationManager = ReservationManager.get();
 </script>
 
-<RadioGroup.Root bind:value={reservationManager.service}>
+<RadioGroup.Root bind:value={reservationManager.selectedService}>
 	{#each services as service (service.id)}
 		<Label
 			for={service.id}

@@ -34,7 +34,7 @@
 
 					<Table.Cell>
 						<Popover.Root>
-							<Popover.Trigger class={buttonVariants({ variant: 'outline' })}>
+							<Popover.Trigger class={buttonVariants({ variant: 'icon' })}>
 								<Info /></Popover.Trigger
 							>
 

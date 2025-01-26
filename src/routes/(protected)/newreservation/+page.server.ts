@@ -2,10 +2,11 @@ import type { Actions, PageServerLoad } from './$types.js';
 import { superValidate } from 'sveltekit-superforms';
 import { reservation } from '$lib/schemas/reservation.js';
 import { zod } from 'sveltekit-superforms/adapters';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { insertReservation } from '$lib/server/backend/reservation-service.js';
 import { getAllServices } from '$lib/server/backend/services-service.js';
 import { logger } from '$lib/server/logger.js';
+
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -26,14 +27,6 @@ export const actions: Actions = {
 			});
 		}
 
-		const name = data.get('name') as string;
-		const surname = data.get('surname') as string;
-		const email = data.get('email') as string;
-
-		if (!name || !surname || !email) {
-			return fail(404, { step: 'info', message: 'Devi inserire i tuoi nominativi' });
-		}
-
 		if (!locals.user) {
 			return fail(404, { message: 'Riprova' });
 		} else {
@@ -51,10 +44,14 @@ export const actions: Actions = {
 	}
 };
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
 	const services = await getAllServices();
+	if (!locals.user) {
+		redirect(307, '/');
+	}
 	return {
 		services,
+		user: locals.user,
 		form: await superValidate(zod(reservation)),
 		title: 'Nuova prenotazione | '
 	};

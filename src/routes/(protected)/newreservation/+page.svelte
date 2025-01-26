@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Date from '$lib/components/app/date.svelte';
-	import PersonalInfoForm from '$lib/components/app/personalinfoform.svelte';
 	import ServicePicker from '$lib/components/app/servicepicker.svelte';
 	import { ChevronLeft, ChevronRight } from '$lib/components/icons/index';
 	import * as Card from '$lib/components/ui/card';
@@ -15,7 +14,7 @@
 	import { toast } from 'svelte-sonner';
 
 	let { data }: { data: PageData } = $props();
-	const reservationManager = ReservationManager.istance();
+	const reservationManager = ReservationManager.istance(data.services);
 
 	const handleConfirmReservation = () => {
 		if (!reservationManager.check()) {
@@ -31,7 +30,7 @@
 
 		formData.append('date', JSON.stringify(reservationManager.date?.toString()));
 		formData.append('hour', reservationManager.hour);
-		formData.append('service', reservationManager.service);
+		formData.append('service', reservationManager.service?.id ?? '');
 
 		return async ({ result }) => {
 			if (result.type === 'success' && result.data) {
@@ -60,7 +59,7 @@
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
 	<Tabs.Root bind:value={reservationManager.tab}>
-		<Tabs.List class="grid w-full grid-cols-3">
+		<Tabs.List class="grid w-full grid-cols-2">
 			{#each reservationManager.tabs as tab}
 				<Tabs.Trigger value={tab.value}>{tab.label}</Tabs.Trigger>
 			{/each}
@@ -95,7 +94,7 @@
 			</Card.Root>
 		</Tabs.Content>
 
-		<Tabs.Content value="info">
+		<!-- <Tabs.Content value="info">
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Informazioni personali</Card.Title>
@@ -110,10 +109,10 @@
 					{@render NavStepper()}
 				</Card.Footer>
 			</Card.Root>
-		</Tabs.Content>
+		</Tabs.Content> -->
 	</Tabs.Root>
 
-	<ConfirmReservationDialog bind:isOpen={isDialogOpen} {loading} />
+	<ConfirmReservationDialog bind:isOpen={isDialogOpen} {loading} user={data.user} />
 </form>
 
 {#snippet NavStepper()}
