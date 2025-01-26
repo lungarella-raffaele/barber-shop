@@ -5,7 +5,7 @@
 	import DatePicker from './datepicker.svelte';
 	import Hourpicker from './hourpicker.svelte';
 
-	const reservationManager = ReservationManager.istance();
+	const reservationManager = ReservationManager.get();
 
 	const df = new DateFormatter('it-IT', {
 		dateStyle: 'long'

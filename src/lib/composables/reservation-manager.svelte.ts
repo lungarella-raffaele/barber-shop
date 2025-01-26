@@ -2,6 +2,14 @@ import { type DateValue } from '@internationalized/date';
 import { getContext, hasContext, setContext } from 'svelte';
 import { toast } from 'svelte-sonner';
 
+type Service = {
+	id: string;
+	name: string;
+	description: string;
+	duration: number;
+	price: number;
+};
+
 export default class ReservationManager {
 	static #contextID = 'reservation-manager';
 
@@ -9,33 +17,38 @@ export default class ReservationManager {
 	#index: number = $derived(this.tabs.findIndex((el) => el.value === this.tab) ?? 0);
 	tab: Tabs = $state('date');
 
-	name: string = $state('');
-	surname: string = $state('');
-	email: string = $state('');
+	// name: string = $state('');
+	// surname: string = $state('');
+	// email: string = $state('');
 	date: DateValue | undefined = $state();
 	hour: string = $state('');
 
-	//TODO
-	service: string = $state('1');
+	selectedService = $state('0');
+	services: Service[] = $state([]);
+	service: Service | undefined = $derived(
+		this.services.find((el) => el.id === this.selectedService)
+	);
 
-	private constructor() {
+	private constructor(services: Service[]) {
 		this.date = undefined;
 		this.hour = '';
-		this.email = '';
-		this.service = '1';
 		this.tabs = [
 			{ value: 'date', label: 'Data' },
-			{ value: 'service', label: 'Servizi' },
-			{ value: 'info', label: 'Informazioni' }
+			{ value: 'service', label: 'Servizi' }
 		];
+		this.services = services;
 	}
 
-	static istance(): ReservationManager {
+	static istance(services: Service[]): ReservationManager {
 		if (hasContext(this.#contextID)) {
 			return getContext(this.#contextID);
 		} else {
-			return setContext(this.#contextID, new ReservationManager());
+			return setContext(this.#contextID, new ReservationManager(services));
 		}
+	}
+
+	static get() {
+		return getContext<ReservationManager>(this.#contextID);
 	}
 
 	check(): boolean {
@@ -46,10 +59,6 @@ export default class ReservationManager {
 		} else if (!this.service) {
 			toast.error('Devi inserire un servizio per poter proseguire ');
 			this.goToTab('service');
-			return true;
-		} else if (!this.name || !this.surname || !this.email) {
-			toast.error('Devi inserire i tuoi nominativi');
-			this.goToTab('info');
 			return true;
 		} else {
 			return false;
