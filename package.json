@@ -31,7 +31,7 @@
 		"@types/better-sqlite3": "^7.6.12",
 		"@types/node": "^22.10.7",
 		"autoprefixer": "^10.4.20",
-		"bits-ui": "1.0.0-next.78",
+		"bits-ui": "1.0.0-next.77",
 		"clsx": "^2.1.1",
 		"embla-carousel-svelte": "^8.5.2",
 		"eslint": "^9.18.0",
