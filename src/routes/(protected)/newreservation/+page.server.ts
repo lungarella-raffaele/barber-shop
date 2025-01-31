@@ -7,7 +7,6 @@ import { insertReservation } from '$lib/server/backend/reservation-service.js';
 import { getAllServices } from '$lib/server/backend/services-service.js';
 import { logger } from '$lib/server/logger.js';
 
-
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
 		const data = await request.formData();
@@ -32,6 +31,7 @@ export const actions: Actions = {
 		} else {
 			await insertReservation({
 				date,
+				hour,
 				id: crypto.randomUUID(),
 				userID: locals.user.id,
 				serviceID: service

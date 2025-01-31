@@ -10,6 +10,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import type { ActionData, PageData } from './$types';
+	import Passwordinput from '$lib/components/app/passwordinput.svelte';
 
 	let { form, data: pageData }: { form: ActionData; data: PageData } = $props();
 
@@ -51,12 +52,11 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Passwords</Form.Label>
-						<Input
-							type="password"
+						<Passwordinput
 							{...props}
 							bind:value={$formData.password}
 							placeholder="Inserisci la tua password"
-						/>
+						></Passwordinput>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
@@ -65,7 +65,7 @@
 
 		<Card.Footer>
 			<div class="flex w-full flex-col">
-				<Button disabled={$delayed} class="mt-6 w-full" type="submit">
+				<Button disabled={$delayed} class="mt-6 w-full" type="submit" onclick={() => (form = null)}>
 					{#if !$delayed}
 						Login
 					{:else}

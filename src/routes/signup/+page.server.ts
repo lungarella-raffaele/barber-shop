@@ -7,6 +7,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { signup } from '$lib/schemas/signup';
 import { getUser, insertUser } from '$lib/server/backend/user-service';
+import { logger } from '$lib/server/logger';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -38,8 +39,9 @@ export const actions: Actions = {
 				form
 			});
 		}
+		logger.info(form.data);
 
-		const { email, password, firstName, lastName } = form.data;
+		const { email, password, username, phoneNumber } = form.data;
 
 		const userID = generateUserId();
 		const passwordHash = await hash(password, {
@@ -51,7 +53,7 @@ export const actions: Actions = {
 		});
 
 		try {
-			await insertUser({ id: userID, email, passwordHash, lastName, firstName, phoneNumber: null });
+			await insertUser({ id: userID, email, passwordHash, username, phoneNumber });
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, userID);

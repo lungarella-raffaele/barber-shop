@@ -10,6 +10,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import type { ActionData, PageData } from './$types';
+	import PasswordInput from '$lib/components/app/passwordinput.svelte';
 
 	let { form, data: pageData }: { form: ActionData; data: PageData } = $props();
 
@@ -50,7 +51,8 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Password</Form.Label>
-						<Input
+
+						<PasswordInput
 							{...props}
 							bind:value={$formData.password}
 							placeholder="Inserisci la tua password"
@@ -60,35 +62,44 @@
 				<Form.FieldErrors />
 			</Form.Field>
 
-			<Separator class="my-5" />
-
-			<!--name -->
-			<Form.Field form={sForm} name="firstName">
+			<Form.Field form={sForm} name="confirmPassword">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>
-							<div class="flex justify-between">
-								Nome
-								{@render optional()}
-							</div>
-						</Form.Label>
-						<Input {...props} bind:value={$formData.firstName} placeholder="Nome" />
+						<Form.Label>Conferma password</Form.Label>
+
+						<PasswordInput
+							{...props}
+							bind:value={$formData.confirmPassword}
+							placeholder="Conferma la tua password"
+						/>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
 
-			<!--surname -->
-			<Form.Field form={sForm} name="lastName">
+			<Separator class="my-5" />
+
+			<!--username -->
+			<Form.Field form={sForm} name="username">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>
-							<div class="flex justify-between">
-								Cognome
-								{@render optional()}
-							</div>
-						</Form.Label>
-						<Input {...props} bind:value={$formData.lastName} placeholder="Cognome" />
+						<Form.Label>Username</Form.Label>
+						<Input {...props} bind:value={$formData.username} placeholder="Username" />
+					{/snippet}
+				</Form.Control>
+				<Form.FieldErrors />
+			</Form.Field>
+
+			<!--phone number -->
+			<Form.Field form={sForm} name="phoneNumber">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>Numero di telefono</Form.Label>
+						<Input
+							{...props}
+							bind:value={$formData.phoneNumber}
+							placeholder="Inserisci il tuo numero"
+						/>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
@@ -112,7 +123,3 @@
 		</Card.Footer>
 	</Card.Root>
 </form>
-
-{#snippet optional()}
-	<div class="text-xs text-muted-foreground">Opzionale</div>
-{/snippet}

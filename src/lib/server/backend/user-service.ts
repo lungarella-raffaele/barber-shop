@@ -7,8 +7,8 @@ export async function insertUser(user: table.User) {
 		id: user.id,
 		email: user.email,
 		passwordHash: user.passwordHash,
-		lastName: user.lastName,
-		firstName: user.firstName
+		username: user.username,
+		phoneNumber: user.phoneNumber
 	});
 }
 
@@ -20,4 +20,4 @@ export async function insertSession(session: table.Session) {
 	return await db.insert(table.session).values(session);
 }
 
-		// const results = await db.select().from(table.user).where(eq(table.user.email, form.data.email));
+// const results = await db.select().from(table.user).where(eq(table.user.email, form.data.email));

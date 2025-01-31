@@ -20,19 +20,11 @@
 		<form>
 			<div class="grid w-full items-center gap-4">
 				<div class="flex flex-col space-y-1.5">
-					<Label for="name">Nome</Label>
+					<Label for="username">Username</Label>
 					<Input
-						id="name"
-						value={user.firstName ? user.firstName : 'Nessuna informazione'}
-						placeholder="Il tuo nome"
-						disabled={!enableModify}
-					/>
-
-					<Label for="name">Cognome</Label>
-					<Input
-						id="name"
-						value={user.lastName ? user.lastName : 'Nessuna informazione'}
-						placeholder="Il tuo cognome"
+						id="username"
+						value={user.username}
+						placeholder="Il tuo username"
 						disabled={!enableModify}
 					/>
 

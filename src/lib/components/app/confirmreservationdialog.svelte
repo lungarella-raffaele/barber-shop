@@ -31,9 +31,9 @@
 			</Dialog.Description>
 		</Dialog.Header>
 		<div class="grid grid-cols-4 grid-rows-4 items-center gap-4 p-6">
-			<Label class="text-right text-muted-foreground">Nome</Label>
+			<Label class="text-right text-muted-foreground">Username</Label>
 			<span class="col-span-3">
-				{user.firstName}
+				{user.username}
 			</span>
 
 			<Label class="text-right text-muted-foreground">Email</Label>
