@@ -1,7 +1,6 @@
-import { db } from '$lib/server/db';
 import type { Service } from './schema';
-import * as table from '$lib/server/db/schema';
 import { getAllServices, insertService } from '../backend/services-service';
+import { logger } from '../logger';
 
 export const init = async () => {
 	const result = await getAllServices();
@@ -11,7 +10,7 @@ export const init = async () => {
 		});
 	}
 
-	console.log('Services table seeded successfully!');
+	logger.info('Services table seeded successfully!');
 };
 
 const services: Service[] = [
