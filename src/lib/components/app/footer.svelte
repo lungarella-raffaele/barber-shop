@@ -15,27 +15,24 @@
 	];
 </script>
 
-<div class="flex flex-row flex-wrap p-2">
-	<hr class="mb-3" />
-	<div class="flex justify-between">
-		<Button variant="link" href="Tel: 345 678 91011" class="text-muted-foreground"
-			><Phone />{BARBER_SHOP_DETAILS.phone}</Button
+<div
+	class="flex flex-col lg:flex-row-reverse [&_*]:text-xs [&_*]:font-light [&_*]:text-muted-foreground"
+>
+	<div class="flex justify-center">
+		<Button class="py-1" variant="link" href="Tel: 345 678 91011"
+			>{BARBER_SHOP_DETAILS.phone}</Button
 		>
-
-		<Button variant="link" href="#" class="text-muted-foreground"
-			><MapPin />{BARBER_SHOP_DETAILS.street}
-		</Button>
+		<Button class="py-1" variant="link" href="#">{BARBER_SHOP_DETAILS.street}</Button>
 	</div>
-	<div class="flex">
+	<div class="flex justify-center">
 		{#each socials as s}
-			<Button variant="link" href={s.url} class="text-muted-foreground">
+			<Button class="py-1" variant="link" href={s.url}>
 				{s.title}
-				<ArrowUpRight />
 			</Button>
 		{/each}
 	</div>
-	<div class="flex">
-		<Button variant="link" href="/cookies" class="text-muted-foreground">Cookies Policy</Button>
-		<Button variant="link" href="/privacy" class="text-muted-foreground">Privacy Policy</Button>
+	<div class="mb-2 flex justify-center">
+		<Button class="py-1" variant="link" href="/cookies">Cookies Policy</Button>
+		<Button class="py-1" variant="link" href="/privacy">Privacy Policy</Button>
 	</div>
 </div>
