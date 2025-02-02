@@ -93,23 +93,6 @@
 				</Card.Footer>
 			</Card.Root>
 		</Tabs.Content>
-
-		<!-- <Tabs.Content value="info">
-			<Card.Root>
-				<Card.Header>
-					<Card.Title>Informazioni personali</Card.Title>
-					<Card.Description>
-						Inserisci le informazioni personali obbligatorie per una prenotazione
-					</Card.Description>
-				</Card.Header>
-				<Card.Content class="space-y-2">
-					<PersonalInfoForm />
-				</Card.Content>
-				<Card.Footer class="mt-8 items-center justify-between">
-					{@render NavStepper()}
-				</Card.Footer>
-			</Card.Root>
-		</Tabs.Content> -->
 	</Tabs.Root>
 
 	<ConfirmReservationDialog bind:isOpen={isDialogOpen} {loading} user={data.user} />
