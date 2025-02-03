@@ -27,7 +27,9 @@
 
 <ToggleGroup.Root type="single" class="flex flex-col" bind:value>
 	{#each hourEntries as entry}
-		{@render HourEntry(entry)}
+		{#if entry.available}
+			{@render HourEntry(entry)}
+		{/if}
 	{/each}
 </ToggleGroup.Root>
 
@@ -38,10 +40,5 @@
 		disabled={!available}
 	>
 		<Label for={hour}>{hour}</Label>
-		{#if available}
-			<Badge>Disponibile</Badge>
-		{:else}
-			<Badge variant="destructive">Non Disponibile</Badge>
-		{/if}
 	</ToggleGroup.Item>
 {/snippet}
