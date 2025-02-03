@@ -11,7 +11,7 @@ export default class ReservationManager {
 	currentTab: TabContent | undefined = $state();
 
 	date: DateValue | undefined = $state();
-	hour: string = $state('');
+	slot: string = $state('');
 
 	selectedService = $state('0');
 	services: Service[] = $state([]);
@@ -21,7 +21,7 @@ export default class ReservationManager {
 
 	private constructor(services: Service[]) {
 		this.date = undefined;
-		this.hour = '';
+		this.slot = '';
 		this.tabs.push('service');
 		this.tabs.push('date');
 		this.currentTab = this.tabs[0];
@@ -41,12 +41,12 @@ export default class ReservationManager {
 	}
 
 	check(): boolean {
-		if (!this.date || !this.hour) {
-			toast.error('Devi inserire una data per poter proseguire');
+		if (!this.date || !this.slot) {
+			toast.warning('Devi inserire una data per poter proseguire');
 			this.goToTab('date');
 			return true;
 		} else if (!this.service) {
-			toast.error('Devi inserire un servizio per poter proseguire ');
+			toast.warning('Devi inserire un servizio per poter proseguire ');
 			this.goToTab('service');
 			return true;
 		} else {

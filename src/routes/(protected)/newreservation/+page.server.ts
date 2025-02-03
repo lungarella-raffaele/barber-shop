@@ -5,16 +5,15 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import { insertReservation } from '$lib/server/backend/reservation-service.js';
 import { getAllServices } from '$lib/server/backend/services-service.js';
-import { logger } from '$lib/server/logger.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
 		const data = await request.formData();
 
 		const date = data.get('date') as string;
-		const hour = data.get('hour') as string;
+		const slot = data.get('slot') as string;
 
-		if (!date || !hour) {
+		if (!date || !slot) {
 			return fail(404, { step: 'date', message: 'Devi inserire una data per la prenotazione' });
 		}
 
@@ -27,19 +26,23 @@ export const actions: Actions = {
 		}
 
 		if (!locals.user) {
-			return fail(404, { message: 'Riprova' });
-		} else {
-			await insertReservation({
-				date,
-				hour,
-				id: crypto.randomUUID(),
-				userID: locals.user.id,
-				serviceID: service
-			});
-			logger.info('New booking created!');
+			return redirect(307, '/');
+		}
+
+		const response = await insertReservation({
+			date,
+			slot,
+			id: crypto.randomUUID(),
+			userID: locals.user.id,
+			serviceID: service
+		});
+
+		if (response) {
 			return {
 				success: true
 			};
+		} else {
+			return fail(500, { success: false });
 		}
 	}
 };

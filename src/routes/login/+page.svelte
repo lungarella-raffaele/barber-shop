@@ -39,11 +39,7 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Email</Form.Label>
-						<Input
-							{...props}
-							bind:value={$formData.email}
-							placeholder="Inserisci la tua username"
-						/>
+						<Input {...props} bind:value={$formData.email} placeholder="Inserisci il tua nome" />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

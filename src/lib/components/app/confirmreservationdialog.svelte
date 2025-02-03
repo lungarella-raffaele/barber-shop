@@ -5,6 +5,7 @@
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
 	import { DateFormatter, getLocalTimeZone } from '@internationalized/date';
 	import { LoaderCircle } from '$lib/components/icons/index';
+	import { displayTime } from '$lib/utils';
 
 	let { isOpen = $bindable(), loading, user } = $props();
 
@@ -31,9 +32,9 @@
 			</Dialog.Description>
 		</Dialog.Header>
 		<div class="grid grid-cols-4 grid-rows-4 items-center gap-4 p-6">
-			<Label class="text-right text-muted-foreground">Username</Label>
+			<Label class="text-right text-muted-foreground">Nome</Label>
 			<span class="col-span-3">
-				{user.username}
+				{user.name}
 			</span>
 
 			<Label class="text-right text-muted-foreground">Email</Label>
@@ -46,7 +47,7 @@
 				{reservationManager.date
 					? df.format(reservationManager.date.toDate(getLocalTimeZone()))
 					: ''} alle
-				{reservationManager.hour}
+				{displayTime(reservationManager.slot)}
 			</span>
 
 			<Label class="text-right text-muted-foreground">Servizio</Label>

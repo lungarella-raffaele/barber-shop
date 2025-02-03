@@ -20,13 +20,8 @@
 		<form>
 			<div class="grid w-full items-center gap-4">
 				<div class="flex flex-col space-y-1.5">
-					<Label for="username">Username</Label>
-					<Input
-						id="username"
-						value={user.username}
-						placeholder="Il tuo username"
-						disabled={!enableModify}
-					/>
+					<Label for="name">Nome</Label>
+					<Input id="name" value={user.name} placeholder="Il tuo nome" disabled={!enableModify} />
 
 					<Label for="name">Numero di telefono</Label>
 					<Input
