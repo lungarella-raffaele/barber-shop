@@ -5,7 +5,7 @@ export const WORKING_HOURS = {
 	slot: new Time(0, 30)
 };
 
-export function getSlots(reservedSlots: string[] | undefined): Slot[] {
+export function getSlots(reservedSlots?: string[] | undefined): Slot[] {
 	const slots: Slot[] = [];
 
 	let start = WORKING_HOURS.start;

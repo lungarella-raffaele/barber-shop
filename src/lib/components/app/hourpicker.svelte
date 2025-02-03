@@ -1,43 +1,31 @@
 <script lang="ts">
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
+	import { getSlots } from '$lib/working-hours';
 	import Label from '../ui/label/label.svelte';
+	import type { Time } from '@internationalized/date';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 
-	const hourEntries = [
-		{
-			hour: '10:00',
-			available: false
-		},
-		{
-			hour: '12:00',
-			available: true
-		},
-		{
-			hour: '16:00',
-			available: true
-		},
-		{
-			hour: '18:00',
-			available: false
-		}
-	];
+	const slots = getSlots();
 
 	let { value = $bindable() } = $props();
 </script>
 
-<ToggleGroup.Root type="single" class="flex flex-col" bind:value>
-	{#each hourEntries as entry}
-		{#if entry.available}
-			{@render HourEntry(entry)}
-		{/if}
-	{/each}
-</ToggleGroup.Root>
+<ScrollArea type="always" class="h-[300px] rounded-md border p-4">
+	<ToggleGroup.Root type="single" class="flex flex-col" bind:value>
+		{#each slots as s}
+			{#if s.available}
+				{@render HourEntry(s)}
+			{/if}
+		{/each}
+	</ToggleGroup.Root>
+</ScrollArea>
 
-{#snippet HourEntry({ hour, available }: { hour: string; available: boolean })}
+{#snippet HourEntry({ id, time, available }: { id: string; time: Time; available: boolean })}
 	<ToggleGroup.Item
-		class="flex w-full justify-between align-middle"
-		value={hour}
+		class="flex w-full justify-between align-middle data-[state=on]:bg-primary data-[state=on]:text-background"
+		value={id}
 		disabled={!available}
 	>
-		<Label for={hour}>{hour}</Label>
+		<Label for={id}>{time.toString().substring(0, time.toString().length - 3)}</Label>
 	</ToggleGroup.Item>
 {/snippet}

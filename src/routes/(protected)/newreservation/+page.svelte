@@ -94,7 +94,7 @@
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Data</Card.Title>
-					<Card.Description></Card.Description>
+					<Card.Description>Scegli una data per la prenotazione</Card.Description>
 				</Card.Header>
 				<Card.Content class="space-y-2">
 					<Date />
