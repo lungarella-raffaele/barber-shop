@@ -1,25 +1,15 @@
 import { type DateValue } from '@internationalized/date';
 import { getContext, hasContext, setContext } from 'svelte';
 import { toast } from 'svelte-sonner';
-
-type Service = {
-	id: string;
-	name: string;
-	description: string;
-	duration: number;
-	price: number;
-};
+import { type TabContent, type Service } from './tabs';
 
 export default class ReservationManager {
 	static #contextID = 'reservation-manager';
 
-	tabs: { value: Tabs; label: string }[] = [];
-	#index: number = $derived(this.tabs.findIndex((el) => el.value === this.tab) ?? 0);
-	tab: Tabs = $state('date');
+	tabs: TabContent[] = [];
+	#index: number = $derived(this.tabs.findIndex((el) => el === this.currentTab) ?? 0);
+	currentTab: TabContent | undefined = $state();
 
-	// name: string = $state('');
-	// surname: string = $state('');
-	// email: string = $state('');
 	date: DateValue | undefined = $state();
 	hour: string = $state('');
 
@@ -32,10 +22,9 @@ export default class ReservationManager {
 	private constructor(services: Service[]) {
 		this.date = undefined;
 		this.hour = '';
-		this.tabs = [
-			{ value: 'date', label: 'Data' },
-			{ value: 'service', label: 'Servizi' }
-		];
+		this.tabs.push('service');
+		this.tabs.push('date');
+		this.currentTab = this.tabs[0];
 		this.services = services;
 	}
 
@@ -66,11 +55,11 @@ export default class ReservationManager {
 	}
 
 	next() {
-		this.tab = this.tabs[this.#index + 1].value;
+		this.currentTab = this.tabs[this.#index + 1];
 	}
 
 	back() {
-		this.tab = this.tabs[this.#index - 1].value;
+		this.currentTab = this.tabs[this.#index - 1];
 	}
 
 	isFirst() {
@@ -89,9 +78,7 @@ export default class ReservationManager {
 		}
 	}
 
-	goToTab(tab: Tabs) {
-		this.tab = tab;
+	goToTab(tab: TabContent) {
+		this.currentTab = tab;
 	}
 }
-
-type Tabs = 'date' | 'service' | 'info';
