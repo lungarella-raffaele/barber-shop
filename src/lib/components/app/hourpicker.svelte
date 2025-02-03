@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Badge } from '$lib/components/ui/badge';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import Label from '../ui/label/label.svelte';
 

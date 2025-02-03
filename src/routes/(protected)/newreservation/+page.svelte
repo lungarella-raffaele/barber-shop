@@ -58,27 +58,11 @@
 </div>
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
-	<Tabs.Root bind:value={reservationManager.tab}>
+	<Tabs.Root bind:value={reservationManager.currentTab}>
 		<Tabs.List class="grid w-full grid-cols-2">
-			{#each reservationManager.tabs as tab}
-				<Tabs.Trigger value={tab.value}>{tab.label}</Tabs.Trigger>
-			{/each}
+			<Tabs.Trigger value="service">Servizio</Tabs.Trigger>
+			<Tabs.Trigger disabled={!reservationManager.service} value="date">Data</Tabs.Trigger>
 		</Tabs.List>
-		<Tabs.Content value="date">
-			<Card.Root>
-				<Card.Header>
-					<Card.Title>Data</Card.Title>
-					<Card.Description>Seleziona una data per l'appuntamento</Card.Description>
-				</Card.Header>
-				<Card.Content class="space-y-2">
-					<Date />
-				</Card.Content>
-				<Card.Footer class="mt-8 items-center justify-between">
-					{@render NavStepper()}
-				</Card.Footer>
-			</Card.Root>
-		</Tabs.Content>
-
 		<Tabs.Content value="service">
 			<Card.Root>
 				<Card.Header>
@@ -89,7 +73,43 @@
 					<ServicePicker services={data.services} />
 				</Card.Content>
 				<Card.Footer class="mt-8 items-center justify-between">
-					{@render NavStepper()}
+					<Button
+						aria-label="Go to previous step"
+						variant="ghost"
+						class="pr-6"
+						disabled={reservationManager.isFirst()}
+						onclick={() => reservationManager.back()}><ChevronLeft class="w-4" />Indietro</Button
+					>
+					<Button
+						aria-label="Go to next step"
+						disabled={!reservationManager.service}
+						class="pl-6"
+						onclick={() => reservationManager.next()}>Avanti <ChevronRight class="w-4" /></Button
+					>
+				</Card.Footer>
+			</Card.Root>
+		</Tabs.Content>
+
+		<Tabs.Content value="date">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Data</Card.Title>
+					<Card.Description></Card.Description>
+				</Card.Header>
+				<Card.Content class="space-y-2">
+					<Date />
+				</Card.Content>
+				<Card.Footer class="mt-8 items-center justify-between">
+					<Button
+						aria-label="Go to previous step"
+						variant="ghost"
+						class="pr-6"
+						disabled={reservationManager.isFirst()}
+						onclick={() => reservationManager.back()}><ChevronLeft class="w-4" />Indietro</Button
+					>
+					<Button type="button" onclick={handleConfirmReservation} aria-label="Submit"
+						>Prenota</Button
+					>
 				</Card.Footer>
 			</Card.Root>
 		</Tabs.Content>
@@ -97,20 +117,3 @@
 
 	<ConfirmReservationDialog bind:isOpen={isDialogOpen} {loading} user={data.user} />
 </form>
-
-{#snippet NavStepper()}
-	<Button
-		aria-label="Go to previous step"
-		variant="ghost"
-		class="pr-6"
-		disabled={reservationManager.isFirst()}
-		onclick={() => reservationManager.back()}><ChevronLeft class="w-4" />Indietro</Button
-	>
-	{#if !reservationManager.isLast()}
-		<Button aria-label="Go to next step" class="pl-6" onclick={() => reservationManager.next()}
-			>Avanti <ChevronRight class="w-4" /></Button
-		>
-	{:else}
-		<Button type="button" onclick={handleConfirmReservation} aria-label="Submit">Prenota</Button>
-	{/if}
-{/snippet}
