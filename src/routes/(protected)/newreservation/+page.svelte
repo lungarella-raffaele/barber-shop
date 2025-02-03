@@ -25,11 +25,15 @@
 	const submitReservation: SubmitFunction = ({ formData, cancel }) => {
 		loading = true;
 		if (reservationManager.check()) {
-			cancel();
+			return cancel();
 		}
 
-		formData.append('date', JSON.stringify(reservationManager.date?.toString()));
-		formData.append('hour', reservationManager.hour);
+		if (!reservationManager.date) {
+			return cancel();
+		}
+
+		formData.append('date', reservationManager.date.toString());
+		formData.append('slot', reservationManager.slot);
 		formData.append('service', reservationManager.service?.id ?? '');
 
 		return async ({ result }) => {
@@ -38,12 +42,19 @@
 					toast.success('Prenotazione confermata!', {
 						duration: 7000
 					});
-					goto('/');
 				}
+				goto('/');
 			} else if (result.type === 'failure' && result.data) {
-				const step = result.data.step;
-				toast.error(result.data.message);
-				reservationManager.goToTab(step);
+				if (result.status === 404) {
+					const step = result.data.step;
+					toast.warning(result.data.message);
+					reservationManager.goToTab(step);
+				} else if (result.status === 500) {
+					toast.error('Non è stato possibile effettuare la prenotazione!', {
+						description: 'Riprova più tardi',
+						duration: 2000
+					});
+				}
 			}
 			isDialogOpen = false;
 			loading = false;

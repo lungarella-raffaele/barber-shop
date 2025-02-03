@@ -2,7 +2,7 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
 export const user = sqliteTable('user', {
 	id: text('id').primaryKey(),
-	username: text('username').notNull(),
+	name: text('name').notNull(),
 	phoneNumber: text('phone_number').notNull(),
 	email: text('email').notNull().unique(),
 	passwordHash: text('password_hash').notNull()
@@ -21,8 +21,8 @@ export const reservation = sqliteTable('reservation', {
 	userID: text('user_id')
 		.notNull()
 		.references(() => user.id),
-	date: text('date'),
-	hour: text('hour'),
+	date: text('date').notNull(),
+	slot: text('slot').notNull(),
 	serviceID: text('service_id')
 		.notNull()
 		.references(() => service.id)

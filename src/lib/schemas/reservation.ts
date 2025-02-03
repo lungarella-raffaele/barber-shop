@@ -5,7 +5,7 @@ export const reservation = z.object({
 	surname: z.string(),
 	email: z.string().email(),
 	date: z.string(),
-	hour: z.string(),
+	slot: z.string(),
 	service: z.string()
 });
 

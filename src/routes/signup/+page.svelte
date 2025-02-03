@@ -79,12 +79,12 @@
 
 			<Separator class="my-5" />
 
-			<!--username -->
-			<Form.Field form={sForm} name="username">
+			<!--name -->
+			<Form.Field form={sForm} name="name">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Username</Form.Label>
-						<Input {...props} bind:value={$formData.username} placeholder="Username" />
+						<Form.Label>Nome</Form.Label>
+						<Input {...props} bind:value={$formData.name} placeholder="Nome" />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

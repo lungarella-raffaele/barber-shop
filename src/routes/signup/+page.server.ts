@@ -41,7 +41,7 @@ export const actions: Actions = {
 		}
 		logger.info(form.data);
 
-		const { email, password, username, phoneNumber } = form.data;
+		const { email, password, name, phoneNumber } = form.data;
 
 		const userID = generateUserId();
 		const passwordHash = await hash(password, {
@@ -53,7 +53,7 @@ export const actions: Actions = {
 		});
 
 		try {
-			await insertUser({ id: userID, email, passwordHash, username, phoneNumber });
+			await insertUser({ id: userID, email, passwordHash, name, phoneNumber });
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, userID);

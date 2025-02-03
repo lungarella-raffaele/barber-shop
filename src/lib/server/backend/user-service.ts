@@ -7,7 +7,7 @@ export async function insertUser(user: table.User) {
 		id: user.id,
 		email: user.email,
 		passwordHash: user.passwordHash,
-		username: user.username,
+		name: user.name,
 		phoneNumber: user.phoneNumber
 	});
 }
