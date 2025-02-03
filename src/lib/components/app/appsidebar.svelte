@@ -59,16 +59,6 @@
 			title: 'linkedin',
 			url: '#',
 			icon: Linkedin
-		},
-		{
-			title: 'Cookies policy',
-			url: '/cookies',
-			icon: Cookie
-		},
-		{
-			title: 'Privacy policy',
-			url: '/privacy',
-			icon: Lock
 		}
 	];
 </script>
@@ -140,7 +130,7 @@
 
 	<Sidebar.Footer>
 		<form method="post" action="/profile?/logout" use:enhance>
-			<Sidebar.MenuButton class="text-destructive">
+			<Sidebar.MenuButton class="border border-destructive text-destructive">
 				<LogOut />
 				<span>Esci</span>
 			</Sidebar.MenuButton>

@@ -101,7 +101,7 @@
 {#snippet NavStepper()}
 	<Button
 		aria-label="Go to previous step"
-		variant="outline"
+		variant="ghost"
 		class="pr-6"
 		disabled={reservationManager.isFirst()}
 		onclick={() => reservationManager.back()}><ChevronLeft class="w-4" />Indietro</Button
