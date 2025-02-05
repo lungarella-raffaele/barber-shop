@@ -1,7 +1,14 @@
-import { type DateValue } from '@internationalized/date';
+import { parseTime, type DateValue } from '@internationalized/date';
 import { getContext, hasContext, setContext } from 'svelte';
 import { toast } from 'svelte-sonner';
 import { type TabContent, type Service } from './tabs';
+import { WORKING_HOURS, type Slot } from '$lib/working-hours';
+
+type CurrentReservation = {
+	date: string;
+	startingTime: string;
+	duration: number;
+};
 
 export default class ReservationManager {
 	static #contextID = 'reservation-manager';
@@ -13,33 +20,87 @@ export default class ReservationManager {
 	date: DateValue | undefined = $state();
 	slot: string = $state('');
 
-	selectedService = $state('0');
+	selectedService = $state('-999');
 	services: Service[] = $state([]);
 	service: Service | undefined = $derived(
 		this.services.find((el) => el.id === this.selectedService)
 	);
 
-	private constructor(services: Service[]) {
-		this.date = undefined;
-		this.slot = '';
-		this.tabs.push('service');
-		this.tabs.push('date');
-		this.currentTab = this.tabs[0];
-		this.services = services;
+	currentReservations: CurrentReservation[];
+	availableSlots: Slot[] = $derived(this.getSlots());
+
+	private getSlots(): Slot[] {
+		// TODO ADD current service selection
+		const selectedDate = this.date;
+		if (!selectedDate) {
+			return [];
+		}
+
+		const reservationsOfSelectedDay = this.currentReservations
+			.filter((el) => el.date === selectedDate.toString())
+			.map((el) => {
+				return { startingTime: el.startingTime, duration: el.duration };
+			});
+
+		const slots: Slot[] = [];
+
+		let curr = WORKING_HOURS.start;
+		while (WORKING_HOURS.end.compare(curr) > 0) {
+			// If we find an element that the slot is reserved
+			const reservedSlot = reservationsOfSelectedDay.find(
+				(el) => el.startingTime === curr.toString()
+			);
+
+			let isAvailable = false;
+			if (!reservedSlot) {
+				isAvailable = true;
+			} else if (reservedSlot && reservedSlot.duration > WORKING_HOURS.slot.minute) {
+				// If the slot has a duration of 45 minutes we invalidate the current slot...
+				slots.push({ time: curr.toString(), available: false });
+
+				// ...and the next
+				curr = curr.add({ hours: WORKING_HOURS.slot.hour, minutes: WORKING_HOURS.slot.minute });
+				isAvailable = false;
+			} else {
+				isAvailable = false;
+			}
+
+			slots.push({
+				time: curr.toString(),
+				available: isAvailable
+			});
+
+			// Move to next slot
+			curr = curr.add({ hours: WORKING_HOURS.slot.hour, minutes: WORKING_HOURS.slot.minute });
+		}
+		return this.sortSlots(slots);
 	}
 
-	static istance(services: Service[]): ReservationManager {
+	private sortSlots(slots: Slot[]): Slot[] {
+		return slots.sort((a, b) => {
+			return parseTime(a.time).compare(parseTime(b.time));
+		});
+	}
+
+	static istance(services: Service[], currentRes: CurrentReservation[]): ReservationManager {
 		if (hasContext(this.#contextID)) {
 			return getContext(this.#contextID);
 		} else {
-			return setContext(this.#contextID, new ReservationManager(services));
+			return setContext(this.#contextID, new ReservationManager(services, currentRes));
 		}
 	}
 
+	/**
+	 * @returns An istance of a ReservationManager singleton
+	 */
 	static get() {
 		return getContext<ReservationManager>(this.#contextID);
 	}
 
+	/**
+	 * Checks wheter all the info has been filled, moves the view to invalid tabs and pops up an error toaster
+	 * @returns true if the values are all inserted
+	 */
 	check(): boolean {
 		if (!this.date || !this.slot) {
 			toast.warning('Devi inserire una data per poter proseguire');
@@ -54,14 +115,23 @@ export default class ReservationManager {
 		}
 	}
 
+	/**
+	 * Goes ahead in the tabs
+	 */
 	next() {
 		this.currentTab = this.tabs[this.#index + 1];
 	}
 
+	/**
+	 * Goes backward in the tabs
+	 */
 	back() {
 		this.currentTab = this.tabs[this.#index - 1];
 	}
 
+	/**
+	 * @returns true if the current tab is the first, false otherwise
+	 */
 	isFirst() {
 		if (this.#index === 0) {
 			return true;
@@ -70,6 +140,9 @@ export default class ReservationManager {
 		}
 	}
 
+	/**
+	 * @returns true if the current tab is the last, false otherwise
+	 */
 	isLast() {
 		if (this.#index === this.tabs.length - 1) {
 			return true;
@@ -78,7 +151,21 @@ export default class ReservationManager {
 		}
 	}
 
+	/**
+	 * Go to a specific tab
+	 * @param tab Target tab
+	 */
 	goToTab(tab: TabContent) {
 		this.currentTab = tab;
+	}
+
+	private constructor(services: Service[], currentRes: CurrentReservation[]) {
+		this.date = undefined;
+		this.slot = '';
+		this.tabs.push('service');
+		this.tabs.push('date');
+		this.currentTab = this.tabs[0];
+		this.services = services;
+		this.currentReservations = currentRes;
 	}
 }

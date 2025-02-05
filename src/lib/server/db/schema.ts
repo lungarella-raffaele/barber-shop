@@ -22,7 +22,7 @@ export const reservation = sqliteTable('reservation', {
 		.notNull()
 		.references(() => user.id),
 	date: text('date').notNull(),
-	slot: text('slot').notNull(),
+	hour: text('hour').notNull(),
 	serviceID: text('service_id')
 		.notNull()
 		.references(() => service.id)

@@ -14,7 +14,7 @@
 	import { toast } from 'svelte-sonner';
 
 	let { data }: { data: PageData } = $props();
-	const reservationManager = ReservationManager.istance(data.services);
+	const reservationManager = ReservationManager.istance(data.services, data.currentReservations);
 
 	const handleConfirmReservation = () => {
 		if (!reservationManager.check()) {
@@ -33,7 +33,7 @@
 		}
 
 		formData.append('date', reservationManager.date.toString());
-		formData.append('slot', reservationManager.slot);
+		formData.append('hour', reservationManager.slot);
 		formData.append('service', reservationManager.service?.id ?? '');
 
 		return async ({ result }) => {
