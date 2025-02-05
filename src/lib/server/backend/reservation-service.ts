@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import type { Reservation } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 import { logger } from '../logger';
 
 export async function insertReservation(reservation: Reservation): Promise<Reservation | null> {
@@ -11,7 +12,7 @@ export async function insertReservation(reservation: Reservation): Promise<Reser
 			id: reservation.id,
 			userID: reservation.userID,
 			serviceID: reservation.serviceID,
-			slot: reservation.slot
+			hour: reservation.hour
 		})
 		.returning();
 
@@ -22,4 +23,16 @@ export async function insertReservation(reservation: Reservation): Promise<Reser
 	}
 	logger.info('Reservation created successfully');
 	return res;
+}
+
+export async function getReservations() {
+	// TODO Select only from current date
+	return await db
+		.select({
+			date: table.reservation.date,
+			startingTime: table.reservation.hour,
+			duration: table.service.duration
+		})
+		.from(table.reservation)
+		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id));
 }
