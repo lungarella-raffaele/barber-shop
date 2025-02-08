@@ -5,7 +5,8 @@ export const user = sqliteTable('user', {
 	name: text('name').notNull(),
 	phoneNumber: text('phone_number').notNull(),
 	email: text('email').notNull().unique(),
-	passwordHash: text('password_hash').notNull()
+	passwordHash: text('password_hash').notNull(),
+	isAdmin: integer({ mode: 'boolean' })
 });
 
 export const session = sqliteTable('session', {

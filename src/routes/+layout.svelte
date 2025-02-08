@@ -6,7 +6,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { ModeWatcher } from 'mode-watcher';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';
-	import { CircleUser } from '$lib/components/icons/index';
+	import { CircleUser, Citrus } from '$lib/components/icons/index';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { Toaster } from '$lib/components/ui/sonner';
@@ -37,6 +37,11 @@
 				{#if !data.user}
 					<Button href="/login" variant="ghost">Login</Button>
 				{:else}
+					{#if data.user.isAdmin}
+						<Button href="/dashboard" variant="ghost">
+							<Citrus />
+						</Button>
+					{/if}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger class={buttonVariants({ variant: 'ghost' })}>
 							<CircleUser />
