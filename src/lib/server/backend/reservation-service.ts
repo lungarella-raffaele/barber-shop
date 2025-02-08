@@ -37,3 +37,19 @@ export async function getReservations() {
 		.from(table.reservation)
 		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id));
 }
+
+export async function getAllReservations() {
+	return await db
+		.select()
+		.from(table.reservation)
+		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id));
+}
+
+export async function getDayReservations(date: string) {
+	console.log(date);
+	return await db
+		.select()
+		.from(table.reservation)
+		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id))
+		.where(eq(table.reservation.date, date));
+}

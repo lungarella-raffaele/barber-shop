@@ -34,3 +34,4 @@ export { default as Ellipsis } from 'lucide-svelte/icons/ellipsis';
 export { default as Library } from 'lucide-svelte/icons/library';
 export { default as Eye } from 'lucide-svelte/icons/eye';
 export { default as EyeClosed } from 'lucide-svelte/icons/eye-closed';
+export { default as Citrus } from 'lucide-svelte/icons/citrus';
