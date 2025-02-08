@@ -2,7 +2,7 @@ import type { Actions, PageServerLoad } from './$types.js';
 import { superValidate } from 'sveltekit-superforms';
 import { reservation } from '$lib/schemas/reservation.js';
 import { zod } from 'sveltekit-superforms/adapters';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import {
 	getReservations as getReservations,
 	insertReservation
@@ -12,13 +12,19 @@ import { logger } from '$lib/server/logger.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
+		const user = locals.user;
 		const data = await request.formData();
 
 		const date = data.get('date') as string;
 		const hour = data.get('hour') as string;
+		const name = data.get('name') as string;
+		const email = data.get('email') as string;
 
 		if (!date || !hour) {
-			return fail(404, { step: 'date', message: 'Devi inserire una data per la prenotazione' });
+			return fail(404, {
+				step: 'date',
+				message: 'Devi inserire una data per la prenotazione'
+			});
 		}
 
 		const service = data.get('service') as string;
@@ -29,33 +35,47 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!locals.user) {
-			return redirect(307, '/');
+		// No info provided for the user
+		if ((!name || !email) && !user) {
+			return fail(404, {
+				message: 'Non è stato possibile effettuare una prenotazione con i dati inseriti'
+			});
 		}
 
-		const response = await insertReservation({
-			date,
-			hour,
-			id: crypto.randomUUID(),
-			userID: locals.user.id,
-			serviceID: service
-		});
+		let response;
+		if (user) {
+			logger.info('Creating reservation with existing user');
+			response = await insertReservation({
+				date,
+				hour,
+				id: crypto.randomUUID(),
+				serviceID: service,
+				name: user.name,
+				email: user.email
+			});
+		} else if (name && email) {
+			logger.info(`Creating reservation with ${name} ${email}`);
+			response = await insertReservation({
+				date,
+				hour,
+				id: crypto.randomUUID(),
+				serviceID: service,
+				name,
+				email
+			});
+		}
 
 		if (response) {
 			return {
-				success: true
+				newReservation: response
 			};
 		} else {
-			return fail(500, { success: false });
+			return fail(500);
 		}
 	}
 };
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) {
-		redirect(307, '/');
-	}
-
 	const services = await getAllServices();
 	const currentReservations = await getReservations();
 

@@ -10,9 +10,10 @@ export async function insertReservation(reservation: Reservation): Promise<Reser
 		.values({
 			date: reservation.date,
 			id: reservation.id,
-			userID: reservation.userID,
 			serviceID: reservation.serviceID,
-			hour: reservation.hour
+			hour: reservation.hour,
+			name: reservation.name,
+			email: reservation.email
 		})
 		.returning();
 

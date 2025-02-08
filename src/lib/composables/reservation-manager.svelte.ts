@@ -29,6 +29,11 @@ export default class ReservationManager {
 	currentReservations: CurrentReservation[];
 	availableSlots: Slot[] = $derived(this.getSlots());
 
+	name: string = $state('');
+	email: string = $state('');
+
+	loggedIn: boolean = $state(false);
+
 	private getSlots(): Slot[] {
 		// TODO ADD current service selection
 		const selectedDate = this.date;
@@ -59,7 +64,10 @@ export default class ReservationManager {
 				slots.push({ time: curr.toString(), available: false });
 
 				// ...and the next
-				curr = curr.add({ hours: WORKING_HOURS.slot.hour, minutes: WORKING_HOURS.slot.minute });
+				curr = curr.add({
+					hours: WORKING_HOURS.slot.hour,
+					minutes: WORKING_HOURS.slot.minute
+				});
 				isAvailable = false;
 			} else {
 				isAvailable = false;
@@ -82,16 +90,23 @@ export default class ReservationManager {
 		});
 	}
 
-	static istance(services: Service[], currentRes: CurrentReservation[]): ReservationManager {
+	static instance(
+		services: Service[],
+		currentRes: CurrentReservation[],
+		loggedIn: boolean
+	): ReservationManager {
 		if (hasContext(this.#contextID)) {
 			return getContext(this.#contextID);
 		} else {
-			return setContext(this.#contextID, new ReservationManager(services, currentRes));
+			return setContext(
+				this.#contextID,
+				new ReservationManager(services, currentRes, loggedIn)
+			);
 		}
 	}
 
 	/**
-	 * @returns An istance of a ReservationManager singleton
+	 * @returns An instance of a ReservationManager singleton
 	 */
 	static get() {
 		return getContext<ReservationManager>(this.#contextID);
@@ -107,8 +122,13 @@ export default class ReservationManager {
 			this.goToTab('date');
 			return true;
 		} else if (!this.service) {
+			console.log(this.service);
 			toast.warning('Devi inserire un servizio per poter proseguire ');
 			this.goToTab('service');
+			return true;
+		} else if ((!this.name || !this.email) && !this.loggedIn) {
+			toast.warning('Devi inserire i tuoi nominativi');
+			this.goToTab('info');
 			return true;
 		} else {
 			return false;
@@ -159,9 +179,15 @@ export default class ReservationManager {
 		this.currentTab = tab;
 	}
 
-	private constructor(services: Service[], currentRes: CurrentReservation[]) {
+	private constructor(services: Service[], currentRes: CurrentReservation[], loggedIn: boolean) {
 		this.date = undefined;
 		this.slot = '';
+		this.name = '';
+		this.email = '';
+		this.loggedIn = loggedIn;
+
+		if (!this.loggedIn) this.tabs.push('info');
+
 		this.tabs.push('service');
 		this.tabs.push('date');
 		this.currentTab = this.tabs[0];

@@ -7,7 +7,17 @@
 	import { LoaderCircle } from '$lib/components/icons/index';
 	import { displayTime } from '$lib/utils';
 
-	let { isOpen = $bindable(), loading, user } = $props();
+	let {
+		isOpen = $bindable(),
+		loading,
+		name,
+		email
+	}: {
+		isOpen: boolean;
+		loading: boolean;
+		name: string;
+		email: string;
+	} = $props();
 
 	const reservationManager = ReservationManager.get();
 
@@ -34,12 +44,12 @@
 		<div class="grid grid-cols-4 grid-rows-4 items-center gap-4 p-6">
 			<Label class="text-right text-muted-foreground">Nome</Label>
 			<span class="col-span-3">
-				{user.name}
+				{name}
 			</span>
 
 			<Label class="text-right text-muted-foreground">Email</Label>
 			<span class="col-span-3">
-				{user.email}
+				{email}
 			</span>
 
 			<Label class="text-right text-muted-foreground">Data</Label>

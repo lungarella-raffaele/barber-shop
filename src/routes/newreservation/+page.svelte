@@ -12,9 +12,14 @@
 	import { Button } from '$lib/components/ui/button/index';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
+	import Personalinfoform from '$lib/components/app/personalinfoform.svelte';
 
 	let { data }: { data: PageData } = $props();
-	const reservationManager = ReservationManager.istance(data.services, data.currentReservations);
+	const reservationManager = ReservationManager.instance(
+		data.services,
+		data.currentReservations,
+		!!data.user
+	);
 
 	const handleConfirmReservation = () => {
 		if (!reservationManager.check()) {
@@ -35,17 +40,18 @@
 		formData.append('date', reservationManager.date.toString());
 		formData.append('hour', reservationManager.slot);
 		formData.append('service', reservationManager.service?.id ?? '');
+		formData.append('name', reservationManager.name);
+		formData.append('email', reservationManager.email);
 
 		return async ({ result }) => {
-			if (result.type === 'success' && result.data) {
-				if (result.data.success) {
-					toast.success('Prenotazione confermata!', {
-						duration: 7000
-					});
-				}
+			if (result.type === 'success') {
+				toast.success('Prenotazione confermata!', {
+					duration: 7000
+				});
 				goto('/');
-			} else if (result.type === 'failure' && result.data) {
-				if (result.status === 404) {
+			} else if (result.type === 'failure') {
+				console.log('okay');
+				if (result.status === 404 && result.data) {
 					const step = result.data.step;
 					toast.warning(result.data.message);
 					reservationManager.goToTab(step);
@@ -62,6 +68,9 @@
 	};
 	let isDialogOpen = $state(false);
 	let loading = $state(false);
+
+	const name = $derived(data.user?.name ?? reservationManager.name);
+	const email = $derived(data.user?.email ?? reservationManager.email);
 </script>
 
 <div class="flex justify-between">
@@ -70,10 +79,41 @@
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
 	<Tabs.Root bind:value={reservationManager.currentTab}>
-		<Tabs.List class="grid w-full grid-cols-2">
+		<Tabs.List class="grid w-full grid-cols-{data.user ? '2' : '3'}">
+			{#if !data.user}
+				<Tabs.Trigger value="info">Nominativo</Tabs.Trigger>
+			{/if}
 			<Tabs.Trigger value="service">Servizio</Tabs.Trigger>
 			<Tabs.Trigger disabled={!reservationManager.service} value="date">Data</Tabs.Trigger>
 		</Tabs.List>
+
+		{#if !data.user}
+			<Tabs.Content value="info">
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Nominativo</Card.Title>
+						<Card.Description>Inserisci le tue informazioni personali</Card.Description>
+					</Card.Header>
+					<Card.Content class="space-y-2">
+						<Personalinfoform />
+					</Card.Content>
+					<Card.Footer class="mt-8 items-center justify-between">
+						<Button
+							aria-label="Go to previous step"
+							variant="ghost"
+							class="pr-6"
+							disabled={reservationManager.isFirst()}
+							onclick={() => reservationManager.back()}><ChevronLeft class="w-4" />Indietro</Button
+						>
+						<Button
+							aria-label="Go to next step"
+							class="pl-6"
+							onclick={() => reservationManager.next()}>Avanti <ChevronRight class="w-4" /></Button
+						>
+					</Card.Footer>
+				</Card.Root>
+			</Tabs.Content>
+		{/if}
 		<Tabs.Content value="service">
 			<Card.Root>
 				<Card.Header>
@@ -126,5 +166,5 @@
 		</Tabs.Content>
 	</Tabs.Root>
 
-	<ConfirmReservationDialog bind:isOpen={isDialogOpen} {loading} user={data.user} />
+	<ConfirmReservationDialog bind:isOpen={isDialogOpen} {loading} {name} {email} />
 </form>
