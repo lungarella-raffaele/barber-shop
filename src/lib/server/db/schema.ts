@@ -18,14 +18,13 @@ export const session = sqliteTable('session', {
 
 export const reservation = sqliteTable('reservation', {
 	id: text('id').primaryKey(),
-	userID: text('user_id')
-		.notNull()
-		.references(() => user.id),
 	date: text('date').notNull(),
 	hour: text('hour').notNull(),
 	serviceID: text('service_id')
 		.notNull()
-		.references(() => service.id)
+		.references(() => service.id),
+	name: text('name').notNull(),
+	email: text('email').notNull()
 });
 
 export const service = sqliteTable('service', {
