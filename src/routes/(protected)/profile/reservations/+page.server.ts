@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const reservations: table.Reservation[] = await db
 		.select()
 		.from(table.reservation)
-		.where(eq(table.reservation.userID, locals.user.id));
+		.where(eq(table.reservation.email, locals.user.email));
 
 	logger.info(`Retrieved ${reservations.length} reservations`);
 
