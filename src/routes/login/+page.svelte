@@ -75,7 +75,7 @@
 						Login
 					{:else}
 						<LoaderCircle class="animate-spin" />
-						Please wait
+						Attendi
 					{/if}
 				</Button>
 				<p class="mt-3">
