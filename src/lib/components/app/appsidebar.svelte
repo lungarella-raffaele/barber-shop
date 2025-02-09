@@ -143,11 +143,13 @@
 	</Sidebar.Content>
 
 	<Sidebar.Footer>
-		<form method="post" action="/profile?/logout" use:enhance>
-			<Sidebar.MenuButton class="border border-destructive text-destructive">
-				<LogOut />
-				<span>Esci</span>
-			</Sidebar.MenuButton>
-		</form>
+		{#if isLogged}
+			<form method="post" action="/profile?/logout" use:enhance>
+				<Sidebar.MenuButton class="border border-destructive text-destructive">
+					<LogOut />
+					<span>Esci</span>
+				</Sidebar.MenuButton>
+			</form>
+		{/if}
 	</Sidebar.Footer>
 </Sidebar.Root>
