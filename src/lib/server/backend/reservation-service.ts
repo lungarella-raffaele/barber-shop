@@ -27,7 +27,7 @@ export async function insertReservation(reservation: Reservation): Promise<Reser
 }
 
 export async function deleteReservation(id: string) {
-	return await db.delete(table.reservation).where(eq(table.reservation.id, id));
+	return await db.delete(table.reservation).where(eq(table.reservation.id, id)).returning();
 }
 
 export async function getReservations() {
@@ -44,7 +44,16 @@ export async function getReservations() {
 
 export async function getAllReservations() {
 	return await db
-		.select()
+		.select({
+			id: table.reservation.id,
+			date: table.reservation.date,
+			hour: table.reservation.hour,
+			name: table.reservation.name,
+			email: table.reservation.email,
+			serviceName: table.service.name,
+			serviceDuration: table.service.duration,
+			servicePrice: table.service.price
+		})
 		.from(table.reservation)
 		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id));
 }
@@ -52,7 +61,16 @@ export async function getAllReservations() {
 export async function getDayReservations(date: string) {
 	console.log(date);
 	return await db
-		.select()
+		.select({
+			id: table.reservation.id,
+			date: table.reservation.date,
+			hour: table.reservation.hour,
+			name: table.reservation.name,
+			email: table.reservation.email,
+			serviceName: table.service.name,
+			serviceDuration: table.service.duration,
+			servicePrice: table.service.price
+		})
 		.from(table.reservation)
 		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id))
 		.where(eq(table.reservation.date, date));

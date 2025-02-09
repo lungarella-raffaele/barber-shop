@@ -1,5 +1,4 @@
 import { db } from '$lib/server/db';
-import { eq } from 'drizzle-orm';
 import * as table from '$lib/server/db/schema';
 
 export async function getAllServices() {

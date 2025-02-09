@@ -1,6 +1,6 @@
 <script lang="ts">
-	import DataTable from './datatable.svelte';
-	import { columns } from './column';
+	import DataTable from '$lib/components/app/datatable/datatable.svelte';
+	import { columns } from '$lib/components/app/datatable/column';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
