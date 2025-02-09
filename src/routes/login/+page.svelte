@@ -39,7 +39,11 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Email</Form.Label>
-						<Input {...props} bind:value={$formData.email} placeholder="Inserisci il tua nome" />
+						<Input
+							{...props}
+							bind:value={$formData.email}
+							placeholder="Inserisci il tua nome"
+						/>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
@@ -61,12 +65,17 @@
 
 		<Card.Footer>
 			<div class="flex w-full flex-col">
-				<Button disabled={$delayed} class="mt-6 w-full" type="submit" onclick={() => (form = null)}>
+				<Button
+					disabled={$delayed}
+					class="mt-6 w-full"
+					type="submit"
+					onclick={() => (form = null)}
+				>
 					{#if !$delayed}
 						Login
 					{:else}
 						<LoaderCircle class="animate-spin" />
-						Please wait
+						Attendi
 					{/if}
 				</Button>
 				<p class="mt-3">

@@ -40,7 +40,11 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Email</Form.Label>
-						<Input {...props} bind:value={$formData.email} placeholder="mariorossi@esempio.com" />
+						<Input
+							{...props}
+							bind:value={$formData.email}
+							placeholder="mariorossi@esempio.com"
+						/>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
@@ -112,7 +116,7 @@
 						Register
 					{:else}
 						<LoaderCircle class="animate-spin" />
-						Please wait
+						Attendi
 					{/if}
 				</Button>
 				<p class="mt-3">
