@@ -7,20 +7,21 @@
 	type DashBoardItem = {
 		href: string;
 		name: string;
-		active: boolean;
 	};
 
 	const dashboardItems: DashBoardItem[] = [
 		{
 			href: 'reservations',
-			name: 'Prenotazioni',
-			active: true
+			name: 'Prenotazioni'
 		},
 
 		{
 			href: 'calendar',
-			name: 'Calendario',
-			active: false
+			name: 'Calendario'
+		},
+		{
+			href: 'banner',
+			name: 'Banner'
 		}
 	];
 
