@@ -89,5 +89,6 @@ export async function getReservationByID(id: string) {
 		})
 		.from(table.reservation)
 		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id))
-		.where(eq(table.reservation.id, id));
+		.where(eq(table.reservation.id, id))
+		.get();
 }

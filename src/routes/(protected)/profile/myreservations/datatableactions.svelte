@@ -46,7 +46,7 @@
 			<Button
 				class="m-0 justify-start p-2 text-right no-underline hover:bg-muted hover:no-underline"
 				variant="link"
-				href="/profile/reservations/{id}">Vedi dettaglio</Button
+				href="/{id}">Vedi dettaglio</Button
 			>
 		</DropdownMenu.Group>
 		<DropdownMenu.Separator />
@@ -57,7 +57,9 @@
 <Dialog.Root bind:open={isDialogOpen}>
 	<Dialog.Content>
 		<Dialog.Header>
-			<Dialog.Title class="text-left">Sei sicuro di voler disdire l'appuntamento?</Dialog.Title>
+			<Dialog.Title class="text-left"
+				>Sei sicuro di voler disdire l'appuntamento?</Dialog.Title
+			>
 			<Dialog.Description class="text-left">L'azione è irreversibile.</Dialog.Description>
 		</Dialog.Header>
 		<Dialog.Footer>

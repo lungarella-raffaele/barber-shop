@@ -15,6 +15,7 @@
 	let { data, children } = $props();
 
 	let isLogged = $derived(data.user !== null);
+	let isAdmin = $derived(data.user?.isAdmin);
 
 	let logoutForm: HTMLFormElement | undefined = $state();
 </script>
@@ -27,7 +28,7 @@
 <Toaster richColors position="top-center" />
 
 <Sidebar.Provider>
-	<AppSidebar {isLogged} />
+	<AppSidebar {isLogged} {isAdmin} />
 	<main class="relative flex h-screen w-full flex-col">
 		<div class="sticky top-0 flex items-center justify-between border-b bg-background p-3">
 			<!-- Leading -->
@@ -56,7 +57,7 @@
 								<Button
 									class="m-0 justify-start p-2 text-right no-underline hover:bg-muted hover:no-underline"
 									variant="link"
-									href="/profile/reservations">Prenotazioni</Button
+									href="profile/myreservations">Prenotazioni</Button
 								>
 								<DropdownMenu.Separator />
 
