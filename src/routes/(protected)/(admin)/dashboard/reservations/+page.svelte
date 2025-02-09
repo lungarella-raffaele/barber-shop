@@ -19,10 +19,6 @@
 
 	let date = $state<DateValue>();
 
-	const submitForm = () => {
-		formElement?.requestSubmit();
-	};
-
 	const submitFunction: SubmitFunction = ({ formData }) => {
 		if (date) formData.append('date', date.toString());
 	};

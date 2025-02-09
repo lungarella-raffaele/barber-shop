@@ -2,8 +2,6 @@
 	import { Button } from '$lib/components/ui/button/index';
 	import { page } from '$app/state';
 
-	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
-
 	let { children } = $props();
 
 	type DashBoardItem = {

@@ -1,5 +1,4 @@
 <script>
-	import { ArrowUpRight, MapPin, Phone } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button/index';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 

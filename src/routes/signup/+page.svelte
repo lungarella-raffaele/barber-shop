@@ -40,7 +40,11 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Email</Form.Label>
-						<Input {...props} bind:value={$formData.email} placeholder="mariorossi@esempio.com" />
+						<Input
+							{...props}
+							bind:value={$formData.email}
+							placeholder="mariorossi@esempio.com"
+						/>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

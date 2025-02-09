@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { dev, browser } from '$app/environment';
+import { dev } from '$app/environment';
 
 let options: pino.LoggerOptions = {};
 
