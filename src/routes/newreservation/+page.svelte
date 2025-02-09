@@ -79,12 +79,14 @@
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
 	<Tabs.Root bind:value={reservationManager.currentTab}>
-		<Tabs.List class="grid w-full grid-cols-{data.user ? '2' : '3'}">
+		<Tabs.List class="flex">
 			{#if !data.user}
-				<Tabs.Trigger value="info">Nominativo</Tabs.Trigger>
+				<Tabs.Trigger class="flex-1" value="info">Nominativo</Tabs.Trigger>
 			{/if}
-			<Tabs.Trigger value="service">Servizio</Tabs.Trigger>
-			<Tabs.Trigger disabled={!reservationManager.service} value="date">Data</Tabs.Trigger>
+			<Tabs.Trigger class="flex-1" value="service">Servizio</Tabs.Trigger>
+			<Tabs.Trigger class="flex-1" disabled={!reservationManager.service} value="date"
+				>Data</Tabs.Trigger
+			>
 		</Tabs.List>
 
 		{#if !data.user}
