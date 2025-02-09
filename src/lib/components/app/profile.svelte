@@ -4,10 +4,29 @@
 	import type { User } from '$lib/server/db/schema';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import { toast } from 'svelte-sonner';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	let { user }: { user: User } = $props();
 
-	let enableModify = $state(false);
+	let isOpen = $state(false);
+
+	const submitFunction: SubmitFunction = () => {
+		return async ({ result }) => {
+			if (result.type === 'success' || result.type === 'redirect') {
+				toast.success('Account eliminato');
+				await invalidateAll();
+				goto('/');
+			} else {
+				toast.error(`Non è stato possibile eliminare l'account riprova più tardi`);
+			}
+			isOpen = false;
+		};
+	};
 </script>
 
 <h1 class="title">Profilo</h1>
@@ -18,43 +37,22 @@
 	</Card.Header>
 	<Card.Content>
 		<form>
-			<div class="grid w-full items-center gap-4">
-				<div class="flex flex-col space-y-1.5">
-					<Label for="name">Nome</Label>
-					<Input
-						id="name"
-						value={user.name}
-						placeholder="Il tuo nome"
-						disabled={!enableModify}
-					/>
+			<Label for="name">Nome</Label>
+			<Input class="mb-4" id="name" value={user.name} placeholder="Il tuo nome" disabled />
 
-					<Label for="name">Numero di telefono</Label>
-					<Input
-						id="name"
-						value={user.phoneNumber ? user.phoneNumber : 'Nessuna informazione'}
-						placeholder="Il tuo numero di cellulare"
-						disabled={!enableModify}
-					/>
+			<Label for="name">Numero di telefono</Label>
+			<Input
+				class="mb-4"
+				id="name"
+				value={user.phoneNumber ? user.phoneNumber : 'Nessuna informazione'}
+				placeholder="Il tuo numero di cellulare"
+				disabled
+			/>
 
-					<Label for="name">Email</Label>
-					<Input
-						id="name"
-						value={user.email}
-						placeholder="La tua email"
-						disabled={!enableModify}
-					/>
-				</div>
-			</div>
+			<Label for="name">Email</Label>
+			<Input id="name" value={user.email} placeholder="La tua email" disabled />
 		</form>
 	</Card.Content>
-	<Card.Footer class="flex justify-between">
-		{#if enableModify}
-			<Button onclick={() => (enableModify = false)} variant="outline">Cancel</Button>
-			<Button>Salva</Button>
-		{:else}
-			<Button onclick={() => (enableModify = true)}>Modifica</Button>
-		{/if}
-	</Card.Footer>
 </Card.Root>
 
 <Card.Root class="border-destructive">
@@ -68,6 +66,27 @@
 	<Card.Content
 		class="mt-4 rounded-b-lg border-t border-destructive bg-red-300 bg-opacity-15 py-4"
 	>
-		<Button variant="destructive" type="submit">Elimina account</Button>
+		<Button onclick={() => (isOpen = true)} class={buttonVariants({ variant: 'destructive' })}
+			>Elimina account</Button
+		>
 	</Card.Content>
 </Card.Root>
+
+<AlertDialog.Root bind:open={isOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Sei sicuro?</AlertDialog.Title>
+			<AlertDialog.Description>
+				Tutte le tue prenotazioni, passate e future verrano eliminate
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Annulla</AlertDialog.Cancel>
+			<form action="?/deleteAccount" method="post" use:enhance={submitFunction}>
+				<AlertDialog.Action class="{buttonVariants({ variant: 'destructive' })} w-full">
+					Elimina account
+				</AlertDialog.Action>
+			</form>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>

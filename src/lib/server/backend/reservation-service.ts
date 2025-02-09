@@ -110,3 +110,7 @@ export async function getReservationByID(id: string) {
 		.where(eq(table.reservation.id, id))
 		.get();
 }
+
+export async function deleteAllReservationsOfUser(email: string) {
+	return await db.delete(table.reservation).where(eq(table.reservation.email, email));
+}
