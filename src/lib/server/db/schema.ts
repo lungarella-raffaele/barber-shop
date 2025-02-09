@@ -36,7 +36,14 @@ export const service = sqliteTable('service', {
 	description: text('description').notNull()
 });
 
+export const banner = sqliteTable('banner', {
+	id: integer().primaryKey(),
+	message: text('message'),
+	visible: integer({ mode: 'boolean' })
+});
+
 export type Session = typeof session.$inferSelect;
 export type User = typeof user.$inferSelect;
 export type Reservation = typeof reservation.$inferSelect;
 export type Service = typeof service.$inferSelect;
+export type Banner = typeof banner.$inferSelect;

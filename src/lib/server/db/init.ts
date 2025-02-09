@@ -2,6 +2,10 @@ import type { Service } from './schema';
 import { getAllServices, insertService } from '../backend/services-service';
 import { logger } from '../logger';
 
+import { db } from '$lib/server/db';
+import * as table from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
+
 export const init = async () => {
 	const result = await getAllServices();
 	if (result.length === 0) {
@@ -9,6 +13,8 @@ export const init = async () => {
 			await insertService(ser);
 		});
 	}
+
+	db.insert(table.banner).values({ id: 1, message: '', visible: false });
 
 	logger.info('Services table seeded successfully!');
 };

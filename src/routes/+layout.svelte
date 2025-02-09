@@ -10,6 +10,7 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import Banner from '$lib/components/app/banner.svelte';
 	import '../app.css';
 
 	let { data, children } = $props();
@@ -74,8 +75,12 @@
 				<Modeswitcher />
 			</div>
 		</div>
+
 		<div class="flex min-h-0 flex-1 flex-col">
 			<div class="flex-1 p-3">
+				{#if data.banner?.visible}
+					<Banner message={data.banner.message} />
+				{/if}
 				{@render children()}
 			</div>
 			<Footer />
