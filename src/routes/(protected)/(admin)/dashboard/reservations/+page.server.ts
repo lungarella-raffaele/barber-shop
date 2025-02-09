@@ -1,6 +1,5 @@
 import { getAllReservations, getDayReservations } from '$lib/server/backend/reservation-service';
-import { logger } from '$lib/server/logger';
-import type { Actions, PageServerLoad } from '../$types';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	return {

@@ -3,7 +3,7 @@
 	import Label from '../ui/label/label.svelte';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
-	import { displayTime } from '$lib/utils';
+	import { formatTime } from '$lib/utils';
 	import Badge from '../ui/badge/badge.svelte';
 
 	const reservationManager = ReservationManager.get();
@@ -23,7 +23,7 @@
 		value={time}
 		disabled={!available}
 	>
-		<Label for={time}>{displayTime(time)}</Label>
+		<Label for={time}>{formatTime(time)}</Label>
 		{#if !available}
 			<Badge variant="destructive">Non disponibile</Badge>
 		{/if}
