@@ -8,7 +8,8 @@
 		variants: {
 			variant: {
 				default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow',
-				destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm',
+				destructive:
+					'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm',
 				outline:
 					'border-input bg-background hover:bg-accent hover:text-accent-foreground border shadow-sm',
 				secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm',
@@ -55,7 +56,12 @@
 </script>
 
 {#if href}
-	<a bind:this={ref} class={cn(buttonVariants({ variant, size, className }))} {href} {...restProps}>
+	<a
+		bind:this={ref}
+		class={cn(buttonVariants({ variant, size, className }))}
+		{href}
+		{...restProps}
+	>
 		{@render children?.()}
 	</a>
 {:else}

@@ -53,14 +53,23 @@ export const actions: Actions = {
 		});
 
 		try {
-			await insertUser({ id: userID, email, passwordHash, name, phoneNumber });
+			await insertUser({
+				id: userID,
+				email,
+				passwordHash,
+				name,
+				phoneNumber,
+				isAdmin: false
+			});
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, userID);
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		} catch (e) {
 			console.log(e);
-			return fail(500, { message: 'Al momento il servizio non risponde. Riprova in seguito.' });
+			return fail(500, {
+				message: 'Al momento il servizio non risponde. Riprova in seguito.'
+			});
 		}
 		return redirect(302, '/');
 	}

@@ -21,7 +21,12 @@
 			<div class="grid w-full items-center gap-4">
 				<div class="flex flex-col space-y-1.5">
 					<Label for="name">Nome</Label>
-					<Input id="name" value={user.name} placeholder="Il tuo nome" disabled={!enableModify} />
+					<Input
+						id="name"
+						value={user.name}
+						placeholder="Il tuo nome"
+						disabled={!enableModify}
+					/>
 
 					<Label for="name">Numero di telefono</Label>
 					<Input
@@ -32,7 +37,12 @@
 					/>
 
 					<Label for="name">Email</Label>
-					<Input id="name" value={user.email} placeholder="La tua email" disabled={!enableModify} />
+					<Input
+						id="name"
+						value={user.email}
+						placeholder="La tua email"
+						disabled={!enableModify}
+					/>
 				</div>
 			</div>
 		</form>
@@ -51,10 +61,13 @@
 	<Card.Header>
 		<Card.Title>Elimina account</Card.Title>
 		<Card.Description>
-			Tutte le informazioni relative al tuo profilo saranno eliminate, l'azione non è reversibile.
+			Tutte le informazioni relative al tuo profilo saranno eliminate, l'azione non è
+			reversibile.
 		</Card.Description>
 	</Card.Header>
-	<Card.Content class="mt-4 rounded-b-lg border-t border-destructive bg-red-300 bg-opacity-15 py-4">
+	<Card.Content
+		class="mt-4 rounded-b-lg border-t border-destructive bg-red-300 bg-opacity-15 py-4"
+	>
 		<Button variant="destructive" type="submit">Elimina account</Button>
 	</Card.Content>
 </Card.Root>

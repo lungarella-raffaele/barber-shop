@@ -103,12 +103,14 @@
 							variant="ghost"
 							class="pr-6"
 							disabled={reservationManager.isFirst()}
-							onclick={() => reservationManager.back()}><ChevronLeft class="w-4" />Indietro</Button
+							onclick={() => reservationManager.back()}
+							><ChevronLeft class="w-4" />Indietro</Button
 						>
 						<Button
 							aria-label="Go to next step"
 							class="pl-6"
-							onclick={() => reservationManager.next()}>Avanti <ChevronRight class="w-4" /></Button
+							onclick={() => reservationManager.next()}
+							>Avanti <ChevronRight class="w-4" /></Button
 						>
 					</Card.Footer>
 				</Card.Root>
@@ -118,7 +120,9 @@
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Servizio</Card.Title>
-					<Card.Description>Scegli il taglio di capelli servizio dai seguenti:</Card.Description>
+					<Card.Description
+						>Scegli il taglio di capelli servizio dai seguenti:</Card.Description
+					>
 				</Card.Header>
 				<Card.Content class="space-y-2">
 					<ServicePicker services={data.services} />
@@ -129,13 +133,15 @@
 						variant="ghost"
 						class="pr-6"
 						disabled={reservationManager.isFirst()}
-						onclick={() => reservationManager.back()}><ChevronLeft class="w-4" />Indietro</Button
+						onclick={() => reservationManager.back()}
+						><ChevronLeft class="w-4" />Indietro</Button
 					>
 					<Button
 						aria-label="Go to next step"
 						disabled={!reservationManager.service}
 						class="pl-6"
-						onclick={() => reservationManager.next()}>Avanti <ChevronRight class="w-4" /></Button
+						onclick={() => reservationManager.next()}
+						>Avanti <ChevronRight class="w-4" /></Button
 					>
 				</Card.Footer>
 			</Card.Root>
@@ -156,7 +162,8 @@
 						variant="ghost"
 						class="pr-6"
 						disabled={reservationManager.isFirst()}
-						onclick={() => reservationManager.back()}><ChevronLeft class="w-4" />Indietro</Button
+						onclick={() => reservationManager.back()}
+						><ChevronLeft class="w-4" />Indietro</Button
 					>
 					<Button type="button" onclick={handleConfirmReservation} aria-label="Submit"
 						>Prenota</Button
