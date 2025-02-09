@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-
 	import CalendarIcon from 'lucide-svelte/icons/calendar';
 	import { type DateValue, DateFormatter, getLocalTimeZone } from '@internationalized/date';
 	import { cn } from '$lib/utils.js';
@@ -8,7 +7,8 @@
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '../../../newreservation/$types';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import ReservationItem from './reservation-item.svelte';
 
 	let { data, form }: PageProps = $props();
 
@@ -63,6 +63,6 @@
 
 {#if form}
 	{#each form.reservations as r}
-		{r.reservation.date}
+		<ReservationItem item={r} />
 	{/each}
 {/if}

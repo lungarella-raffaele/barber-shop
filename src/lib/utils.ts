@@ -1,4 +1,4 @@
-import type { Time } from '@internationalized/date';
+import { DateFormatter, getLocalTimeZone, parseDate, type Time } from '@internationalized/date';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -6,6 +6,23 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export function displayTime(time: Time | string) {
+export function formatTime(time: Time | string) {
 	return time.toString().substring(0, time.toString().length - 3);
 }
+
+export const formatDate = (date: string) => {
+	const df = new DateFormatter('it-IT', {
+		dateStyle: 'long'
+	});
+	const dateValue = parseDate(date);
+	return df.format(dateValue.toDate(getLocalTimeZone()));
+};
+
+export const formatCurrency = (amount: string) => {
+	const formatter = new Intl.NumberFormat('it-IT', {
+		style: 'currency',
+		currency: 'EUR'
+	});
+
+	return formatter.format(Number.parseFloat(amount));
+};
