@@ -55,6 +55,9 @@ export const actions: Actions = {
 		const session = await auth.createSession(sessionToken, existingUser.id);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
+		if (existingUser.isAdmin) {
+			return redirect(302, '/dashboard');
+		}
 		return redirect(302, '/');
 	}
 };

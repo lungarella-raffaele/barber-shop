@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import {
 		Calendar,
@@ -9,13 +8,12 @@
 		Instagram,
 		Linkedin,
 		LogOut,
-		Cookie,
-		Lock,
-		Library
+		Library,
+		Citrus
 	} from '$lib/components/icons/index';
 	import { enhance } from '$app/forms';
 
-	let { isLogged } = $props();
+	let { isLogged, isAdmin } = $props();
 
 	// Menu items.
 	const navigation = [
@@ -44,10 +42,12 @@
 		},
 		{
 			title: 'Prenotazioni',
-			url: '/profile/reservations',
+			url: '/profile/myreservations',
 			icon: Library
 		}
 	];
+
+	const admin = [{ title: 'Dashboard', url: '/dashboard', icon: Citrus }];
 
 	const others = [
 		{
@@ -102,6 +102,20 @@
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 						{/each}
+						{#if isAdmin}
+							{#each admin as item (item.title)}
+								<Sidebar.MenuItem>
+									<Sidebar.MenuButton>
+										{#snippet child({ props })}
+											<a href={item.url} {...props}>
+												<item.icon />
+												<span>{item.title}</span>
+											</a>
+										{/snippet}
+									</Sidebar.MenuButton>
+								</Sidebar.MenuItem>
+							{/each}
+						{/if}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
 			</Sidebar.Group>
