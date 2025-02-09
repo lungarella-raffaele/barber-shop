@@ -30,7 +30,7 @@
 <Sidebar.Provider>
 	<AppSidebar {isLogged} {isAdmin} />
 	<main class="relative flex h-screen w-full flex-col">
-		<div class="sticky top-0 flex items-center justify-between border-b bg-background p-3">
+		<div class="sticky top-0 z-50 flex items-center justify-between border-b bg-background p-3">
 			<!-- Leading -->
 			<Sidebar.Trigger />
 			<!-- Trailing -->

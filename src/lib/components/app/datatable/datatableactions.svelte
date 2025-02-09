@@ -6,6 +6,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 
 	let { id }: { id: string } = $props();
 
@@ -22,6 +23,7 @@
 	const submitDelete: SubmitFunction = async () => {
 		return async ({ result }) => {
 			if (result.type === 'success' && result.data) {
+				await invalidateAll();
 				toast.success('Prenotazione eliminata');
 			} else if (result.type === 'failure') {
 				toast.error(`Errore durante l'eliminazione della prenotazione. Riprova più tardi`);

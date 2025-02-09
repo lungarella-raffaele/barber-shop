@@ -14,6 +14,7 @@ export const formatDate = (date: string) => {
 	const df = new DateFormatter('it-IT', {
 		dateStyle: 'long'
 	});
+
 	const dateValue = parseDate(date);
 	return df.format(dateValue.toDate(getLocalTimeZone()));
 };

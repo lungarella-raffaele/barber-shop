@@ -8,7 +8,8 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import ReservationItem from './reservation-item.svelte';
+	import DataTable from '$lib/components/app/datatable/datatable.svelte';
+	import { columns } from '$lib/components/app/datatable/column';
 
 	let { data, form }: PageProps = $props();
 
@@ -29,7 +30,7 @@
 	let formElement: HTMLFormElement | undefined = $state();
 </script>
 
-<div class="flex justify-between">
+<div class="mb-4 flex justify-between">
 	<Popover.Root>
 		<Popover.Trigger>
 			{#snippet child({ props })}
@@ -57,12 +58,8 @@
 		use:enhance={submitFunction}
 		method="post"
 	>
-		<Button type="submit">Search</Button>
+		<Button class="ml-2" type="submit">Search</Button>
 	</form>
 </div>
 
-{#if form}
-	{#each form.reservations as r}
-		<ReservationItem item={r} />
-	{/each}
-{/if}
+<DataTable data={form?.reservations ?? data.reservations} {columns} />

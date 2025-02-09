@@ -8,7 +8,7 @@
 		data: TData[];
 	};
 
-	// @ts-expect-error
+	// @ts-expect-error TData TValue
 	let { data, columns }: DataTableProps<TData, TValue> = $props();
 
 	const table = createSvelteTable({
@@ -43,15 +43,18 @@
 				<Table.Row data-state={row.getIsSelected() && 'selected'}>
 					{#each row.getVisibleCells() as cell (cell.id)}
 						<Table.Cell>
-							<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+							<FlexRender
+								content={cell.column.columnDef.cell}
+								context={cell.getContext()}
+							/>
 						</Table.Cell>
 					{/each}
 				</Table.Row>
 			{:else}
 				<Table.Row>
-					<Table.Cell colspan={columns.length} class="h-24 text-center"
-						>Nessuna prenotazione.</Table.Cell
-					>
+					<Table.Cell colspan={columns.length} class="h-24 text-center">
+						Nessuna prenotazione.
+					</Table.Cell>
 				</Table.Row>
 			{/each}
 		</Table.Body>
