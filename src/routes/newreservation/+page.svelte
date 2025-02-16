@@ -73,9 +73,7 @@
 	const email = $derived(data.user?.email ?? reservationManager.email);
 </script>
 
-<div class="flex justify-between">
-	<h1 class="title">Prenotazione</h1>
-</div>
+<h1 class="title">Prenotazione</h1>
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
 	<Tabs.Root bind:value={reservationManager.currentTab}>
@@ -122,9 +120,7 @@
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Servizio</Card.Title>
-					<Card.Description
-						>Scegli il taglio di capelli servizio dai seguenti:</Card.Description
-					>
+					<Card.Description>Scegli il taglio di capelli dai seguenti</Card.Description>
 				</Card.Header>
 				<Card.Content class="space-y-2">
 					<ServicePicker services={data.services} />
@@ -153,7 +149,7 @@
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Data</Card.Title>
-					<Card.Description>Scegli una data per la prenotazione</Card.Description>
+					<Card.Description>Scegli la data della prenotazione</Card.Description>
 				</Card.Header>
 				<Card.Content class="space-y-2">
 					<Date />

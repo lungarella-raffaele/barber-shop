@@ -42,6 +42,12 @@ export const banner = sqliteTable('banner', {
 	visible: integer({ mode: 'boolean' })
 });
 
+export const closures = sqliteTable('closure', {
+	id: text('id').primaryKey(),
+	start: text('start').notNull(),
+	end: text('start').notNull()
+});
+
 export type Session = typeof session.$inferSelect;
 export type User = typeof user.$inferSelect;
 export type Reservation = typeof reservation.$inferSelect;

@@ -9,3 +9,13 @@ export type Slot = {
 	time: string;
 	available: boolean;
 };
+
+export function getWorkingHours(): string[] {
+	const times: string[] = [];
+	let curr = WORKING_HOURS.start;
+	while (WORKING_HOURS.end.compare(curr) > 0) {
+		times.push(curr.toString());
+		curr = curr.add({ hours: WORKING_HOURS.slot.hour, minutes: WORKING_HOURS.slot.minute });
+	}
+	return times;
+}

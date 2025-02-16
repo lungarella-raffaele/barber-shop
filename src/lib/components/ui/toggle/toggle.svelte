@@ -41,6 +41,8 @@
 		variant?: ToggleVariant;
 		size?: ToggleSize;
 	} = $props();
+
+	/** */
 </script>
 
 <TogglePrimitive.Root

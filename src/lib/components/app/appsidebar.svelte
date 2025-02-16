@@ -145,7 +145,7 @@
 	<Sidebar.Footer>
 		{#if isLogged}
 			<form method="post" action="/profile?/logout" use:enhance>
-				<Sidebar.MenuButton class="border border-destructive text-destructive">
+				<Sidebar.MenuButton class="text-destructive">
 					<LogOut />
 					<span>Esci</span>
 				</Sidebar.MenuButton>

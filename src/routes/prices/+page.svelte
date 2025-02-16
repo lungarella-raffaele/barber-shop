@@ -10,7 +10,7 @@
 	const { services } = data;
 </script>
 
-<h1 class="title">Listino prezzi</h1>
+<h1 class="title">Listino Prezzi</h1>
 <div class="flex flex-col items-center">
 	<Table.Root>
 		<Table.Caption>Il tempo è indicativo, e potrebbe variare.</Table.Caption>
