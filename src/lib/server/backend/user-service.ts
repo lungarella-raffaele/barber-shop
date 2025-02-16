@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import * as auth from '$lib/server/auth';
-import { type RequestEvent, redirect } from '@sveltejs/kit';
+import { type RequestEvent } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import * as table from '$lib/server/db/schema';
 import { deleteAllReservationsOfUser } from './reservation-service';

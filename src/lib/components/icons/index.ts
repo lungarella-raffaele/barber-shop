@@ -38,3 +38,5 @@ export { default as Citrus } from 'lucide-svelte/icons/citrus';
 export { default as MessageCircleWarning } from 'lucide-svelte/icons/message-circle-warning';
 export { default as Rows3 } from 'lucide-svelte/icons/rows-3';
 export { default as ChartGantt } from 'lucide-svelte/icons/chart-gantt';
+export { default as CirclePlus } from 'lucide-svelte/icons/circle-plus';
+export { default as Trash } from 'lucide-svelte/icons/trash-2';
