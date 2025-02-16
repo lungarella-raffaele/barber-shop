@@ -45,7 +45,7 @@ export const banner = sqliteTable('banner', {
 export const closures = sqliteTable('closure', {
 	id: text('id').primaryKey(),
 	start: text('start').notNull(),
-	end: text('start').notNull()
+	end: text('end').notNull()
 });
 
 export type Session = typeof session.$inferSelect;
