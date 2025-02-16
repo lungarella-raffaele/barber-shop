@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
-	import Terminal from 'lucide-svelte/icons/terminal';
-	import * as Alert from '$lib/components/ui/alert/index.js';
-
-	let { data } = $props();
 </script>
 
 <div class="flex flex-col items-center">
@@ -17,15 +13,4 @@
 		<a class="underline" href="Tel: 345 678 91011">Chiama</a>
 		al {BARBER_SHOP_DETAILS.phone}
 	</span>
-
-	{#if data.success}
-		<Alert.Root class="text-green-800">
-			<Terminal class="size-4" />
-			<Alert.Title>Grazie per la prenotazione!</Alert.Title>
-			<Alert.Description
-				>Puoi vedere i dettagli della tua prenotazione <a href="/success">qui</a
-				>.</Alert.Description
-			>
-		</Alert.Root>
-	{/if}
 </div>

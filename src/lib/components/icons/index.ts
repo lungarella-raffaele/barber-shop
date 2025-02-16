@@ -36,3 +36,5 @@ export { default as Eye } from 'lucide-svelte/icons/eye';
 export { default as EyeClosed } from 'lucide-svelte/icons/eye-closed';
 export { default as Citrus } from 'lucide-svelte/icons/citrus';
 export { default as MessageCircleWarning } from 'lucide-svelte/icons/message-circle-warning';
+export { default as Rows3 } from 'lucide-svelte/icons/rows-3';
+export { default as ChartGantt } from 'lucide-svelte/icons/chart-gantt';

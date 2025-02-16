@@ -30,16 +30,20 @@
 	}
 </script>
 
-<h1 class="title">Admin Dashboard</h1>
+<h1 class="title">Dashboard</h1>
 
-<div class="mb-5 flex flex-row">
-	{#each dashboardItems as dI}
-		<Button
-			class="{isItemActive(dI.href) ? 'bg-accent' : ''} mr-2 rounded-full"
-			variant="ghost"
-			href="/dashboard/{dI.href}">{dI.name}</Button
+<ul class="mb-5 flex flex-row gap-2">
+	{#each dashboardItems as dI (dI.name)}
+		<li
+			class={isItemActive(dI.href)
+				? 'underline decoration-primary decoration-2 underline-offset-[16px]'
+				: ''}
 		>
+			<Button href="/dashboard/{dI.href}" variant="ghost">
+				{dI.name}
+			</Button>
+		</li>
 	{/each}
-</div>
+</ul>
 
 {@render children()}

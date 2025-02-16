@@ -27,3 +27,12 @@ export const formatCurrency = (amount: string) => {
 
 	return formatter.format(Number.parseFloat(amount));
 };
+
+export function toDecimalHours(hours: number, minutes: number) {
+	return hours + minutes / 60;
+}
+
+export function extractHoursAndMinutes(timeString: string) {
+	const [hours, minutes] = timeString.split(':').map(Number);
+	return { hours, minutes };
+}

@@ -33,7 +33,6 @@
 <Card.Root class="mb-5">
 	<Card.Header>
 		<Card.Title>Informazioni personali</Card.Title>
-		<Card.Description>Queste sono le tue informazioni personali</Card.Description>
 	</Card.Header>
 	<Card.Content>
 		<form>

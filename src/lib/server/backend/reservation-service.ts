@@ -59,7 +59,6 @@ export async function getAllReservations() {
 }
 
 export async function getDayReservations(date: string) {
-	console.log(date);
 	return await db
 		.select({
 			id: table.reservation.id,
