@@ -39,9 +39,6 @@
 	const toggleAddPeriod = () => {
 		isAddingPeriod = !isAddingPeriod;
 	};
-	$effect(() => {
-		console.log(value);
-	});
 </script>
 
 <div class="mb-4 rounded-md border p-4 shadow">

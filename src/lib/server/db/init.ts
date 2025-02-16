@@ -1,5 +1,5 @@
 import type { Service } from './schema';
-import { getAllServices, insertService } from '../backend/services-service';
+import { getAllServices, insertService } from '../backend/services';
 import { logger } from '../logger';
 
 import { db } from '$lib/server/db';

@@ -50,7 +50,6 @@
 				});
 				goto('/');
 			} else if (result.type === 'failure') {
-				console.log('okay');
 				if (result.status === 404 && result.data) {
 					const step = result.data.step;
 					toast.warning(result.data.message);

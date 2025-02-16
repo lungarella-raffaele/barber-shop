@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { logger } from '$lib/server/logger';
-import { deleteAccount, logout } from '$lib/server/backend/user-service';
+import { deleteAccount, logout } from '$lib/server/backend/user';
 
 export const load: PageServerLoad = ({ locals }) => {
 	return { user: locals.user, title: 'Profilo | ' };

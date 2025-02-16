@@ -3,8 +3,15 @@ import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
 	plugins: [sveltekit()],
+	resolve: process.env.VITEST
+		? {
+				conditions: ['browser']
+			}
+		: undefined,
 
 	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}']
+		environment: 'jsdom',
+		include: ['src/**/*.{test,spec}.{js,ts}'],
+		setupFiles: ['src/lib/vitest/cleanup.ts']
 	}
 });

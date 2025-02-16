@@ -20,7 +20,7 @@ export default class ReservationManager {
 	date: DateValue | undefined = $state();
 	slot: string = $state('');
 
-	selectedService = $state('-999');
+	selectedService = $state('');
 	services: Service[] = $state([]);
 	service: Service | undefined = $derived(
 		this.services.find((el) => el.id === this.selectedService)
@@ -122,7 +122,6 @@ export default class ReservationManager {
 			this.goToTab('date');
 			return true;
 		} else if (!this.service) {
-			console.log(this.service);
 			toast.warning('Devi inserire un servizio per poter proseguire ');
 			this.goToTab('service');
 			return true;
