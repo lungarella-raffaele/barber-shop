@@ -5,7 +5,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { login } from '$lib/schemas/login';
-import { getUser } from '$lib/server/backend/user-service';
+import { getUser } from '$lib/server/backend/user';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {

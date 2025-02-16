@@ -1,4 +1,4 @@
-import { getDayReservations } from '$lib/server/backend/reservation-service';
+import { getDayReservations } from '$lib/server/backend/reservation';
 import type { Actions } from './$types';
 
 export const actions: Actions = {

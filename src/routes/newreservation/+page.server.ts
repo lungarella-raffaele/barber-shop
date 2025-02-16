@@ -6,8 +6,8 @@ import { fail } from '@sveltejs/kit';
 import {
 	getReservations as getReservations,
 	insertReservation
-} from '$lib/server/backend/reservation-service.js';
-import { getAllServices } from '$lib/server/backend/services-service.js';
+} from '$lib/server/backend/reservation.js';
+import { getAllServices } from '$lib/server/backend/services.js';
 import { logger } from '$lib/server/logger.js';
 
 export const actions: Actions = {

@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { getReservationByID } from '$lib/server/backend/reservation-service';
+import { getReservationByID } from '$lib/server/backend/reservation';
 import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, locals }) => {

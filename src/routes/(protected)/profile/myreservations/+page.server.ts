@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { logger } from '$lib/server/logger';
-import { deleteReservation, getReservationsByUser } from '$lib/server/backend/reservation-service';
+import { deleteReservation, getReservationsByUser } from '$lib/server/backend/reservation';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {

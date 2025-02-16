@@ -3,7 +3,7 @@ import * as auth from '$lib/server/auth';
 import { type RequestEvent } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import * as table from '$lib/server/db/schema';
-import { deleteAllReservationsOfUser } from './reservation-service';
+import { deleteAllReservationsOfUser } from './reservation';
 
 export async function insertUser(user: table.User) {
 	const email = user.email.toLowerCase();
