@@ -13,10 +13,10 @@
 	import Banner from '$lib/components/app/banner.svelte';
 	import '../app.css';
 
-	let { data, children } = $props();
+	const { data, children } = $props();
 
-	let isLogged = $derived(data.user !== null);
-	let isAdmin = $derived(data.user?.isAdmin);
+	const isLogged = $derived(data.user !== null);
+	const isAdmin = $derived(data.user?.isAdmin);
 
 	let logoutForm: HTMLFormElement | undefined = $state();
 </script>

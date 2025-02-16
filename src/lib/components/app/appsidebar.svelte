@@ -13,7 +13,7 @@
 	} from '$lib/components/icons/index';
 	import { enhance } from '$app/forms';
 
-	let { isLogged, isAdmin } = $props();
+	const { isLogged, isAdmin } = $props();
 
 	// Menu items.
 	const navigation = [

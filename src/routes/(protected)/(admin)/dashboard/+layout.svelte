@@ -2,7 +2,7 @@
 	import { Button } from '$lib/components/ui/button/index';
 	import { page } from '$app/state';
 
-	let { children } = $props();
+	const { children } = $props();
 
 	type DashBoardItem = {
 		href: string;

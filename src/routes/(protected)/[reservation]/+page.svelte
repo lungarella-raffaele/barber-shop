@@ -5,7 +5,7 @@
 	import { formatTime, formatCurrency, formatDate } from '$lib/utils';
 	import * as Table from '$lib/components/ui/table/index.js';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const reservation = data.reservation;
 
@@ -65,7 +65,7 @@
 	<Card.Content>
 		<Table.Root>
 			<Table.Body>
-				{#each rows as r}
+				{#each rows as r (r.label)}
 					<Table.Row>
 						<Table.Cell class="font-medium">{r.label}</Table.Cell>
 						<Table.Cell>

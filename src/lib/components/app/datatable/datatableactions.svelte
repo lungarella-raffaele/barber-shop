@@ -8,7 +8,7 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 
-	let { id }: { id: string } = $props();
+	const { id }: { id: string } = $props();
 
 	let isDialogOpen = $state(false);
 

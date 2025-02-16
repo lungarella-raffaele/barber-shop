@@ -3,7 +3,7 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
 
-	let { services } = $props();
+	const { services } = $props();
 
 	const reservationManager = ReservationManager.get();
 </script>

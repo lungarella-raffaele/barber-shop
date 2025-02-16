@@ -30,5 +30,13 @@ export default ts.config(
 				parser: ts.parser
 			}
 		}
+	},
+
+	{
+		rules: {
+			eqeqeq: 'warn',
+			'prefer-const': ['error', { destructuring: 'all' }],
+			'svelte/require-each-key': 'off'
+		}
 	}
 );

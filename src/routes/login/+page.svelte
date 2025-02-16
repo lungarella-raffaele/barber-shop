@@ -12,9 +12,9 @@
 	import type { ActionData, PageData } from './$types';
 	import Passwordinput from '$lib/components/app/passwordinput.svelte';
 
-	let { form, data: pageData }: { form: ActionData; data: PageData } = $props();
+	let { form, data }: { form: ActionData; data: PageData } = $props();
 
-	const sForm = superForm(pageData.form, {
+	const sForm = superForm(data.form, {
 		validators: zodClient(login)
 	});
 

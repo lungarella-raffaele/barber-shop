@@ -2,7 +2,7 @@
 	import { extractHoursAndMinutes, formatTime, toDecimalHours } from '$lib/utils';
 	import { getWorkingHours, WORKING_HOURS } from '$lib/working-hours';
 
-	let {
+	const {
 		data
 	}: {
 		data: {

@@ -14,7 +14,7 @@
 	import { toast } from 'svelte-sonner';
 	import Personalinfoform from '$lib/components/app/personalinfoform.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 	const reservationManager = ReservationManager.instance(
 		data.services,
 		data.currentReservations,

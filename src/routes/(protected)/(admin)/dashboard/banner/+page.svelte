@@ -5,12 +5,12 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	let message = $state(data.banner?.message ?? '');
 	let visible = $state(data.banner?.visible ?? false);
 
-	let saveDisabled = $derived(
+	const saveDisabled = $derived(
 		message === data.banner?.message && visible === data.banner.visible
 	);
 </script>

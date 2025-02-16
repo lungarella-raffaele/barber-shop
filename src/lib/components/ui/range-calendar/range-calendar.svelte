@@ -28,11 +28,11 @@
 			<RangeCalendar.NextButton />
 		</RangeCalendar.Header>
 		<RangeCalendar.Months>
-			{#each months as month}
+			{#each months as month (month)}
 				<RangeCalendar.Grid>
 					<RangeCalendar.GridHead>
 						<RangeCalendar.GridRow class="flex w-full">
-							{#each weekdays as weekday}
+							{#each weekdays as weekday (weekday)}
 								<RangeCalendar.HeadCell class="w-full">
 									{weekday.slice(0, 2)}
 								</RangeCalendar.HeadCell>
@@ -40,9 +40,9 @@
 						</RangeCalendar.GridRow>
 					</RangeCalendar.GridHead>
 					<RangeCalendar.GridBody>
-						{#each month.weeks as weekDates}
+						{#each month.weeks as weekDates (weekDates)}
 							<RangeCalendar.GridRow class="mt-2 w-full">
-								{#each weekDates as date}
+								{#each weekDates as date (date)}
 									<RangeCalendar.Cell {date} month={month.value} class="w-full">
 										<RangeCalendar.Day />
 									</RangeCalendar.Cell>

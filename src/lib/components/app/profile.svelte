@@ -11,7 +11,7 @@
 	import { toast } from 'svelte-sonner';
 	import { goto, invalidateAll } from '$app/navigation';
 
-	let { user }: { user: User } = $props();
+	const { user }: { user: User } = $props();
 
 	let isOpen = $state(false);
 
