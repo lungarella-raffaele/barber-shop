@@ -7,7 +7,7 @@
 	} from './context.js';
 	import { cn } from '$lib/utils.js';
 
-	let {
+	const {
 		opts = {},
 		plugins = [],
 		setApi = () => {},
@@ -17,7 +17,7 @@
 		...restProps
 	}: CarouselProps = $props();
 
-	let carouselState = $state<EmblaContext>({
+	const carouselState = $state<EmblaContext>({
 		api: undefined,
 		scrollPrev,
 		scrollNext,

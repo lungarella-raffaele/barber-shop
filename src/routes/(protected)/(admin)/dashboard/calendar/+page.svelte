@@ -6,17 +6,12 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import type { PageProps } from './$types';
-	import {
-		formatDate,
-		formatDateRange,
-		formatDateWithoutMonth,
-		formatDateWithoutYear
-	} from '$lib/utils';
+	import { formatDateRange } from '$lib/utils';
 	import { CirclePlus, Trash } from '$lib/components/icons/index';
 	import { slide } from 'svelte/transition';
 	import { invalidateAll } from '$app/navigation';
 
-	let { data }: PageProps = $props();
+	const { data }: PageProps = $props();
 
 	let value: { start: CalendarDate; end: CalendarDate } | undefined = $state();
 

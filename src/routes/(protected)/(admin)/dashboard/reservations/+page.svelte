@@ -15,7 +15,7 @@
 	import { date } from './date.svelte';
 	import { onMount } from 'svelte';
 
-	let { form }: PageProps = $props();
+	const { form }: PageProps = $props();
 
 	onMount(() => {
 		if (selectedDate) {

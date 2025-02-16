@@ -5,7 +5,7 @@
 	import * as Table from '$lib/components/ui/table';
 	import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const { services } = data;
 </script>
@@ -23,7 +23,7 @@
 			</Table.Row>
 		</Table.Header>
 		<Table.Body>
-			{#each services as service}
+			{#each services as service (service.id)}
 				<Table.Row>
 					<Table.Cell>{service.name}</Table.Cell>
 					<Table.Cell

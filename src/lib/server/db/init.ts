@@ -4,7 +4,6 @@ import { logger } from '../logger';
 
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
 
 export const init = async () => {
 	const result = await getAllServices();
