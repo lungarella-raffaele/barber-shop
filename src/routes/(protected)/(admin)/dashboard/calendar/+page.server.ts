@@ -3,6 +3,7 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { fail } from 'sveltekit-superforms';
 import type { PageServerLoad } from './$types';
+import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async () => {
 	return {
@@ -11,7 +12,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	create: async ({ request }) => {
 		const data = await request.formData();
 		const start = data.get('start') as string;
 		const end = data.get('end') as string;
@@ -26,5 +27,10 @@ export const actions: Actions = {
 				.values({ id: crypto.randomUUID(), start, end })
 				.returning({ id: table.closures.id })
 		};
+	},
+	delete: async ({ request }) => {
+		const data = await request.formData();
+		const id = data.get('id') as string;
+		await db.delete(table.closures).where(eq(table.closures.id, id));
 	}
 };

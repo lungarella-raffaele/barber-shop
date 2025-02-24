@@ -33,12 +33,16 @@
 
 	let reservations = $state(form?.reservations);
 	let formElement: HTMLFormElement | undefined = $state();
+
+	let loading = $state(false);
 	const submitFunction: SubmitFunction = ({ formData }) => {
+		loading = true;
 		if (selectedDate) formData.append('date', selectedDate.toString());
 		return ({ result }) => {
 			if (result.type === 'success' && result.data) {
 				reservations = result.data.reservations;
 			}
+			loading = false;
 		};
 	};
 
@@ -104,6 +108,8 @@
 	{:else}
 		<Timeline data={reservations} />
 	{/if}
-{:else}
-	<div class="w-fit rounded-md border p-4">Nessuna prenotazione</div>
+{:else if !loading}
+	<div class="rounded-md border p-4">Nessuna prenotazione</div>
+{:else if loading}
+	<div class="h-[500px] rounded-md border p-4"></div>
 {/if}
