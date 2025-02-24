@@ -80,7 +80,7 @@
 		`rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
 </script>
 
-<div class="w-full max-w-md rounded-md border p-4 shadow">
+<div class="w-full rounded-md border p-4 shadow">
 	<div
 		style:height="{TIME_SLOT * getWorkingHours().length}px"
 		class="relative ml-16 mt-3 grid grid-cols-2 border-gray-200"
