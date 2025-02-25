@@ -53,3 +53,4 @@ export type User = typeof user.$inferSelect;
 export type Reservation = typeof reservation.$inferSelect;
 export type Service = typeof service.$inferSelect;
 export type Banner = typeof banner.$inferSelect;
+export type Closure = typeof closures.$inferSelect;

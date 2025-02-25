@@ -9,6 +9,7 @@ import {
 } from '$lib/server/backend/reservation.js';
 import { getAllServices } from '$lib/server/backend/services.js';
 import { logger } from '$lib/server/logger.js';
+import { getClosures } from '$lib/server/backend/closures-service.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -78,9 +79,11 @@ export const actions: Actions = {
 export const load: PageServerLoad = async ({ locals }) => {
 	const services = await getAllServices();
 	const currentReservations = await getReservations();
+	const closures = await getClosures();
 
 	return {
 		currentReservations,
+		closures,
 		services,
 		user: locals.user,
 		form: await superValidate(zod(reservation)),

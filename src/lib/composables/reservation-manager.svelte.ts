@@ -27,6 +27,7 @@ export default class ReservationManager {
 	);
 
 	currentReservations: CurrentReservation[];
+	closures: { start: string; end: string; id: string }[];
 	availableSlots: Slot[] = $derived(this.getSlots());
 
 	name: string = $state('');
@@ -93,14 +94,15 @@ export default class ReservationManager {
 	static instance(
 		services: Service[],
 		currentRes: CurrentReservation[],
-		loggedIn: boolean
+		loggedIn: boolean,
+		closures: { end: string; start: string; id: string }[]
 	): ReservationManager {
 		if (hasContext(this.#contextID)) {
 			return getContext(this.#contextID);
 		} else {
 			return setContext(
 				this.#contextID,
-				new ReservationManager(services, currentRes, loggedIn)
+				new ReservationManager(services, currentRes, loggedIn, closures)
 			);
 		}
 	}
@@ -178,7 +180,13 @@ export default class ReservationManager {
 		this.currentTab = tab;
 	}
 
-	private constructor(services: Service[], currentRes: CurrentReservation[], loggedIn: boolean) {
+	private constructor(
+		services: Service[],
+		currentRes: CurrentReservation[],
+		loggedIn: boolean,
+		closures: { start: string; end: string; id: string }[]
+	) {
+		this.closures = closures;
 		this.date = undefined;
 		this.slot = '';
 		this.name = '';
