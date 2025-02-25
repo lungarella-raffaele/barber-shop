@@ -12,7 +12,12 @@
 	import type { ActionData, PageData } from './$types';
 	import Passwordinput from '$lib/components/app/passwordinput.svelte';
 
+<<<<<<< HEAD
 	let { form, data }: { form: ActionData; data: PageData } = $props();
+=======
+	// eslint-disable-next-line
+	let { form, data: pageData }: { form: ActionData; data: PageData } = $props();
+>>>>>>> e3cb6d8 (feat: added cookie and privacy policy)
 
 	const sForm = superForm(data.form, {
 		validators: zodClient(login)

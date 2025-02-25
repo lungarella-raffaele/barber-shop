@@ -36,14 +36,14 @@
 
 	const user = [
 		{
-			title: 'Profilo',
-			url: '/profile',
-			icon: CircleUser
-		},
-		{
 			title: 'Prenotazioni',
 			url: '/profile/myreservations',
 			icon: Library
+		},
+		{
+			title: 'Profilo',
+			url: '/profile',
+			icon: CircleUser
 		}
 	];
 
@@ -90,18 +90,6 @@
 				<Sidebar.GroupLabel>Area personale</Sidebar.GroupLabel>
 				<Sidebar.GroupContent>
 					<Sidebar.Menu>
-						{#each user as item (item.title)}
-							<Sidebar.MenuItem>
-								<Sidebar.MenuButton>
-									{#snippet child({ props })}
-										<a href={item.url} {...props}>
-											<item.icon />
-											<span>{item.title}</span>
-										</a>
-									{/snippet}
-								</Sidebar.MenuButton>
-							</Sidebar.MenuItem>
-						{/each}
 						{#if isAdmin}
 							{#each admin as item (item.title)}
 								<Sidebar.MenuItem>
@@ -116,6 +104,18 @@
 								</Sidebar.MenuItem>
 							{/each}
 						{/if}
+						{#each user as item (item.title)}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton>
+									{#snippet child({ props })}
+										<a href={item.url} {...props}>
+											<item.icon />
+											<span>{item.title}</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/each}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
 			</Sidebar.Group>

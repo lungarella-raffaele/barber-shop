@@ -11,7 +11,7 @@
 
 <ScrollArea type="always" class="h-[300px] rounded-md border p-4">
 	<ToggleGroup.Root type="single" class="flex flex-col" bind:value={reservationManager.slot}>
-		{#each reservationManager.availableSlots as s}
+		{#each reservationManager.availableSlots as s (s)}
 			{@render SlotEntry(s)}
 		{/each}
 	</ToggleGroup.Root>

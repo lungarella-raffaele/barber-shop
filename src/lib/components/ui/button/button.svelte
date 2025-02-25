@@ -14,7 +14,7 @@
 					'border-input bg-background hover:bg-accent hover:text-accent-foreground border shadow-sm',
 				secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm',
 				ghost: 'hover:bg-accent hover:text-accent-foreground',
-				link: 'text-primary underline-offset-4 hover:underline',
+				link: 'text-background underline-offset-4 hover:underline',
 				icon: 'inline-flex size-7 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-transparent p-0 text-sm font-medium opacity-50 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0'
 			},
 			size: {

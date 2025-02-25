@@ -50,18 +50,6 @@
 	let idToDelete = $state('');
 </script>
 
-<AlertDialog.Root bind:open={isDialogOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Sei sicuro?</AlertDialog.Title>
-		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel>Cancella</AlertDialog.Cancel>
-			<Button type="submit" form="deleteForm">Conferma</Button>
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>
-
 <form action="?/delete" method="post" id="deleteForm">
 	<input type="hidden" value={idToDelete} name="id" />
 </form>
@@ -110,3 +98,15 @@
 		{/if}
 	{/if}
 </div>
+
+<AlertDialog.Root bind:open={isDialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Sei sicuro?</AlertDialog.Title>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Annulla</AlertDialog.Cancel>
+			<Button type="submit" form="deleteForm">Conferma</Button>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>

@@ -24,7 +24,7 @@
 		<Button class="py-1" variant="link" href="#">{BARBER_SHOP_DETAILS.street}</Button>
 	</div>
 	<div class="flex justify-center">
-		{#each socials as s}
+		{#each socials as s (s)}
 			<Button class="py-1" variant="link" href={s.url}>
 				{s.title}
 			</Button>

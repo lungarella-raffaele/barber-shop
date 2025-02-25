@@ -11,6 +11,7 @@
 	import { page } from '$app/state';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import Banner from '$lib/components/app/banner.svelte';
+	import CookieBanner from '$lib/components/app/cookiebanner.svelte';
 	import '../app.css';
 
 	const { data, children } = $props();
@@ -87,5 +88,7 @@
 		</div>
 	</main>
 </Sidebar.Provider>
+
+<CookieBanner />
 
 <form bind:this={logoutForm} method="post" action="/profile?/logout" use:enhance></form>
