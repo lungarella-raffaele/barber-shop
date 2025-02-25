@@ -18,7 +18,8 @@
 	const reservationManager = ReservationManager.instance(
 		data.services,
 		data.currentReservations,
-		!!data.user
+		!!data.user,
+		data.closures
 	);
 
 	const handleConfirmReservation = () => {

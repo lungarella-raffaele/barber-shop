@@ -29,7 +29,8 @@
 			</p>
 			<div class="flex flex-row-reverse items-center">
 				<Button variant="secondary" onclick={dismiss}>Ho capito</Button>
-				<Button variant="link" href="/cookies">Cookie policy</Button>
+				<Button class="text-background" variant="link" href="/cookies">Cookie policy</Button
+				>
 			</div>
 		</div>
 	</div>

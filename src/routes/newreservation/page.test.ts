@@ -76,7 +76,8 @@ const userProps: PageData = {
 		shape: undefined,
 		errors: {}
 	},
-	title: ''
+	title: '',
+	closures: []
 };
 
 const noUserProps: PageData = {
@@ -109,5 +110,6 @@ const noUserProps: PageData = {
 		shape: undefined,
 		errors: {}
 	},
-	title: ''
+	title: '',
+	closures: []
 };
