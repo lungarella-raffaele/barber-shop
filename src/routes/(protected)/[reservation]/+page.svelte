@@ -65,7 +65,7 @@
 	<Card.Content>
 		<Table.Root>
 			<Table.Body>
-				{#each rows as r (r.label)}
+				{#each rows as r (r.accessor)}
 					<Table.Row>
 						<Table.Cell class="font-medium">{r.label}</Table.Cell>
 						<Table.Cell>
