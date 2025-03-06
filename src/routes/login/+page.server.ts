@@ -1,4 +1,4 @@
-import { verify } from '@node-rs/argon2';
+import { verify } from 'argon2';
 import { fail, redirect } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth';
 import type { Actions, PageServerLoad } from './$types';
@@ -38,12 +38,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const validPassword = await verify(existingUser.passwordHash, form.data.password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+		const validPassword = await verify(existingUser.passwordHash, form.data.password, {});
 
 		if (!validPassword) {
 			return fail(400, {
