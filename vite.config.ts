@@ -13,5 +13,8 @@ export default defineConfig({
 		environment: 'jsdom',
 		include: ['src/**/*.{test,spec}.{js,ts}'],
 		setupFiles: ['src/lib/vitest/cleanup.ts']
+	},
+	optimizeDeps: {
+		exclude: ['@node-rs/argon2', '@node-rs/bcrypt']
 	}
 });
