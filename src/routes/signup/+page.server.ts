@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth';
-import { hash } from '@node-rs/argon2';
+import { hash } from 'argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
@@ -48,7 +48,6 @@ export const actions: Actions = {
 			// recommended minimum parameters
 			memoryCost: 19456,
 			timeCost: 2,
-			outputLen: 32,
 			parallelism: 1
 		});
 
