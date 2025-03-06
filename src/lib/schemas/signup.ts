@@ -7,7 +7,7 @@ export const signup = z
 		password: password,
 		confirmPassword: z.string(),
 		name: z.string().min(2, { message: 'Il nome utente è obbligatorio per creare un account' }),
-		phoneNumber: z.string().min(5, { message: 'Il numero di telefono è obbligatorio' })
+		phoneNumber: z.string()
 	})
 	.refine((data) => data.password === data.confirmPassword, {
 		message: 'Le password non corrispondono',

@@ -44,6 +44,7 @@ export const actions: Actions = {
 			outputLen: 32,
 			parallelism: 1
 		});
+
 		if (!validPassword) {
 			return fail(400, {
 				message: 'Email o password errati',
