@@ -20,7 +20,6 @@ describe('Format date function', () => {
 	it('should format an ISO date', () => {
 		const date = '2025-02-16';
 		const formattedDate = u.formatDate(date);
-		console.log(formattedDate);
 		expect(formattedDate).toEqual('16 febbraio 2025');
 	});
 });
