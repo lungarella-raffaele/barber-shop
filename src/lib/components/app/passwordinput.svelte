@@ -33,10 +33,17 @@
 		class="absolute right-0 rounded-l-none"
 	>
 		{#if isPassVisible}
-			<EyeClosed />
-		{:else}
 			<Eye />
+		{:else}
+			<EyeClosed />
 		{/if}
 	</Button>
-	<Input bind:ref class={className} bind:value type="button" {...restProps}></Input>
+	<Input
+		placeholder="Password"
+		bind:ref
+		class={className}
+		bind:value
+		type={isPassVisible ? 'text' : 'password'}
+		{...restProps}
+	></Input>
 </div>
