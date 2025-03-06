@@ -12,6 +12,6 @@
 		"ui": "$lib/components/ui",
 		"hooks": "$lib/hooks"
 	},
-	"typescript": true,
+	"typescript": false,
 	"registry": "https://next.shadcn-svelte.com/registry"
 }

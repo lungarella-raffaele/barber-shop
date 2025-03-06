@@ -1,20 +1,26 @@
 <script lang="ts">
-	import type { HTMLInputAttributes } from 'svelte/elements';
 	import type { WithElementRef } from 'bits-ui';
 	import { Input } from '../ui/input';
 	import { Eye, EyeClosed } from '$lib/components/icons/index';
 	import Button from '../ui/button/button.svelte';
+	import type { HTMLInputAttributes, HTMLInputTypeAttribute } from 'svelte/elements';
+
+	type InputType = Exclude<HTMLInputTypeAttribute, 'file'>;
+	type Props = WithElementRef<
+		Omit<HTMLInputAttributes, 'type'> &
+			({ type: 'file'; files?: FileList } | { type?: InputType; files?: undefined })
+	>;
 
 	let {
 		ref = $bindable(null),
 		value = $bindable(),
 		class: className,
 		...restProps
-	}: WithElementRef<HTMLInputAttributes> = $props();
+	}: Props = $props();
 
-	let passwordType = $state('password');
+	let isPassVisible = $state(false);
 	const togglePasswordVisibility = () => {
-		passwordType = passwordType === 'password' ? 'text' : 'password';
+		isPassVisible = !isPassVisible;
 	};
 </script>
 
@@ -26,11 +32,11 @@
 		variant="icon"
 		class="absolute right-0 rounded-l-none"
 	>
-		{#if passwordType === 'password'}
+		{#if isPassVisible}
 			<EyeClosed />
 		{:else}
 			<Eye />
 		{/if}
 	</Button>
-	<Input bind:ref class={className} bind:value type={passwordType} {...restProps}></Input>
+	<Input bind:ref class={className} bind:value type="button" {...restProps}></Input>
 </div>
