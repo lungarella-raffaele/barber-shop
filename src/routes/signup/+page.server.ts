@@ -7,7 +7,6 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { signup } from '$lib/schemas/signup';
 import { getUser, insertUser } from '$lib/server/backend/user';
-import { logger } from '$lib/server/logger';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -39,7 +38,6 @@ export const actions: Actions = {
 				form
 			});
 		}
-		logger.info(form.data);
 
 		const { email, password, name, phoneNumber } = form.data;
 

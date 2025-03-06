@@ -23,11 +23,14 @@ export default ts.config(
 		}
 	},
 	{
-		files: ['**/*.svelte'],
-
+		files: ['**/*.svelte', '**/*.svelte.ts'],
 		languageOptions: {
 			parserOptions: {
-				parser: ts.parser
+				parser: ts.parser,
+				svelteFeatures: {
+					experimentalGenerics: true
+				},
+				extraFileExtensions: ['.svelte', '.svelte.ts']
 			}
 		}
 	},
