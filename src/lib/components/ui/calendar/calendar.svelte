@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { cn } from '$lib/utils.js';
 	import { Calendar as CalendarPrimitive, type WithoutChildrenOrChild } from 'bits-ui';
 	import * as Calendar from './index.js';
-	import { cn } from '$lib/utils.js';
 
 	let {
 		ref = $bindable(null),
@@ -35,7 +35,7 @@ get along, so we shut typescript up by casting `value` to `never`.
 			{#each months as month}
 				<Calendar.Grid>
 					<Calendar.GridHead>
-						<Calendar.GridRow class="flex">
+						<Calendar.GridRow class="flex w-full justify-between">
 							{#each weekdays as weekday}
 								<Calendar.HeadCell>
 									{weekday.slice(0, 2)}
@@ -45,7 +45,7 @@ get along, so we shut typescript up by casting `value` to `never`.
 					</Calendar.GridHead>
 					<Calendar.GridBody>
 						{#each month.weeks as weekDates}
-							<Calendar.GridRow class="mt-2 w-full">
+							<Calendar.GridRow class="mt-2 flex w-full justify-between">
 								{#each weekDates as date}
 									<Calendar.Cell {date} month={month.value}>
 										<Calendar.Day />

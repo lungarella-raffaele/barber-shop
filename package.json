@@ -62,18 +62,22 @@
 		"zod": "^3.24.2"
 	},
 	"dependencies": {
+		"@libsql/client": "^0.15.1",
+		"@lucide/lab": "^0.1.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"@tailwindcss/container-queries": "^0.1.1",
 		"@tailwindcss/forms": "^0.5.10",
 		"@tailwindcss/typography": "^0.5.16",
 		"@tanstack/table-core": "^8.21.2",
+		"add": "^2.0.6",
 		"argon2": "^0.41.1",
 		"dotenv": "^16.4.7",
 		"drizzle-kit": "^0.30.5",
 		"drizzle-orm": "^0.40.0",
 		"pino": "^9.6.0",
-		"pino-pretty": "^13.0.0"
+		"pino-pretty": "^13.0.0",
+		"resend": "^4.2.0"
 	},
 	"packageManager": "pnpm@10.0.0+sha512.b8fef5494bd3fe4cbd4edabd0745df2ee5be3e4b0b8b08fa643aa3e4c6702ccc0f00d68fa8a8c9858a735a0032485a44990ed2810526c875e416f001b17df12b"
 }
