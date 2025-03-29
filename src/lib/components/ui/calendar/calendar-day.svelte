@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Calendar as CalendarPrimitive } from 'bits-ui';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
+	import { Calendar as CalendarPrimitive } from 'bits-ui';
 
 	let {
 		ref = $bindable(null),
@@ -21,7 +21,7 @@
 		// Disabled
 		'data-[disabled]:text-muted-foreground data-[disabled]:opacity-50',
 		// Unavailable
-		'data-[unavailable]:text-destructive-foreground data-[unavailable]:line-through',
+		'data-[unavailable]:text-foreground-muted data-[unavailable]:line-through',
 		// Outside months
 		'data-[outside-month]:pointer-events-none data-[outside-month]:text-muted-foreground data-[outside-month]:opacity-50 [&[data-outside-month][data-selected]]:bg-accent/50 [&[data-outside-month][data-selected]]:text-muted-foreground [&[data-outside-month][data-selected]]:opacity-30',
 		className

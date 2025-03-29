@@ -10,6 +10,7 @@ import {
 import { getAllServices } from '$lib/server/backend/services.js';
 import { logger } from '$lib/server/logger.js';
 import { getClosures } from '$lib/server/backend/closures-service.js';
+import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -55,6 +56,7 @@ export const actions: Actions = {
 				email: user.email
 			});
 		} else if (name && email) {
+			await newReservationEmail(name, email);
 			logger.info(`Creating reservation with ${name} ${email}`);
 			response = await insertReservation({
 				date,

@@ -1,17 +1,17 @@
 <script lang="ts">
-	import AppSidebar from '$lib/components/app/appsidebar.svelte';
-	import Footer from '$lib/components/app/footer.svelte';
-	import Modeswitcher from '$lib/components/app/modeswitcher.svelte';
-	import { Button, buttonVariants } from '$lib/components/ui/button/index';
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { ModeWatcher } from 'mode-watcher';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';
-	import { CircleUser, Citrus } from '$lib/components/icons/index';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
-	import { Toaster } from '$lib/components/ui/sonner';
+	import AppSidebar from '$lib/components/app/appsidebar.svelte';
 	import Banner from '$lib/components/app/banner.svelte';
 	import CookieBanner from '$lib/components/app/cookiebanner.svelte';
+	import Footer from '$lib/components/app/footer.svelte';
+	import Modeswitcher from '$lib/components/app/modeswitcher.svelte';
+	import { CircleUser, Citrus } from '$lib/components/icons/index';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { Toaster } from '$lib/components/ui/sonner';
+	import { ModeWatcher } from 'mode-watcher';
 	import '../app.css';
 
 	const { data, children } = $props();
