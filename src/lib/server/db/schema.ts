@@ -25,7 +25,9 @@ export const reservation = sqliteTable('reservation', {
 		.notNull()
 		.references(() => service.id),
 	name: text('name').notNull(),
-	email: text('email').notNull()
+	email: text('email').notNull(),
+	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+	pending: integer({ mode: 'boolean' })
 });
 
 export const service = sqliteTable('service', {

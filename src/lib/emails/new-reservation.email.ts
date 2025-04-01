@@ -1,14 +1,15 @@
 import { MAILER } from '$env/static/private';
-import { BARBER_SHOP_DETAILS } from '$lib/constants';
 import { Resend } from 'resend';
 
 const resend = new Resend(MAILER);
 
-export async function newReservationEmail(name: string, email: string) {
-	const { data, error } = await resend.emails.send({
-		from: BARBER_SHOP_DETAILS.mailer_sender,
+export async function newReservationEmail(name: string, email: string, confirmLink: string) {
+	return await resend.emails.send({
+		from: 'Emiliano Lo Russo <reservations@mailer.emihairclub.com>',
 		to: [email],
-		subject: 'Hello World',
-		html: '<strong>It works!</strong>'
+		subject: 'Grazie per la prenotazione!',
+		html: `Ciao ${name}, <br/>
+		per confermare la prenotazione clicca questo link <a href=${confirmLink}>conferma</a>
+		`
 	});
 }

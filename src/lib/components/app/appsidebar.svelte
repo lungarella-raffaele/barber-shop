@@ -1,17 +1,16 @@
 <script lang="ts">
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { enhance } from '$app/forms';
 	import {
 		Calendar,
 		CircleUser,
+		Citrus,
 		DollarSign,
 		House,
 		Instagram,
-		Linkedin,
-		LogOut,
 		Library,
-		Citrus
+		LogOut
 	} from '$lib/components/icons/index';
-	import { enhance } from '$app/forms';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
 	const { isLogged, isAdmin } = $props();
 
@@ -54,11 +53,6 @@
 			title: 'instagram',
 			url: '#',
 			icon: Instagram
-		},
-		{
-			title: 'linkedin',
-			url: '#',
-			icon: Linkedin
 		}
 	];
 </script>
