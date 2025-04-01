@@ -7,14 +7,7 @@ import { logger } from '../logger';
 export async function insertReservation(reservation: Reservation): Promise<Reservation | null> {
 	const queryRes = await db
 		.insert(table.reservation)
-		.values({
-			date: reservation.date,
-			id: reservation.id,
-			serviceID: reservation.serviceID,
-			hour: reservation.hour,
-			name: reservation.name,
-			email: reservation.email
-		})
+		.values({ ...reservation })
 		.returning();
 
 	const res = queryRes[0];
@@ -100,6 +93,7 @@ export async function getReservationByID(id: string) {
 			hour: table.reservation.hour,
 			name: table.reservation.name,
 			email: table.reservation.email,
+			pending: table.reservation.pending,
 			serviceName: table.service.name,
 			serviceDuration: table.service.duration,
 			servicePrice: table.service.price
@@ -112,4 +106,13 @@ export async function getReservationByID(id: string) {
 
 export async function deleteAllReservationsOfUser(email: string) {
 	return await db.delete(table.reservation).where(eq(table.reservation.email, email));
+}
+
+export async function updateReservation(id: string) {
+	return await db
+		.update(table.reservation)
+		.set({ pending: false, expiresAt: new Date() })
+		.where(eq(table.reservation.id, id))
+		.returning()
+		.get();
 }

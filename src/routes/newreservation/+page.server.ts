@@ -11,6 +11,8 @@ import { getAllServices } from '$lib/server/backend/services.js';
 import { logger } from '$lib/server/logger.js';
 import { getClosures } from '$lib/server/backend/closures-service.js';
 import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
+import { BASE_URL } from '$env/static/private';
+import { DAY_IN_MS } from '$lib/constants.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -44,33 +46,56 @@ export const actions: Actions = {
 			});
 		}
 
-		let response;
 		if (user) {
+			// Logged in user
 			logger.info('Creating reservation with existing user');
-			response = await insertReservation({
+			const response = await insertReservation({
 				date,
 				hour,
 				id: crypto.randomUUID(),
 				serviceID: service,
 				name: user.name,
-				email: user.email
+				email: user.email,
+				pending: false,
+				expiresAt: new Date()
 			});
+
+			if (response) {
+				return {
+					newReservation: response
+				};
+			} else {
+				return fail(500);
+			}
 		} else if (name && email) {
-			await newReservationEmail(name, email);
-			logger.info(`Creating reservation with ${name} ${email}`);
-			response = await insertReservation({
+			// No auth user
+
+			const response = await insertReservation({
 				date,
 				hour,
 				id: crypto.randomUUID(),
 				serviceID: service,
 				name,
-				email
+				email,
+				expiresAt: new Date(Date.now() + DAY_IN_MS),
+				pending: true
 			});
-		}
+			if (!response) {
+				return fail(500);
+			}
 
-		if (response) {
+			const { error } = await newReservationEmail(
+				name,
+				email,
+				`${BASE_URL}confirm?reservation=${response.id}`
+			);
+
+			if (error) {
+				return fail(500);
+			}
+
 			return {
-				newReservation: response
+				emailSent: true
 			};
 		} else {
 			return fail(500);

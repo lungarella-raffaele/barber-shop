@@ -1,4 +1,4 @@
-<div class="privacy-policy-container">
+<article class="prose dark:prose-invert p-4">
 	<h1>Privacy Policy</h1>
 
 	<section>
@@ -156,54 +156,4 @@
 	<footer>
 		<p>Data ultimo aggiornamento: [inserisci qui la data]</p>
 	</footer>
-</div>
-
-<style>
-	h1 {
-		font-weight: bold;
-	}
-
-	h2 {
-		margin-top: 1.5em;
-		margin-bottom: 0.5em;
-		font-weight: bold;
-	}
-
-	h1 {
-		font-size: 2em;
-		border-bottom: 1px solid #ddd;
-		padding-bottom: 0.5em;
-	}
-
-	h2 {
-		font-size: 1.5em;
-	}
-
-	p {
-		margin-bottom: 1em;
-	}
-
-	section {
-		margin-bottom: 2em;
-	}
-
-	ul {
-		margin-bottom: 1em;
-	}
-
-	li {
-		margin-bottom: 0.5em;
-	}
-
-	footer {
-		margin-top: 2em;
-		padding-top: 1em;
-		border-top: 1px solid #ddd;
-		font-size: 0.9em;
-		color: #666;
-	}
-
-	strong {
-		font-weight: bold;
-	}
-</style>
+</article>

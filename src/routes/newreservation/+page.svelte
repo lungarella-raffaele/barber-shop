@@ -1,18 +1,18 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
+	import ConfirmReservationDialog from '$lib/components/app/confirmreservationdialog.svelte';
 	import Date from '$lib/components/app/date.svelte';
+	import Personalinfoform from '$lib/components/app/personalinfoform.svelte';
 	import ServicePicker from '$lib/components/app/servicepicker.svelte';
 	import { ChevronLeft, ChevronRight } from '$lib/components/icons/index';
+	import { Button } from '$lib/components/ui/button/index';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
-	import ConfirmReservationDialog from '$lib/components/app/confirmreservationdialog.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import type { PageData } from './$types';
-	import { Button } from '$lib/components/ui/button/index';
-	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import Personalinfoform from '$lib/components/app/personalinfoform.svelte';
+	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
 	const reservationManager = ReservationManager.instance(
@@ -45,10 +45,17 @@
 		formData.append('email', reservationManager.email);
 
 		return async ({ result }) => {
-			if (result.type === 'success') {
-				toast.success('Prenotazione confermata!', {
-					duration: 7000
-				});
+			if (result.type === 'success' && result.data) {
+				if (result.data.newReservation) {
+					toast.success('Prenotazione confermata!', {
+						duration: 7000
+					});
+				} else if (result.data.emailSent) {
+					toast.info('Conferma la prenotazione', {
+						duration: 7000,
+						description: `Abbiamo inviato una mail a ${reservationManager.email}!`
+					});
+				}
 				goto('/');
 			} else if (result.type === 'failure') {
 				if (result.status === 404 && result.data) {

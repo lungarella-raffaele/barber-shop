@@ -5,8 +5,7 @@ import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { insertSession } from './backend/user';
-
-const DAY_IN_MS = 1000 * 60 * 60 * 24;
+import { DAY_IN_MS } from '$lib/constants';
 
 export const sessionCookieName = 'auth-session';
 

@@ -2,7 +2,7 @@
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 </script>
 
-<div class="cookie-policy-container">
+<article class="prose dark:prose-invert p-4">
 	<h1>Cookie Policy</h1>
 
 	<section>
@@ -33,20 +33,18 @@
 			singola sessione o, se richiesto, da una sessione all'altra.
 		</p>
 
-		<div class="cookie-details">
-			<h4 class="mb-2 text-lg font-bold">Dettagli dei cookie tecnici utilizzati:</h4>
-			<ul>
-				<li><strong>Finalità</strong>: Autenticazione e gestione della sessione utente</li>
-				<li><strong>Durata</strong>: 30 giorni</li>
-				<li>
-					<strong>Nome dei cookie</strong>: "auth-session"
-				</li>
-				<li>
-					<strong>Dati raccolti</strong>: Informazioni di sessione necessarie per
-					identificare e autenticare l'utente
-				</li>
-			</ul>
-		</div>
+		<h4>Dettagli dei cookie tecnici utilizzati:</h4>
+		<ul>
+			<li><strong>Finalità</strong>: Autenticazione e gestione della sessione utente</li>
+			<li><strong>Durata</strong>: 30 giorni</li>
+			<li>
+				<strong>Nome dei cookie</strong>: "auth-session"
+			</li>
+			<li>
+				<strong>Dati raccolti</strong>: Informazioni di sessione necessarie per identificare
+				e autenticare l'utente
+			</li>
+		</ul>
 	</section>
 
 	<section>
@@ -60,27 +58,25 @@
 			offerti.
 		</p>
 
-		<div class="browser-instructions">
-			<h4 class="mb-2 text-lg font-bold">Come gestire i cookie nei principali browser:</h4>
-			<ul>
-				<li>
-					<strong>Chrome</strong>: Menu → Impostazioni → Mostra impostazioni avanzate →
-					Privacy → Impostazioni contenuti → Cookie
-				</li>
-				<li>
-					<strong>Firefox</strong>: Menu → Opzioni → Privacy → Utilizzare impostazioni
-					personalizzate → Cookie
-				</li>
-				<li>
-					<strong>Internet Explorer</strong>: Menu → Opzioni Internet → Privacy → Avanzate
-				</li>
-				<li><strong>Safari</strong>: Preferenze → Privacy</li>
-				<li>
-					<strong>Edge</strong>: Impostazioni e altro → Impostazioni → Autorizzazioni sito
-					→ Cookie e dati del sito
-				</li>
-			</ul>
-		</div>
+		<h4>Come gestire i cookie nei principali browser:</h4>
+		<ul>
+			<li>
+				<strong>Chrome</strong>: Menu → Impostazioni → Mostra impostazioni avanzate →
+				Privacy → Impostazioni contenuti → Cookie
+			</li>
+			<li>
+				<strong>Firefox</strong>: Menu → Opzioni → Privacy → Utilizzare impostazioni
+				personalizzate → Cookie
+			</li>
+			<li>
+				<strong>Internet Explorer</strong>: Menu → Opzioni Internet → Privacy → Avanzate
+			</li>
+			<li><strong>Safari</strong>: Preferenze → Privacy</li>
+			<li>
+				<strong>Edge</strong>: Impostazioni e altro → Impostazioni → Autorizzazioni sito →
+				Cookie e dati del sito
+			</li>
+		</ul>
 	</section>
 
 	<section>
@@ -103,59 +99,4 @@
 	<footer>
 		<p>Data ultimo aggiornamento: Martedì 25 Febbraio 2025</p>
 	</footer>
-</div>
-
-<style>
-	h1 {
-		font-weight: bold;
-	}
-
-	h2,
-	h3 {
-		margin-top: 1.5em;
-		margin-bottom: 0.5em;
-		font-weight: bold;
-	}
-
-	h1 {
-		font-size: 2em;
-		border-bottom: 1px solid #ddd;
-		padding-bottom: 0.5em;
-	}
-
-	h2 {
-		font-size: 1.5em;
-	}
-
-	h3 {
-		font-size: 1.2em;
-	}
-
-	p {
-		margin-bottom: 1em;
-	}
-
-	section {
-		margin-bottom: 2em;
-	}
-
-	ul {
-		margin-bottom: 1em;
-	}
-
-	li {
-		margin-bottom: 0.5em;
-	}
-
-	footer {
-		margin-top: 2em;
-		padding-top: 1em;
-		border-top: 1px solid #ddd;
-		font-size: 0.9em;
-		color: #666;
-	}
-
-	strong {
-		font-weight: bold;
-	}
-</style>
+</article>
