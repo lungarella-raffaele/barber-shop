@@ -1,9 +1,8 @@
-import { fail, redirect } from '@sveltejs/kit';
-import * as auth from '$lib/server/auth';
+import { redirect } from '@sveltejs/kit';
 import { hash } from 'argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import type { Actions, PageServerLoad } from './$types';
-import { superValidate } from 'sveltekit-superforms';
+import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { signup } from '$lib/schemas/signup';
 import { getUser, insertUser } from '$lib/server/backend/user';
@@ -23,9 +22,9 @@ export const actions: Actions = {
 	default: async (event) => {
 		const form = await superValidate(event, zod(signup));
 		if (!form.valid) {
-			return fail(400, {
-				message: `Le informazioni che hai inserito non sono valide. Riprova.`,
-				form
+			return message(form, {
+				text: 'Le informazioni che hai inserito non sono valide',
+				success: false
 			});
 		}
 
@@ -33,9 +32,9 @@ export const actions: Actions = {
 
 		const existingUser = results.at(0);
 		if (existingUser) {
-			return fail(400, {
-				message: `L'email che hai inserito è gia un uso. Prova con un altro indirizzo email.`,
-				form
+			return message(form, {
+				text: `L'email che hai inserito è gia un uso. Prova con un altro indirizzo email.`,
+				success: false
 			});
 		}
 
@@ -56,19 +55,23 @@ export const actions: Actions = {
 				passwordHash,
 				name,
 				phoneNumber,
-				isAdmin: false
+				isAdmin: false,
+				pending: true
 			});
 
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, userID);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+			return message(form, { text: `Abbiamo inviato una mail di verifica a ${email}` });
+
+			// const sessionToken = auth.generateSessionToken();
+			// const session = await auth.createSession(sessionToken, userID);
+			// auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		} catch (e) {
 			console.log(e);
-			return fail(500, {
-				message: 'Al momento il servizio non risponde. Riprova in seguito.'
+
+			return message(form, {
+				text: 'Al momento il servizio non risponde. Riprova in seguito.',
+				success: true
 			});
 		}
-		return redirect(302, '/');
 	}
 };
 

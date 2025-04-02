@@ -23,7 +23,7 @@
 </script>
 
 <svelte:head>
-	<title>{page.data.title} Emis Barber Shop</title>
+	<title>{page.data.title} Emi Hair Club</title>
 </svelte:head>
 
 <ModeWatcher />
@@ -91,4 +91,10 @@
 
 <CookieBanner />
 
-<form bind:this={logoutForm} method="post" action="/profile?/logout" use:enhance></form>
+<form
+	bind:this={logoutForm}
+	method="post"
+	action="/profile?/logout"
+	use:enhance
+	id="logout-menubar-form"
+></form>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import PasswordInput from '$lib/components/app/passwordinput.svelte';
 	import { CircleAlert, LoaderCircle } from '$lib/components/icons/index';
 	import * as Alert from '$lib/components/ui/alert/';
 	import Button from '$lib/components/ui/button/button.svelte';
@@ -7,24 +9,46 @@
 	import { Input } from '$lib/components/ui/input';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { signup } from '$lib/schemas/signup';
+	import { toast } from 'svelte-sonner';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
-	import type { ActionData, PageData } from './$types';
-	import PasswordInput from '$lib/components/app/passwordinput.svelte';
+	import type { PageProps } from './$types';
 
-	const { form, data }: { form: ActionData; data: PageData } = $props();
+	const { data }: PageProps = $props();
 
 	const sForm = superForm(data.form, {
-		validators: zodClient(signup)
+		validators: zodClient(signup),
+		onUpdated({ form }) {
+			if (form.message) {
+				if (form.message.success) {
+					toast.warning('Email di verifica', { description: form.message.text });
+					goto('/');
+				} else {
+					showAlert = true;
+					alertMessage = form.message.text;
+				}
+			}
+		}
 	});
 
 	const { form: formData, enhance, delayed } = sForm;
+
+	function focus(node: HTMLDivElement) {
+		node.scrollIntoView({
+			behavior: 'smooth',
+			block: 'center'
+		});
+	}
+	let showAlert = $state(false);
+	let alertMessage = $state('');
 </script>
 
-{#if form && form.message}
+{#if showAlert}
 	<Alert.Root variant="destructive" class="mb-3">
-		<CircleAlert class="size-4" />
-		<Alert.Description>{form.message}</Alert.Description>
+		<div use:focus>
+			<CircleAlert class="size-4" />
+			<Alert.Description>{alertMessage}</Alert.Description>
+		</div>
 	</Alert.Root>
 {/if}
 

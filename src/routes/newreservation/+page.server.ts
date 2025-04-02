@@ -87,7 +87,7 @@ export const actions: Actions = {
 			const { error } = await newReservationEmail(
 				name,
 				email,
-				`${BASE_URL}confirm?reservation=${response.id}`
+				`${BASE_URL}?reservation=${response.id}`
 			);
 
 			if (error) {

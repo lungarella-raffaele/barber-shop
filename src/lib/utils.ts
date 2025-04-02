@@ -91,6 +91,5 @@ export function toDecimalHours(hours: number, minutes: number) {
 
 export function extractHoursAndMinutes(timeString: string) {
 	const [hours, minutes] = timeString.split(':').map(Number);
-	console.log(hours, minutes);
 	return { hours, minutes };
 }

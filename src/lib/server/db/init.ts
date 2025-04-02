@@ -17,46 +17,79 @@ export const init = async () => {
 
 	logger.info('Services table seeded successfully!');
 };
+// Database entries for salon services
 
 const services: Service[] = [
 	{
 		id: '1',
-		name: 'Taglio Base',
+		name: 'Taglio base',
 		duration: 30,
-		price: 22,
-		description:
-			'Taglio classico eseguito con tecniche avanzate di precisione geometrica. Comprende shampoo pre e post servizio.'
+		price: 20,
+		description: 'Taglio di capelli base per uomo, include lavaggio e styling.',
+		inactive: false
 	},
 	{
 		id: '2',
-		name: 'Taglio Base + Rifinitura Barba',
-		duration: 30,
-		price: 23,
-		description:
-			'Ideale per barbe corte rifinite a macchinetta. Include un taglio classico e la definizione accurata della barba.'
+		name: 'Solo sfumatura',
+		duration: 20,
+		price: 10,
+		description: 'Servizio di sfumatura laterale e posteriore, senza taglio completo.',
+		inactive: false
 	},
 	{
 		id: '3',
-		name: 'Taglio + Scolpitura Barba',
+		name: 'Taglio più scolpitura barba',
 		duration: 45,
 		price: 25,
-		description:
-			'Pensato per barbe lunghe, combina un taglio tradizionale con una scolpitura e definizione dettagliata della barba.'
+		description: 'Taglio di capelli completo con servizio di rifinitura e modellamento barba.',
+		inactive: false
 	},
 	{
 		id: '4',
-		name: 'Taglio Bambino (0-10 anni)',
-		duration: 15,
-		price: 15,
-		description:
-			'Taglio studiato per i più piccoli, fino a 10 anni, con un’attenzione particolare al comfort e alla precisione.'
+		name: 'Taglio bambino (0-13)',
+		duration: 25,
+		price: 14,
+		description: 'Taglio di capelli per bambini fino a 13 anni di età.',
+		inactive: false
 	},
 	{
 		id: '5',
-		name: 'Taglio Ragazzo (11-13 anni)',
+		name: 'Taglio donna',
+		duration: 45,
+		price: 20,
+		description: 'Taglio di capelli per donna, adatto a tutte le lunghezze.',
+		inactive: false
+	},
+	{
+		id: '6',
+		name: 'Colore',
+		duration: 60,
+		price: 20,
+		description: 'Applicazione di un singolo colore su tutta la capigliatura.',
+		inactive: false
+	},
+	{
+		id: '7',
+		name: 'Doppio colore',
+		duration: 90,
+		price: 30,
+		description: 'Applicazione di due colori diversi per effetti di contrasto o sfumatura.',
+		inactive: false
+	},
+	{
+		id: '8',
+		name: 'Piega corta',
+		duration: 20,
+		price: 15,
+		description: 'Servizio di piega e styling per capelli corti.',
+		inactive: false
+	},
+	{
+		id: '9',
+		name: 'Piega lunga',
 		duration: 30,
-		price: 18,
-		description:
-			'Servizio dedicato ai ragazzi di età compresa tra 11 e 13 anni, con uno stile moderno e curato.'
+		price: 20,
+		description: 'Servizio di piega e styling per capelli lunghi.',
+		inactive: false
 	}
 ];
