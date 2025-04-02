@@ -1,4 +1,4 @@
-# Emis Barber Shop
+# Emi Hair Club
 
 ![example event parameter](https://github.com/lungarella-raffaele/emis-barber-shop/actions/workflows/ci.yml/badge.svg?event=push)
 

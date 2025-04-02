@@ -51,28 +51,31 @@
 
 	// Predefined color palette
 	const colorPalette: RGBA[] = [
-		rgba(208, 0, 0), // Engineering Orange
-		rgba(232, 93, 4), // Persimmon
-		rgba(250, 163, 7), // Orange Web
-		rgba(255, 186, 8), // Selective Yellow
-		rgba(0, 114, 0), // Office Green 2
-		rgba(56, 176, 0), // Kelly Green
-		rgba(112, 224, 0), // SGBus Green
-		rgba(204, 255, 51), // Lime
-		rgba(0, 119, 182), // Honolulu Blue
-		rgba(0, 150, 199), // Blue Green
-		rgba(0, 180, 216), // Pacific Cyan
-		rgba(72, 202, 228) // Vivid Sky Blue
+		rgba(52, 211, 153, 1), // - Emerald Green (shortest duration)
+		rgba(245, 158, 11, 1), // - Amber Yellow (short-medium duration)
+		rgba(255, 149, 0, 1), // - Orange (medium duration)
+		rgba(239, 68, 68, 1), // - Bright Red (high duration)
+		rgba(139, 92, 246, 1), // - Purple (very high duration)
+		rgba(59, 130, 246, 1) // - Blue (highest duration)
 	];
 
-	const getRandomColor = (): RGBA => {
-		const randomIndex = Math.floor(Math.random() * colorPalette.length);
-		return colorPalette[randomIndex];
-	};
-
 	const changeOpacity = (color: RGBA, newopacity: number) => {
+		console.log(color);
 		color.a = newopacity;
 		return color;
+	};
+
+	const getColor = (duration: number): RGBA => {
+		switch (duration) {
+			case 15:
+				return colorPalette[0];
+			case 30:
+				return colorPalette[2];
+			case 45:
+				return colorPalette[6];
+			default:
+				return colorPalette[0];
+		}
 	};
 
 	// Utility function to convert RGBA object to CSS string
@@ -96,7 +99,7 @@
 		{/each}
 
 		{#each data as d (d.id)}
-			{@const color = getRandomColor()}
+			{@const color = getColor(d.serviceDuration)}
 			<div
 				style:height="{getSlotHeight(d.serviceDuration)}px"
 				style:top="{getStartingPosition(d.hour)}px"

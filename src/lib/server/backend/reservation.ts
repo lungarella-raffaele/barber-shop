@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import type { Reservation } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { logger } from '../logger';
 
 export async function insertReservation(reservation: Reservation): Promise<Reservation | null> {
@@ -48,6 +48,7 @@ export async function getAllReservations() {
 			servicePrice: table.service.price
 		})
 		.from(table.reservation)
+		.where(eq(table.reservation.pending, false))
 		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id));
 }
 
@@ -65,7 +66,7 @@ export async function getDayReservations(date: string) {
 		})
 		.from(table.reservation)
 		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id))
-		.where(eq(table.reservation.date, date));
+		.where(and(eq(table.reservation.date, date), eq(table.reservation.pending, false)));
 }
 
 export async function getReservationsByUser(email: string) {

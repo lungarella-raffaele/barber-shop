@@ -6,7 +6,8 @@ export const user = sqliteTable('user', {
 	phoneNumber: text('phone_number'),
 	email: text('email').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
-	isAdmin: integer({ mode: 'boolean' })
+	isAdmin: integer({ mode: 'boolean' }),
+	pending: integer({ mode: 'boolean' })
 });
 
 export const session = sqliteTable('session', {
@@ -35,7 +36,8 @@ export const service = sqliteTable('service', {
 	name: text('name').notNull().unique(),
 	duration: integer('duration').notNull(),
 	price: integer('price').notNull(),
-	description: text('description').notNull()
+	description: text('description').notNull(),
+	inactive: integer({ mode: 'boolean' })
 });
 
 export const banner = sqliteTable('banner', {

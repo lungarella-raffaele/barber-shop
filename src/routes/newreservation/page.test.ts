@@ -57,7 +57,8 @@ const userProps: PageData = {
 		phoneNumber: '333',
 		email: 'johndoes@test.com',
 		passwordHash: 'axsdqeow',
-		isAdmin: null
+		isAdmin: null,
+		pending: false
 	},
 	form: {
 		id: '',

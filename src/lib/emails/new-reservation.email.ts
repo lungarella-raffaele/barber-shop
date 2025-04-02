@@ -13,3 +13,14 @@ export async function newReservationEmail(name: string, email: string, confirmLi
 		`
 	});
 }
+
+export async function newUser(name: string, email: string, confirmLink: string) {
+	return await resend.emails.send({
+		from: 'Emiliano Lo Russo <account@mailer.emihairclub.com>',
+		to: [email],
+		subject: 'Conferma il tuo account!',
+		html: `Ciao ${name}, <br/>
+		per verificare il tuo account clicca questo link <a href=${confirmLink}>verifica</a>
+		`
+	});
+}

@@ -6,14 +6,7 @@ import * as table from '$lib/server/db/schema';
 import { deleteAllReservationsOfUser } from './reservation';
 
 export async function insertUser(user: table.User) {
-	const email = user.email.toLowerCase();
-	await db.insert(table.user).values({
-		id: user.id,
-		email,
-		passwordHash: user.passwordHash,
-		name: user.name,
-		phoneNumber: user.phoneNumber
-	});
+	await db.insert(table.user).values({ ...user, email: user.email.toLowerCase() });
 }
 
 export async function getUser(email: string) {
