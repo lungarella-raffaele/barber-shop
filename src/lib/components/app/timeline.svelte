@@ -60,7 +60,6 @@
 	];
 
 	const changeOpacity = (color: RGBA, newopacity: number) => {
-		console.log(color);
 		color.a = newopacity;
 		return color;
 	};

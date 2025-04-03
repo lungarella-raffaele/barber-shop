@@ -4,6 +4,7 @@ import { reservation } from '$lib/schemas/reservation.js';
 import { zod } from 'sveltekit-superforms/adapters';
 import { fail } from '@sveltejs/kit';
 import {
+	checkAvailability,
 	getReservations as getReservations,
 	insertReservation
 } from '$lib/server/backend/reservation.js';
@@ -12,7 +13,8 @@ import { logger } from '$lib/server/logger.js';
 import { getClosures } from '$lib/server/backend/closures-service.js';
 import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
 import { BASE_URL } from '$env/static/private';
-import { DAY_IN_MS } from '$lib/constants.js';
+import { LOCK_EXPIRATION_MINUTES } from '$lib/constants.js';
+import { sql } from 'drizzle-orm';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -46,9 +48,19 @@ export const actions: Actions = {
 			});
 		}
 
+		if (!checkAvailability(date, hour)) {
+			logger.info('Già prenotato');
+			return fail(500, {
+				message: 'Qualcuno ha prenotato questo slot prima di te'
+			});
+		}
+
 		if (user) {
 			// Logged in user
 			logger.info('Creating reservation with existing user');
+			const expiresAt = new Date(date);
+			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
+			expiresAt.setHours(23, 59, 59, 999); // Set to end of the day
 			const response = await insertReservation({
 				date,
 				hour,
@@ -57,7 +69,7 @@ export const actions: Actions = {
 				name: user.name,
 				email: user.email,
 				pending: false,
-				expiresAt: new Date()
+				expiresAt
 			});
 
 			if (response) {
@@ -69,7 +81,6 @@ export const actions: Actions = {
 			}
 		} else if (name && email) {
 			// No auth user
-
 			const response = await insertReservation({
 				date,
 				hour,
@@ -77,7 +88,7 @@ export const actions: Actions = {
 				serviceID: service,
 				name,
 				email,
-				expiresAt: new Date(Date.now() + DAY_IN_MS),
+				expiresAt: new Date(Date.now() + LOCK_EXPIRATION_MINUTES),
 				pending: true
 			});
 			if (!response) {
@@ -95,7 +106,8 @@ export const actions: Actions = {
 			}
 
 			return {
-				emailSent: true
+				pending: true,
+				newReservation: response
 			};
 		} else {
 			return fail(500);

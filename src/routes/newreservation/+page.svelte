@@ -46,17 +46,14 @@
 
 		return async ({ result }) => {
 			if (result.type === 'success' && result.data) {
-				if (result.data.newReservation) {
+				if (result.data.newReservation && result.data.pending) {
+					goto(`/?pending=${result.data.newReservation.id}`);
+				} else if (result.data.newReservation) {
 					toast.success('Prenotazione confermata!', {
 						duration: 7000
 					});
-				} else if (result.data.emailSent) {
-					toast.info('Conferma la prenotazione', {
-						duration: 7000,
-						description: `Abbiamo inviato una mail a ${reservationManager.email}!`
-					});
+					goto('/');
 				}
-				goto('/');
 			} else if (result.type === 'failure') {
 				if (result.status === 404 && result.data) {
 					const step = result.data.step;

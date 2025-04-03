@@ -93,3 +93,7 @@ export function extractHoursAndMinutes(timeString: string) {
 	const [hours, minutes] = timeString.split(':').map(Number);
 	return { hours, minutes };
 }
+
+export function expired(timestamp: number): boolean {
+	return timestamp < Date.now();
+}
