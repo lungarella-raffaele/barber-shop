@@ -1,70 +1,92 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 	import Logo from '$lib/components/app/logo.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Progress } from '$lib/components/ui/progress';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
-	import { formatDate, formatTime } from '$lib/utils';
-	import { mustache } from '@lucide/lab';
-	import { CircleCheckBig, Icon } from 'lucide-svelte';
 	import type { PageProps } from './$types';
+	import ConfirmReservation from './confirmreservation.svelte';
+	import Timer from './timer.svelte';
 
 	const { data }: PageProps = $props();
+
+	// State management with reactivity
+	const confirmReservation = page.url.searchParams.get('reservation');
+	const confirmUser = page.url.searchParams.get('user');
+	const pendingReservation = page.url.searchParams.get('pending');
+
+	// Timer handling with error protection
+	const timer = new Timer();
+	let showTimer = $state(false);
+	$effect(() => {
+		if (
+			pendingReservation &&
+			data.pendingReservation &&
+			data.pendingReservation.pending &&
+			browser
+		) {
+			const expiryTime = data.pendingReservation.expiresAt.getTime();
+			const currentTime = new Date().getTime();
+			const timeLeft = expiryTime - currentTime;
+			showTimer = true;
+
+			if (timeLeft > 0) {
+				timer.start(timeLeft);
+			} else {
+				// Handle expired reservation
+				timer.reset();
+				showTimer = false;
+			}
+		} else {
+			timer.reset();
+			showTimer = false;
+		}
+	});
 </script>
 
-{#if data.reservationConfirmed}
-	<div
-		class="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-12 lg:max-w-4xl lg:px-8 lg:py-16 xl:max-w-6xl"
-	>
-		<article
-			class="prose prose-sm sm:prose-base lg:prose-lg xl:prose-xl 2xl:prose-2xl dark:prose-invert mx-auto text-center"
-		>
-			{#if data.reservationConfirmed}
-				<div class="flex flex-col items-center text-center">
-					<CircleCheckBig size={30} class="mb-2" />
-					<h2>Prenotazione confermata</h2>
-					<p>Grazie per la prenotazione. Di seguito i dettagli.</p>
-				</div>
-				<table>
-					<tbody>
-						<tr>
-							<th scope="row">Email</th>
-							<td>{data.reservation.email}</td>
-						</tr>
-
-						<tr>
-							<th scope="row">Nome</th>
-							<td>{data.reservation.name}</td>
-						</tr>
-
-						<tr>
-							<th scope="row">Data</th>
-							<td>{formatDate(data.reservation.date)}</td>
-						</tr>
-
-						<tr>
-							<th scope="row">Ora</th>
-							<td>{formatTime(data.reservation.hour)}</td>
-						</tr>
-					</tbody>
-				</table>
-				<Button href="/">Home</Button>
-			{:else}
-				Non è stato possibile confermare la prenotazione, prova a crearne un altra
-			{/if}
-		</article>
-	</div>
+{#if confirmReservation && data.reservation}
+	<ConfirmReservation
+		reservation={data.reservation}
+		reservationConfirmed={data.reservationConfirmed}
+	/>
 {:else}
 	<div class="mb-16 mt-16 flex flex-col items-center">
 		<Logo />
 
-		<Button href="/newreservation">
-			<Icon iconNode={mustache} />
-			Prenota
-		</Button>
+		{#if showTimer && data.pendingReservation}
+			<Card.Root class="mb-12 w-[350px]">
+				<Card.Header>
+					<Card.Title>Prenotazione in attesa</Card.Title>
+					<Card.Description>
+						Abbiamo inviato una mail all'indirizzo: {data.pendingReservation.email ||
+							'email non disponibile'}. Controlla la tua casella di posta e cliccare
+						sul link contenuto nell'email per confermare la tua prenotazione prima dello
+						scadere del tempo.
+					</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<div class="text-center text-xl font-bold">
+						<div class="mb-2">
+							{timer.show()}
+						</div>
+						<Progress value={timer.timeLeft} max={60 * 1000 * 10} />
+					</div>
+				</Card.Content>
+			</Card.Root>
+		{/if}
 
+		{#if confirmUser}
+			<!-- TODO -->
+			<div class="mb-4 text-xl font-bold">BENVENUTO</div>
+		{/if}
+
+		<Button href="/newreservation">Prenota</Button>
 		<p class="my-3 text-muted-foreground">oppure</p>
 		<span>
-			<a class="underline" href="Tel: {BARBER_SHOP_DETAILS}">Chiama</a>
-			al {BARBER_SHOP_DETAILS.phone}
+			<a class="underline" href="Tel:{BARBER_SHOP_DETAILS.phone}">Chiama</a>
+			al {BARBER_SHOP_DETAILS.phone || 'numero non disponibile'}
 		</span>
 	</div>
 {/if}
