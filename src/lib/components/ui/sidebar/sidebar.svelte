@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { afterNavigate } from '$app/navigation';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import { cn } from '$lib/utils.js';
 	import type { WithElementRef } from 'bits-ui';
@@ -19,6 +20,10 @@
 		variant?: 'sidebar' | 'floating' | 'inset';
 		collapsible?: 'offcanvas' | 'icon' | 'none';
 	} = $props();
+
+	afterNavigate(() => {
+		sidebar.setOpenMobile(false);
+	});
 
 	const sidebar = useSidebar();
 </script>

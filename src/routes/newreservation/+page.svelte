@@ -11,8 +11,8 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
+	import { minutesToTime } from '$lib/utils';
 	import { getSlots } from '$lib/working-hours';
-	import { Time } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import { fly } from 'svelte/transition';
@@ -92,12 +92,6 @@
 			}))
 		);
 	});
-
-	function minutesToTime(totalMinutes: number) {
-		const hours = Math.floor(totalMinutes / 60);
-		const minutes = totalMinutes % 60;
-		return new Time(hours, minutes);
-	}
 </script>
 
 <h1 class="title">Prenotazione</h1>

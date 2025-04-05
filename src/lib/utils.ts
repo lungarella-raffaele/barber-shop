@@ -1,4 +1,4 @@
-import { DateFormatter, getLocalTimeZone, parseDate, type Time } from '@internationalized/date';
+import { DateFormatter, getLocalTimeZone, parseDate, Time } from '@internationalized/date';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -96,4 +96,10 @@ export function extractHoursAndMinutes(timeString: string) {
 
 export function expired(timestamp: number): boolean {
 	return timestamp < Date.now();
+}
+
+export function minutesToTime(totalMinutes: number) {
+	const hours = Math.floor(totalMinutes / 60);
+	const minutes = totalMinutes % 60;
+	return new Time(hours, minutes);
 }
