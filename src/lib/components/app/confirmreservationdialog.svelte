@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { LoaderCircle } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
-	import { DateFormatter, getLocalTimeZone } from '@internationalized/date';
-	import { LoaderCircle } from '$lib/components/icons/index';
 	import { formatTime } from '$lib/utils';
+	import { DateFormatter, getLocalTimeZone } from '@internationalized/date';
 
 	let {
 		isOpen = $bindable(),
@@ -62,7 +62,7 @@
 
 			<Label class="text-right text-muted-foreground">Servizio</Label>
 			<span class="col-span-3">
-				{reservationManager.service?.name}
+				{reservationManager.selectedService}
 			</span>
 		</div>
 		<Dialog.Footer>

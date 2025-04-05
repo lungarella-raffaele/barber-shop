@@ -1,6 +1,7 @@
 const TEN_MINUTES = 10 * 60 * 1000;
 export default class Timer {
 	timeLeft: number = $state(0);
+	// @ts-expect-error any
 	timerInterval;
 	isRunning = $state(false);
 

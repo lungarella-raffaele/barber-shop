@@ -2,27 +2,26 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import ConfirmReservationDialog from '$lib/components/app/confirmreservationdialog.svelte';
-	import Date from '$lib/components/app/date.svelte';
+	import DatePicker from '$lib/components/app/datepicker.svelte';
 	import Personalinfoform from '$lib/components/app/personalinfoform.svelte';
 	import ServicePicker from '$lib/components/app/servicepicker.svelte';
+	import SlotPicker from '$lib/components/app/slotpicker.svelte';
 	import { ChevronLeft, ChevronRight } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button/index';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
+	import { getSlots } from '$lib/working-hours';
+	import { Time } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
+	import { fly } from 'svelte/transition';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
-	const reservationManager = ReservationManager.instance(
-		data.services,
-		data.currentReservations,
-		!!data.user,
-		data.closures
-	);
+	const reservationManager = ReservationManager.instance(!!data.user);
 
-	const handleConfirmReservation = () => {
+	const confirmReservation = () => {
 		if (!reservationManager.check()) {
 			isDialogOpen = true;
 		}
@@ -35,12 +34,17 @@
 		}
 
 		if (!reservationManager.date) {
+			console.warn('Date not specified');
+			return cancel();
+		}
+		if (!reservationManager.selectedService) {
+			console.warn('Service not specified');
 			return cancel();
 		}
 
 		formData.append('date', reservationManager.date.toString());
 		formData.append('hour', reservationManager.slot);
-		formData.append('service', reservationManager.service?.id ?? '');
+		formData.append('service', reservationManager.selectedService);
 		formData.append('name', reservationManager.name);
 		formData.append('email', reservationManager.email);
 
@@ -75,20 +79,44 @@
 
 	const name = $derived(data.user?.name ?? reservationManager.name);
 	const email = $derived(data.user?.email ?? reservationManager.email);
+	const availableSlots = $derived.by(() => {
+		if (!reservationManager.date) {
+			return [];
+		}
+		return getSlots(
+			reservationManager.date,
+			data.currentReservations.map((el) => ({
+				date: el.date,
+				startingTime: el.startingTime,
+				duration: minutesToTime(el.duration)
+			}))
+		);
+	});
+
+	function minutesToTime(totalMinutes: number) {
+		const hours = Math.floor(totalMinutes / 60);
+		const minutes = totalMinutes % 60;
+		return new Time(hours, minutes);
+	}
 </script>
 
 <h1 class="title">Prenotazione</h1>
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
+	<ConfirmReservationDialog bind:isOpen={isDialogOpen} {loading} {name} {email} />
 	<Tabs.Root bind:value={reservationManager.currentTab}>
 		<Tabs.List class="flex">
 			{#if !data.user}
 				<Tabs.Trigger class="flex-1" value="info">Nominativo</Tabs.Trigger>
 			{/if}
 			<Tabs.Trigger class="flex-1" value="service">Servizio</Tabs.Trigger>
-			<Tabs.Trigger class="flex-1" disabled={!reservationManager.service} value="date"
-				>Data</Tabs.Trigger
+			<Tabs.Trigger
+				class="flex-1"
+				disabled={!reservationManager.selectedService}
+				value="date"
 			>
+				Data
+			</Tabs.Trigger>
 		</Tabs.List>
 
 		{#if !data.user}
@@ -114,8 +142,9 @@
 							aria-label="Go to next step"
 							class="pl-6"
 							onclick={() => reservationManager.next()}
-							>Avanti <ChevronRight class="w-4" /></Button
 						>
+							Avanti <ChevronRight class="w-4" />
+						</Button>
 					</Card.Footer>
 				</Card.Root>
 			</Tabs.Content>
@@ -140,7 +169,7 @@
 					>
 					<Button
 						aria-label="Go to next step"
-						disabled={!reservationManager.service}
+						disabled={!reservationManager.selectedService}
 						class="pl-6"
 						onclick={() => reservationManager.next()}
 						>Avanti <ChevronRight class="w-4" /></Button
@@ -156,7 +185,22 @@
 					<Card.Description>Scegli la data della prenotazione</Card.Description>
 				</Card.Header>
 				<Card.Content class="space-y-2">
-					<Date />
+					<DatePicker bind:value={reservationManager.date} closures={data.closures} />
+
+					<!-- The grid is used to make the elements live in the same place thus avoiding glithes when animating -->
+					<div class="grid overflow-hidden">
+						{#if reservationManager.date}
+							{#key reservationManager.date}
+								<div
+									class="col-span-full row-span-full"
+									in:fly={{ x: 150, delay: 50 }}
+									out:fly={{ x: -150 }}
+								>
+									<SlotPicker {availableSlots} />
+								</div>
+							{/key}
+						{/if}
+					</div>
 				</Card.Content>
 				<Card.Footer class="mt-8 items-center justify-between">
 					<Button
@@ -167,13 +211,11 @@
 						onclick={() => reservationManager.back()}
 						><ChevronLeft class="w-4" />Indietro</Button
 					>
-					<Button type="button" onclick={handleConfirmReservation} aria-label="Submit"
+					<Button type="button" onclick={confirmReservation} aria-label="Submit"
 						>Prenota</Button
 					>
 				</Card.Footer>
 			</Card.Root>
 		</Tabs.Content>
 	</Tabs.Root>
-
-	<ConfirmReservationDialog bind:isOpen={isDialogOpen} {loading} {name} {email} />
 </form>
