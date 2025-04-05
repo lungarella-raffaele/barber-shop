@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { extractHoursAndMinutes, formatTime, toDecimalHours } from '$lib/utils';
-	import { getWorkingHours, WORKING_HOURS } from '$lib/working-hours';
+	import { getSlotsFromInterval, SlotDuration } from '$lib/working-hours';
+	import { Time } from '@internationalized/date';
 
 	const {
 		data
@@ -17,11 +18,17 @@
 		}[];
 	} = $props();
 
+	const day = {
+		start: new Time(9, 0),
+		end: new Time(19, 0)
+	};
+	const slots = getSlotsFromInterval([], day.start, day.end);
+
 	const getStartingPosition = (start: string) => {
 		// 2(t-8) where t chosen time
 
 		const { hours, minutes } = extractHoursAndMinutes(start);
-		const res = 2 * (toDecimalHours(hours, minutes) - WORKING_HOURS.start.hour) * TIME_SLOT;
+		const res = 2 * (toDecimalHours(hours, minutes) - day.start.hour) * TIME_SLOT;
 		return res;
 	};
 
@@ -30,7 +37,7 @@
 	};
 
 	const pixelPerMinute = 2;
-	const minutesPerSlot = WORKING_HOURS.slot.minute;
+	const minutesPerSlot = SlotDuration.minute;
 
 	const TIME_SLOT = pixelPerMinute * minutesPerSlot;
 
@@ -71,7 +78,7 @@
 			case 30:
 				return colorPalette[2];
 			case 45:
-				return colorPalette[6];
+				return colorPalette[5];
 			default:
 				return colorPalette[0];
 		}
@@ -84,16 +91,16 @@
 
 <div class="w-full rounded-md border p-4 shadow">
 	<div
-		style:height="{TIME_SLOT * getWorkingHours().length}px"
+		style:height="{TIME_SLOT * slots.length}px"
 		class="relative ml-16 mt-3 grid grid-cols-2 border-gray-200"
 	>
 		<!-- Time slots -->
-		{#each getWorkingHours() as time, i (i)}
+		{#each slots as s, i (i)}
 			<div
 				style:top="{TIME_SLOT * i}px"
 				class="absolute -left-16 border-t text-sm text-gray-500"
 			>
-				{formatTime(time)}
+				{formatTime(s.time)}
 			</div>
 		{/each}
 

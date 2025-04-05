@@ -48,7 +48,8 @@ const userProps: PageData = {
 			name: 'Haircut',
 			description: 'Nice haircut',
 			duration: 30,
-			price: 22
+			price: 22,
+			inactive: false
 		}
 	],
 	user: {
@@ -90,7 +91,8 @@ const noUserProps: PageData = {
 			name: 'Haircut',
 			description: 'Nice haircut',
 			duration: 30,
-			price: 22
+			price: 22,
+			inactive: false
 		}
 	],
 	user: null,

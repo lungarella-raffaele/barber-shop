@@ -14,7 +14,6 @@ import { getClosures } from '$lib/server/backend/closures-service.js';
 import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
 import { BASE_URL } from '$env/static/private';
 import { LOCK_EXPIRATION_MINUTES } from '$lib/constants.js';
-import { sql } from 'drizzle-orm';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
