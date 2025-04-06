@@ -1,6 +1,5 @@
 {
 	"$schema": "https://next.shadcn-svelte.com/schema.json",
-	"typescript": true,
 	"style": "new-york",
 	"tailwind": {
 		"config": "tailwind.config.ts",
@@ -13,5 +12,6 @@
 		"ui": "$lib/components/ui",
 		"hooks": "$lib/hooks"
 	},
+	"typescript": true,
 	"registry": "https://next.shadcn-svelte.com/registry"
 }
