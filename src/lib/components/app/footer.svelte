@@ -1,13 +1,6 @@
 <script>
 	import { Button } from '$lib/components/ui/button/index';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
-
-	const socials = [
-		{
-			title: 'instagram',
-			url: '#'
-		}
-	];
 </script>
 
 <div
