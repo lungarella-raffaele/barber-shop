@@ -11,8 +11,8 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
+	import { getSlots } from '$lib/get-slots';
 	import { minutesToTime } from '$lib/utils';
-	import { getSlots } from '$lib/working-hours';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import { fly } from 'svelte/transition';
@@ -79,6 +79,9 @@
 
 	const name = $derived(data.user?.name ?? reservationManager.name);
 	const email = $derived(data.user?.email ?? reservationManager.email);
+	const service = $derived(
+		data.services.find((el) => el.id === reservationManager.selectedService)
+	);
 	const availableSlots = $derived.by(() => {
 		if (!reservationManager.date) {
 			return [];
@@ -89,7 +92,8 @@
 				date: el.date,
 				startingTime: el.startingTime,
 				duration: minutesToTime(el.duration)
-			}))
+			})),
+			service?.duration
 		);
 	});
 </script>

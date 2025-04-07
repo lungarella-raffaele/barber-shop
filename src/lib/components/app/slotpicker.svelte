@@ -2,9 +2,9 @@
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
+	import type { Slot } from '$lib/types';
 	import { formatDate, formatTime } from '$lib/utils';
-	import type { Slot } from '$lib/working-hours';
-	import Badge from '../ui/badge/badge.svelte';
+	import { CalendarX, ClockAlert } from '../icons';
 	import Label from '../ui/label/label.svelte';
 
 	const reservationManager = ReservationManager.get();
@@ -33,13 +33,15 @@
 
 {#snippet SlotEntry(s: Slot)}
 	<ToggleGroup.Item
-		class="flex w-full justify-between align-middle data-[state=on]:bg-primary data-[state=on]:text-background"
-		value={s.time}
-		disabled={!s.available}
+		class="-destructive flex w-full justify-between border-2 align-middle data-[disabled]:border-destructive data-[state=on]:bg-primary data-[state=on]:text-background"
+		value={s.startingTime}
+		disabled={!s.available || !s.hasEnoughFollowingSlots}
 	>
-		<Label for={s.time}>{formatTime(s.time)}</Label>
+		<Label for={s.startingTime}>{formatTime(s.startingTime)}</Label>
 		{#if !s.available}
-			<Badge variant="destructive">Non disponibile</Badge>
+			<div class="flex items-center">Riservato<CalendarX class="ml-1" /></div>
+		{:else if !s.hasEnoughFollowingSlots}
+			<div class="flex items-center">Tempo insufficiente<ClockAlert class="ml-1" /></div>
 		{/if}
 	</ToggleGroup.Item>
 {/snippet}
