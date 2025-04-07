@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { getSlotsFromInterval, SlotDuration } from '$lib/get-slots';
 	import { extractHoursAndMinutes, formatTime, toDecimalHours } from '$lib/utils';
-	import { getSlotsFromInterval, SlotDuration } from '$lib/working-hours';
 	import { Time } from '@internationalized/date';
 
 	const {
@@ -23,6 +23,7 @@
 		end: new Time(19, 0)
 	};
 	const slots = getSlotsFromInterval([], day.start, day.end);
+	console.log(slots);
 
 	const getStartingPosition = (start: string) => {
 		// 2(t-8) where t chosen time
@@ -100,7 +101,7 @@
 				style:top="{TIME_SLOT * i}px"
 				class="absolute -left-16 border-t text-sm text-gray-500"
 			>
-				{formatTime(s.time)}
+				{formatTime(s.startingTime)}
 			</div>
 		{/each}
 
