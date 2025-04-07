@@ -11,6 +11,7 @@
 		LogOut
 	} from '$lib/components/icons/index';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 
 	const { isLogged, isAdmin } = $props();
 
@@ -51,7 +52,7 @@
 	const others = [
 		{
 			title: 'instagram',
-			url: '#',
+			url: BARBER_SHOP_DETAILS.instagram,
 			icon: Instagram
 		}
 	];
@@ -123,7 +124,7 @@
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
-									<a href={item.url} {...props}>
+									<a href={item.url} {...props} target="_blank">
 										<item.icon />
 										<span>{item.title}</span>
 									</a>
