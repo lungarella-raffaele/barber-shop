@@ -3,23 +3,26 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import ReservationManager from '$lib/composables/reservation-manager.svelte';
 	import { formatTime } from '$lib/utils';
-	import { DateFormatter, getLocalTimeZone } from '@internationalized/date';
+	import { DateFormatter, getLocalTimeZone, type DateValue } from '@internationalized/date';
 
 	let {
 		isOpen = $bindable(),
 		loading,
 		name,
-		email
+		email,
+		hour,
+		date,
+		service
 	}: {
 		isOpen: boolean;
 		loading: boolean;
 		name: string;
 		email: string;
+		hour: string;
+		date: DateValue;
+		service: string;
 	} = $props();
-
-	const reservationManager = ReservationManager.get();
 
 	const df = new DateFormatter('it-IT', {
 		dateStyle: 'long'
@@ -54,15 +57,13 @@
 
 			<Label class="text-right text-muted-foreground">Data</Label>
 			<span class="col-span-3">
-				{reservationManager.date
-					? df.format(reservationManager.date.toDate(getLocalTimeZone()))
-					: ''} alle
-				{formatTime(reservationManager.slot)}
+				{date ? df.format(date.toDate(getLocalTimeZone())) : ''} alle
+				{formatTime(hour)}
 			</span>
 
 			<Label class="text-right text-muted-foreground">Servizio</Label>
 			<span class="col-span-3">
-				{reservationManager.selectedService}
+				{service}
 			</span>
 		</div>
 		<Dialog.Footer>

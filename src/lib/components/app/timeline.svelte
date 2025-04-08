@@ -20,10 +20,9 @@
 
 	const day = {
 		start: new Time(9, 0),
-		end: new Time(19, 0)
+		end: new Time(19, 30)
 	};
 	const slots = getSlotsFromInterval([], day.start, day.end);
-	console.log(slots);
 
 	const getStartingPosition = (start: string) => {
 		// 2(t-8) where t chosen time
@@ -74,11 +73,18 @@
 
 	const getColor = (duration: number): RGBA => {
 		switch (duration) {
-			case 15:
+			case 20:
 				return colorPalette[0];
+			case 25:
+				return colorPalette[1];
 			case 30:
 				return colorPalette[2];
 			case 45:
+				return colorPalette[3];
+			case 60:
+				return colorPalette[4];
+
+			case 90:
 				return colorPalette[5];
 			default:
 				return colorPalette[0];
@@ -112,12 +118,12 @@
 				style:top="{getStartingPosition(d.hour)}px"
 				style:background-color={rgbaToString(changeOpacity(color, 0.7))}
 				style:border-color={rgbaToString(color)}
-				class="absolute w-full rounded border-l-4 border-primary bg-primary bg-opacity-60 p-2 text-sm text-gray-100"
+				class="absolute w-full overflow-y-hidden rounded border-l-4 border-primary bg-primary bg-opacity-60 p-2 text-sm text-foreground"
 			>
 				<span class="font-bold">
 					{d.name} | {d.serviceName}
 				</span>
-				<div class="text-xs text-gray-200">
+				<div class="text-foreground-muted text-xs">
 					{formatTime(d.hour)} - {d.serviceDuration}min
 				</div>
 			</div>

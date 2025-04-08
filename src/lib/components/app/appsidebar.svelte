@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import {
+		ArrowUpRight,
 		Calendar,
 		CircleUser,
 		Citrus,
@@ -127,6 +128,7 @@
 									<a href={item.url} {...props} target="_blank">
 										<item.icon />
 										<span>{item.title}</span>
+										<ArrowUpRight />
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>

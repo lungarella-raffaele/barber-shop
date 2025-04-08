@@ -39,6 +39,7 @@ export { default as Rows3 } from 'lucide-svelte/icons/rows-3';
 export { default as ChartGantt } from 'lucide-svelte/icons/chart-gantt';
 export { default as CirclePlus } from 'lucide-svelte/icons/circle-plus';
 export { default as Trash } from 'lucide-svelte/icons/trash-2';
+export { default as Timer } from 'lucide-svelte/icons/timer';
 export { default as CircleCheckBig } from 'lucide-svelte/icons/circle-check-big';
 export { default as CalendarX } from 'lucide-svelte/icons/calendar-x';
 export { default as ClockAlert } from 'lucide-svelte/icons/clock-alert';

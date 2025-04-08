@@ -1,4 +1,11 @@
-import { getDayOfWeek, parseTime, Time, type DateValue } from '@internationalized/date';
+import {
+	getDayOfWeek,
+	getLocalTimeZone,
+	now,
+	Time,
+	today,
+	type DateValue
+} from '@internationalized/date';
 import { minutesToTime } from './utils';
 import type { Reservation, Slot } from './types';
 import { workingHours } from './working-hours';
@@ -24,7 +31,7 @@ export function getSlots(
 
 	// Array of slots for every interval
 	const arrayOfSlots = businessIntervals.map((interval) =>
-		getSlotsFromInterval(reservationsOfTheDay, interval.start, interval.end)
+		getSlotsFromInterval(reservationsOfTheDay, date, interval.start, interval.end)
 	);
 
 	const slots = arrayOfSlots.flatMap((array) => {
@@ -44,15 +51,12 @@ export function getSlots(
 		});
 	});
 
-	return slots;
-
-	// return slots.map((el) => {
-	// 	return { ...el, strict: false };
-	// });
+	return sortSlots(slots);
 }
 
 export function getSlotsFromInterval(
 	reservations: { startingTime: string; duration: Time }[],
+	date: DateValue,
 	curr: Time,
 	end: Time
 ): Slot[] {
@@ -62,9 +66,18 @@ export function getSlotsFromInterval(
 		// If we find a reserved slot
 		const reservedSlot = reservations.find((el) => el.startingTime === curr.toString());
 
-		if (!reservedSlot) {
+		const time = now(getLocalTimeZone());
+		const timeInTime = new Time(time.hour, time.minute);
+
+		if (timeInTime.compare(curr) < 0 && date.compare(today(getLocalTimeZone())) === 0) {
 			slots.push({
-				startingTime: curr.toString(),
+				startingTime: curr,
+				available: false,
+				hasEnoughFollowingSlots: undefined
+			});
+		} else if (!reservedSlot) {
+			slots.push({
+				startingTime: curr,
 				available: true,
 				hasEnoughFollowingSlots: true
 			});
@@ -72,7 +85,7 @@ export function getSlotsFromInterval(
 			if (reservedSlot.duration.compare(SlotDuration) <= 0) {
 				// If the service duration is less that the slots we occupy on slot
 				slots.push({
-					startingTime: curr.toString(),
+					startingTime: curr,
 					available: false,
 					hasEnoughFollowingSlots: true
 				});
@@ -81,7 +94,7 @@ export function getSlotsFromInterval(
 				const slotCount = getSlotCountFromDuration(reservedSlot.duration, SlotDuration);
 				for (let i = 0; i < slotCount; i++) {
 					slots.push({
-						startingTime: curr.toString(),
+						startingTime: curr,
 						available: false,
 						hasEnoughFollowingSlots: true
 					});
@@ -94,7 +107,7 @@ export function getSlotsFromInterval(
 		// Move to next slot
 		curr = curr.add({ hours: SlotDuration.hour, minutes: SlotDuration.minute });
 	}
-	return sortSlots(slots);
+	return slots;
 }
 
 function getSlotCountFromDuration(duration: Time, slotDuration: Time): number {
@@ -105,7 +118,7 @@ function getSlotCountFromDuration(duration: Time, slotDuration: Time): number {
 
 function sortSlots(slots: Slot[]): Slot[] {
 	return slots.sort((a, b) => {
-		return parseTime(a.startingTime).compare(parseTime(b.startingTime));
+		return a.startingTime.compare(b.startingTime);
 	});
 }
 
