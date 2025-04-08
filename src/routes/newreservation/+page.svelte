@@ -101,7 +101,17 @@
 <h1 class="title">Prenotazione</h1>
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
-	<ConfirmReservationDialog bind:isOpen={isDialogOpen} {loading} {name} {email} />
+	{#if reservationManager.date && service}
+		<ConfirmReservationDialog
+			bind:isOpen={isDialogOpen}
+			{loading}
+			{name}
+			{email}
+			date={reservationManager.date}
+			hour={reservationManager.slot}
+			service={service.name}
+		/>
+	{/if}
 	<Tabs.Root bind:value={reservationManager.currentTab}>
 		<Tabs.List class="flex">
 			{#if !data.user}

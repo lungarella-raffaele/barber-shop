@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 import { workingHours } from './working-hours';
-import { CalendarDate, Time } from '@internationalized/date';
+import { CalendarDate, parseTime, Time } from '@internationalized/date';
 import { expect } from '@playwright/test';
 import { Day } from './enums/days';
 import { getSlots } from './get-slots';
@@ -8,36 +8,36 @@ import type { Slot, Reservation } from './types';
 
 describe('Working hours functions', () => {
 	const monday: Slot[] = [
-		{ startingTime: '14:00:00', available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: '14:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '15:00:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '15:30:00', available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: '16:00:00', available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: '16:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '17:00:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '17:30:00', available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: '18:00:00', available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: '18:30:00', available: true, hasEnoughFollowingSlots: true }
+		{ startingTime: parseTime('14:00:00'), available: false, hasEnoughFollowingSlots: undefined },
+		{ startingTime: parseTime('14:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('15:00:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('15:30:00'), available: false, hasEnoughFollowingSlots: undefined },
+		{ startingTime: parseTime('16:00:00'), available: false, hasEnoughFollowingSlots: undefined },
+		{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('17:30:00'), available: false, hasEnoughFollowingSlots: undefined },
+		{ startingTime: parseTime('18:00:00'), available: false, hasEnoughFollowingSlots: undefined },
+		{ startingTime: parseTime('18:30:00'), available: true, hasEnoughFollowingSlots: true }
 	];
 
 	const normalDay: Slot[] = [
-		{ startingTime: '09:00:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '09:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '10:00:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '10:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '11:00:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '11:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '12:00:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '12:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '14:00:00', available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: '14:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '15:00:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '15:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '16:00:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '16:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '17:00:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '17:30:00', available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: '18:00:00', available: true, hasEnoughFollowingSlots: true }
+		{ startingTime: parseTime('09:00:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('09:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('10:00:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('10:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('11:00:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('11:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('12:00:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('12:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('14:00:00'), available: false, hasEnoughFollowingSlots: undefined },
+		{ startingTime: parseTime('14:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('15:00:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('15:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('16:00:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('17:30:00'), available: true, hasEnoughFollowingSlots: true },
+		{ startingTime: parseTime('18:00:00'), available: true, hasEnoughFollowingSlots: true }
 	];
 	// Monday
 	it('should disable occupied slots', () => {
@@ -73,7 +73,7 @@ describe('Working hours functions', () => {
 		const monday = new CalendarDate(2022, 1, 3);
 		expect(
 			getSlots(monday, [], 30)?.find(
-				(el) => el.startingTime === workingHours.get(Day.MONDAY)?.[0].end.toString()
+				(el) => el.startingTime === workingHours.get(Day.MONDAY)?.[0].end
 			)
 		).toBe(undefined);
 	});
@@ -114,23 +114,23 @@ describe('Working hours functions', () => {
 		];
 
 		const correctSlots: Slot[] = [
-			{ startingTime: '09:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '09:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '10:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '10:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '11:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '11:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '12:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '12:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '14:00:00', available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: '14:30:00', available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: '15:00:00', available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: '15:30:00', available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: '16:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '16:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '17:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '17:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '18:00:00', available: true, hasEnoughFollowingSlots: true }
+			{ startingTime: parseTime('09:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('09:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('10:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('10:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('11:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('11:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('12:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('12:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('14:00:00'), available: false, hasEnoughFollowingSlots: undefined },
+			{ startingTime: parseTime('14:30:00'), available: false, hasEnoughFollowingSlots: undefined },
+			{ startingTime: parseTime('15:00:00'), available: false, hasEnoughFollowingSlots: undefined },
+			{ startingTime: parseTime('15:30:00'), available: false, hasEnoughFollowingSlots: undefined },
+			{ startingTime: parseTime('16:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('17:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('18:00:00'), available: true, hasEnoughFollowingSlots: true }
 		];
 
 		const slots = getSlots(date, currentReservations, 30);
@@ -150,23 +150,23 @@ describe('Working hours functions', () => {
 		];
 
 		const correctSlots = [
-			{ startingTime: '09:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '09:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '10:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '10:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '11:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '11:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '12:00:00', available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: '12:30:00', available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: '14:00:00', available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: '14:30:00', available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: '15:00:00', available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: '15:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '16:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '16:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '17:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '17:30:00', available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: '18:00:00', available: true, hasEnoughFollowingSlots: false }
+			{ startingTime: parseTime('09:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('09:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('10:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('10:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('11:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('11:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('12:00:00'), available: true, hasEnoughFollowingSlots: false },
+			{ startingTime: parseTime('12:30:00'), available: true, hasEnoughFollowingSlots: false },
+			{ startingTime: parseTime('14:00:00'), available: false, hasEnoughFollowingSlots: undefined },
+			{ startingTime: parseTime('14:30:00'), available: true, hasEnoughFollowingSlots: false },
+			{ startingTime: parseTime('15:00:00'), available: false, hasEnoughFollowingSlots: undefined },
+			{ startingTime: parseTime('15:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('16:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('17:30:00'), available: true, hasEnoughFollowingSlots: false },
+			{ startingTime: parseTime('18:00:00'), available: true, hasEnoughFollowingSlots: false }
 		];
 
 		const slots = getSlots(date, currentReservations, 80);
@@ -179,28 +179,26 @@ describe('Working hours functions', () => {
 		const date = new CalendarDate(2022, 2, 3);
 
 		const correctSlots = [
-			{ startingTime: '09:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '09:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '10:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '10:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '11:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '11:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '12:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '12:30:00', available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: '14:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '14:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '15:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '15:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '16:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '16:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '17:00:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '17:30:00', available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: '18:00:00', available: true, hasEnoughFollowingSlots: false }
+			{ startingTime: parseTime('09:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('09:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('10:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('10:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('11:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('11:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('12:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('12:30:00'), available: true, hasEnoughFollowingSlots: false },
+			{ startingTime: parseTime('14:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('14:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('15:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('15:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('16:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('17:30:00'), available: true, hasEnoughFollowingSlots: true },
+			{ startingTime: parseTime('18:00:00'), available: true, hasEnoughFollowingSlots: false }
 		];
 
 		const slots = getSlots(date, [], 45);
-
-		console.log(slots);
 
 		expect(slots?.length).toEqual(correctSlots.length);
 		expect(slots?.every((el, index) => equalSlot(el, correctSlots[index], index))).toBe(true);
@@ -208,7 +206,7 @@ describe('Working hours functions', () => {
 });
 
 function equalSlot(item1: Slot, item2: Slot, index: number): boolean {
-	if (item1.startingTime === item2.startingTime) {
+	if (item1.startingTime.compare(item2.startingTime) === 0) {
 		if (item1.available === item2.available) {
 			if (item1.hasEnoughFollowingSlots === item2.hasEnoughFollowingSlots) {
 				return true;

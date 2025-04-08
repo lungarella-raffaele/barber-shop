@@ -4,7 +4,7 @@ import type { Time } from '@internationalized/date';
  * A slot can correspond to a single or multiple slots
  */
 export type Slot = {
-	startingTime: string;
+	startingTime: Time;
 	available: boolean;
 	hasEnoughFollowingSlots: boolean | undefined;
 };
