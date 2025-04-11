@@ -1,218 +1,282 @@
 import { describe, it } from 'vitest';
 import { workingHours } from './working-hours';
-import { CalendarDate, parseTime, Time } from '@internationalized/date';
+import { CalendarDate, parseDate, parseTime, Time } from '@internationalized/date';
 import { expect } from '@playwright/test';
 import { Day } from './enums/days';
 import { getSlots } from './get-slots';
 import type { Slot, Reservation } from './types';
+import { monday, normalDay, saturday } from './mocks';
+import { isEqualTime } from './utils';
 
-describe('Working hours functions', () => {
-	const monday: Slot[] = [
-		{ startingTime: parseTime('14:00:00'), available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: parseTime('14:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('15:00:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('15:30:00'), available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: parseTime('16:00:00'), available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('17:30:00'), available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: parseTime('18:00:00'), available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: parseTime('18:30:00'), available: true, hasEnoughFollowingSlots: true }
-	];
+describe('Get slots', () => {
+	describe('should disable occupied slots', () => {
+		it('monday', () => {
+			const date = new CalendarDate(2022, 1, 3);
+			const currentReservations: Reservation[] = [
+				{
+					date: parseDate('2022-01-03'),
+					start: parseTime('14:00:00'),
+					duration: new Time(0, 30)
+				},
+				{
+					date: parseDate('2022-01-03'),
+					start: parseTime('15:30:00'),
+					duration: new Time(0, 30)
+				},
+				{
+					date: parseDate('2022-01-03'),
+					start: parseTime('16:00:00'),
+					duration: new Time(0, 30)
+				}
+			];
 
-	const normalDay: Slot[] = [
-		{ startingTime: parseTime('09:00:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('09:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('10:00:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('10:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('11:00:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('11:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('12:00:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('12:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('14:00:00'), available: false, hasEnoughFollowingSlots: undefined },
-		{ startingTime: parseTime('14:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('15:00:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('15:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('16:00:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('17:30:00'), available: true, hasEnoughFollowingSlots: true },
-		{ startingTime: parseTime('18:00:00'), available: true, hasEnoughFollowingSlots: true }
-	];
-	// Monday
-	it('should disable occupied slots', () => {
-		const date = new CalendarDate(2022, 1, 3);
-		const currentReservations: Reservation[] = [
-			{
-				date: '2022-01-03',
-				startingTime: '14:00:00',
-				duration: new Time(0, 30)
-			},
-			{
-				date: '2022-01-03',
-				startingTime: '15:30:00',
-				duration: new Time(0, 30)
-			},
-			{
-				date: '2022-01-03',
-				startingTime: '16:00:00',
-				duration: new Time(0, 30)
-			},
-			{
-				date: '2022-01-03',
-				startingTime: '17:30:00',
-				duration: new Time(0, 45)
-			}
-		];
+			const slots = getSlots(date, currentReservations);
+			expect(slots?.every((el, index) => equalSlot(el, monday[index], index))).toBe(true);
+		});
 
-		const slots = getSlots(date, currentReservations, 30);
-		expect(slots?.every((el, index) => equalSlot(el, monday[index], index))).toBe(true);
+		it('normal day', () => {
+			const date = new CalendarDate(2022, 1, 4);
+			const currentReservations: Reservation[] = [
+				{
+					date: parseDate('2022-02-03'),
+					start: parseTime('09:00:00'),
+					duration: new Time(0, 30)
+				},
+				{
+					date: parseDate('2022-02-03'),
+					start: parseTime('11:30:00'),
+					duration: new Time(0, 30)
+				},
+				{
+					date: parseDate('2022-02-03'),
+					start: parseTime('15:30:00'),
+					duration: new Time(0, 30)
+				},
+				{
+					date: parseDate('2022-02-03'),
+					start: parseTime('16:00:00'),
+					duration: new Time(0, 30)
+				}
+			];
+
+			const slots = getSlots(date, currentReservations);
+			expect(slots?.every((el, index) => equalSlot(el, normalDay[index], index))).toBe(true);
+		});
+		it('saturday', () => {
+			const date = new CalendarDate(2022, 1, 8);
+			const currentReservations: Reservation[] = [
+				{
+					date: parseDate('2022-07-03'),
+					start: parseTime('11:30:00'),
+					duration: new Time(0, 30)
+				},
+				{
+					date: parseDate('2022-07-03'),
+					start: parseTime('13:00:00'),
+					duration: new Time(0, 30)
+				},
+				{
+					date: parseDate('2022-07-03'),
+					start: parseTime('13:30:00'),
+					duration: new Time(0, 30)
+				}
+			];
+
+			const slots = getSlots(date, currentReservations);
+			expect(slots?.every((el, index) => equalSlot(el, saturday[index], index))).toBe(true);
+		});
 	});
 
-	it('should not contain the end startingTime as a slot', () => {
-		const monday = new CalendarDate(2022, 1, 3);
-		expect(
-			getSlots(monday, [], 30)?.find(
-				(el) => el.startingTime === workingHours.get(Day.MONDAY)?.[0].end
-			)
-		).toBe(undefined);
+	describe('should contain the correct number of slots', () => {
+		it('monday', () => {
+			const date = new CalendarDate(2022, 1, 3);
+
+			expect(getSlots(date, [])?.length).toEqual(monday.length);
+		});
+		it('normal day', () => {
+			const date = new CalendarDate(2022, 1, 4);
+
+			expect(getSlots(date, [])?.length).toEqual(normalDay.length);
+		});
+		it('saturday', () => {
+			const date = new CalendarDate(2022, 1, 8);
+			expect(getSlots(date, [])?.length).toEqual(saturday.length);
+		});
 	});
 
-	it('should create the correct number of slots', () => {
-		const monday = new CalendarDate(2022, 1, 3);
-		const otherDay = new CalendarDate(2022, 1, 4);
-		const saturday = new CalendarDate(2022, 1, 8);
-
-		expect(getSlots(monday, [], 30)?.length).toEqual(10);
-		expect(getSlots(otherDay, [], 30)?.length).toEqual(17);
-		expect(getSlots(saturday, [], 30)?.length).toEqual(10);
-	});
-
-	// Tuesday Wednesday Thursday Friday
-	it('should work correctly for normal days', () => {
-		const date = new CalendarDate(2022, 2, 3);
-		const currentReservations: Reservation[] = [
-			{
-				date: '2022-02-03',
-				startingTime: '14:00:00',
-				duration: new Time(0, 30)
-			}
-		];
-
-		const slots = getSlots(date, currentReservations, 30);
-		expect(slots?.every((el, index) => equalSlot(el, normalDay[index], index))).toBe(true);
+	describe('should not have the end of an interval as a slot', () => {
+		it('monday', () => {
+			const monday = new CalendarDate(2022, 1, 3);
+			expect(
+				getSlots(monday, [])?.find(
+					(el) => el.start === workingHours.get(Day.MONDAY)?.[0].end
+				)
+			).toBe(undefined);
+		});
+		it('normal day', () => {
+			const monday = new CalendarDate(2022, 2, 3);
+			expect(
+				getSlots(monday, [])?.find(
+					(el) => el.start === workingHours.get(Day.THURSDAY)?.[0].end
+				)
+			).toBe(undefined);
+		});
+		it('saturday', () => {
+			const monday = new CalendarDate(2022, 1, 3);
+			expect(
+				getSlots(monday, [])?.find(
+					(el) => el.start === workingHours.get(Day.SATURDAY)?.[0].end
+				)
+			).toBe(undefined);
+		});
 	});
 
 	it('should work for long duration services', () => {
 		const date = new CalendarDate(2022, 2, 3);
 		const currentReservations: Reservation[] = [
 			{
-				date: '2022-02-03',
-				startingTime: '14:00:00',
+				date: parseDate('2022-02-03'),
+				start: parseTime('09:00:00'),
+				duration: new Time(0, 45)
+			},
+			{
+				date: parseDate('2022-02-03'),
+				start: parseTime('14:00:00'),
 				duration: new Time(2, 0)
+			},
+			{
+				date: parseDate('2022-02-03'),
+				start: parseTime('17:00:00'),
+				duration: new Time(1, 30)
 			}
 		];
 
 		const correctSlots: Slot[] = [
-			{ startingTime: parseTime('09:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('09:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('10:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('10:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('11:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('11:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('12:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('12:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('14:00:00'), available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: parseTime('14:30:00'), available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: parseTime('15:00:00'), available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: parseTime('15:30:00'), available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: parseTime('16:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('17:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('18:00:00'), available: true, hasEnoughFollowingSlots: true }
+			{ start: parseTime('09:00:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('09:30:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('10:00:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('10:30:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('11:00:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('11:30:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('12:00:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('12:30:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('14:00:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('14:30:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('15:00:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('15:30:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('16:00:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('16:30:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('17:00:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('17:30:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('18:00:00'), available: false, invalid: false, past: false }
 		];
 
-		const slots = getSlots(date, currentReservations, 30);
+		const slots = getSlots(date, currentReservations);
 		expect(slots?.length).toEqual(correctSlots.length);
 		expect(slots?.every((el, index) => equalSlot(el, correctSlots[index], index))).toBe(true);
 	});
 
-	it('should handle long duration services correctly', () => {
-		const date = new CalendarDate(2022, 2, 3);
-		const currentReservations: Reservation[] = [
-			{
-				date: '2022-02-03',
-				startingTime: '14:00:00',
-				duration: new Time(0, 30)
-			},
-			{ date: '2022-02-03', startingTime: '15:00:00', duration: new Time(0, 30) }
-		];
+	describe('should handle invalid slots correctly', () => {
+		it('first scenario', () => {
+			const date = new CalendarDate(2022, 2, 3);
+			const currentReservations: Reservation[] = [
+				{
+					date: parseDate('2022-02-03'),
+					start: parseTime('09:00:00'),
+					duration: new Time(0, 30)
+				},
+				{
+					date: parseDate('2022-02-03'),
+					start: parseTime('10:00:00'),
+					duration: new Time(0, 30)
+				},
+				{
+					date: parseDate('2022-02-03'),
+					start: parseTime('15:00:00'),
+					duration: new Time(2, 0)
+				}
+			];
 
-		const correctSlots = [
-			{ startingTime: parseTime('09:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('09:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('10:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('10:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('11:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('11:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('12:00:00'), available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: parseTime('12:30:00'), available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: parseTime('14:00:00'), available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: parseTime('14:30:00'), available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: parseTime('15:00:00'), available: false, hasEnoughFollowingSlots: undefined },
-			{ startingTime: parseTime('15:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('16:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('17:30:00'), available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: parseTime('18:00:00'), available: true, hasEnoughFollowingSlots: false }
-		];
+			const correctSlots: Slot[] = [
+				{ start: parseTime('09:00:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('09:30:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('10:00:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('10:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('11:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('11:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('12:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('12:30:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('14:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('14:30:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('15:00:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('15:30:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('16:00:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('16:30:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('17:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('17:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('18:00:00'), available: true, invalid: true, past: false }
+			];
 
-		const slots = getSlots(date, currentReservations, 80);
+			const slots = getSlots(date, currentReservations, new Time(0, 45));
 
-		expect(slots?.length).toEqual(correctSlots.length);
-		expect(slots?.every((el, index) => equalSlot(el, correctSlots[index], index))).toBe(true);
-	});
+			expect(slots?.length).toEqual(correctSlots.length);
+			expect(slots?.every((el, index) => equalSlot(el, correctSlots[index], index))).toBe(
+				true
+			);
+		});
 
-	it('should handle edge cases correctly', () => {
-		const date = new CalendarDate(2022, 2, 3);
+		it('second scenario', () => {
+			const date = new CalendarDate(2022, 2, 3);
 
-		const correctSlots = [
-			{ startingTime: parseTime('09:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('09:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('10:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('10:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('11:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('11:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('12:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('12:30:00'), available: true, hasEnoughFollowingSlots: false },
-			{ startingTime: parseTime('14:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('14:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('15:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('15:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('16:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('16:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('17:00:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('17:30:00'), available: true, hasEnoughFollowingSlots: true },
-			{ startingTime: parseTime('18:00:00'), available: true, hasEnoughFollowingSlots: false }
-		];
+			const correctSlots: Slot[] = [
+				{ start: parseTime('09:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('09:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('10:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('10:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('11:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('11:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('12:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('12:30:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('14:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('14:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('15:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('15:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('16:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('16:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('17:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('17:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('18:00:00'), available: true, invalid: true, past: false }
+			];
 
-		const slots = getSlots(date, [], 45);
+			const slots = getSlots(date, [], new Time(0, 45));
 
-		expect(slots?.length).toEqual(correctSlots.length);
-		expect(slots?.every((el, index) => equalSlot(el, correctSlots[index], index))).toBe(true);
+			expect(slots?.length).toEqual(correctSlots.length);
+			expect(slots?.every((el, index) => equalSlot(el, correctSlots[index], index))).toBe(
+				true
+			);
+		});
 	});
 });
 
 function equalSlot(item1: Slot, item2: Slot, index: number): boolean {
-	if (item1.startingTime.compare(item2.startingTime) === 0) {
+	if (isEqualTime(item1.start, item2.start)) {
 		if (item1.available === item2.available) {
-			if (item1.hasEnoughFollowingSlots === item2.hasEnoughFollowingSlots) {
+			if (item1.invalid === item2.invalid) {
 				return true;
 			}
 		}
 	}
 	console.error(`The element at position ${index} is not equal!`);
 	return false;
+}
+
+function printSlots(slots: Slot[]) {
+	slots.forEach((slot) => {
+		const hour = String(slot.start.hour).padStart(2, '0');
+		const minute = String(slot.start.minute).padStart(2, '0');
+		const available = String(slot.available).padEnd(5, ' ');
+		const invalid = String(slot.invalid).padEnd(5, ' ');
+
+		console.log(`Hour: ${hour}:${minute}  |  Available: ${available}  |  Invalid: ${invalid}`);
+	});
 }

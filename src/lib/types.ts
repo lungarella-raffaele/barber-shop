@@ -1,12 +1,13 @@
-import type { Time } from '@internationalized/date';
+import type { DateValue, Time } from '@internationalized/date';
 
 /**
  * A slot can correspond to a single or multiple slots
  */
 export type Slot = {
-	startingTime: Time;
+	start: Time;
 	available: boolean;
-	hasEnoughFollowingSlots: boolean | undefined;
+	invalid: boolean;
+	past: boolean;
 };
 export type BusinessHours = {
 	start: Time;
@@ -14,7 +15,7 @@ export type BusinessHours = {
 };
 
 export type Reservation = {
-	date: string;
-	startingTime: string;
+	date: DateValue;
+	start: Time;
 	duration: Time;
 };

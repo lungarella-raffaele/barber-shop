@@ -13,6 +13,7 @@
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
 	import { getSlots } from '$lib/get-slots';
 	import { minutesToTime } from '$lib/utils';
+	import { parseDate, parseTime } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import { fly } from 'svelte/transition';
@@ -88,12 +89,14 @@
 		}
 		return getSlots(
 			reservationManager.date,
-			data.currentReservations.map((el) => ({
-				date: el.date,
-				startingTime: el.startingTime,
-				duration: minutesToTime(el.duration)
-			})),
-			service?.duration
+			data.currentReservations
+				.filter((el) => el.date === reservationManager.date?.toString())
+				.map((el) => ({
+					date: parseDate(el.date),
+					start: parseTime(el.startingTime),
+					duration: minutesToTime(el.duration)
+				})),
+			service?.duration ? minutesToTime(service.duration) : undefined
 		);
 	});
 </script>
