@@ -34,13 +34,15 @@
 {#snippet SlotEntry(s: Slot)}
 	<ToggleGroup.Item
 		class="-destructive flex w-full justify-between border-2 align-middle data-[disabled]:border-destructive data-[state=on]:bg-primary data-[state=on]:text-background"
-		value={s.startingTime.toString()}
-		disabled={!s.available || !s.hasEnoughFollowingSlots}
+		value={s.start.toString()}
+		disabled={!s.available || s.invalid || s.past}
 	>
-		<Label for={s.startingTime.toString()}>{formatTime(s.startingTime)}</Label>
+		<Label for={s.start.toString()}>{formatTime(s.start)}</Label>
 		{#if !s.available}
 			<div class="flex items-center">Riservato<CalendarX class="ml-1" /></div>
-		{:else if !s.hasEnoughFollowingSlots}
+		{:else if s.past}
+			<div class="flex items-center">Scaduto<ClockAlert class="ml-1" /></div>
+		{:else if s.invalid}
 			<div class="flex items-center">Tempo insufficiente<ClockAlert class="ml-1" /></div>
 		{/if}
 	</ToggleGroup.Item>

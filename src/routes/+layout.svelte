@@ -29,7 +29,7 @@
 <ModeWatcher />
 <Toaster richColors position="top-center" />
 
-<Sidebar.Provider onOpenChange={() => console.log('daje')}>
+<Sidebar.Provider>
 	<AppSidebar {isLogged} {isAdmin} />
 	<main class="relative flex h-screen w-full flex-col">
 		<div class="sticky top-0 z-50 flex items-center justify-between border-b bg-background p-3">

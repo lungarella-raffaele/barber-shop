@@ -103,3 +103,7 @@ export function minutesToTime(totalMinutes: number) {
 	const minutes = totalMinutes % 60;
 	return new Time(hours, minutes);
 }
+
+export function isEqualTime(t1: Time, t2: Time) {
+	return t1.compare(t2) === 0;
+}
