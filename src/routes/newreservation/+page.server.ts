@@ -1,19 +1,19 @@
-import type { Actions, PageServerLoad } from './$types.js';
-import { superValidate } from 'sveltekit-superforms';
+import { BASE_URL } from '$env/static/private';
+import { LOCK_EXPIRATION_MINUTES } from '$lib/constants.js';
+import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
 import { reservation } from '$lib/schemas/reservation.js';
-import { zod } from 'sveltekit-superforms/adapters';
-import { fail } from '@sveltejs/kit';
+import { getClosures } from '$lib/server/backend/closures-service.js';
 import {
-	checkAvailability,
-	getReservations as getReservations,
+	deleteReservation,
+	getReservations,
 	insertReservation
 } from '$lib/server/backend/reservation.js';
 import { getAllServices } from '$lib/server/backend/services.js';
 import { logger } from '$lib/server/logger.js';
-import { getClosures } from '$lib/server/backend/closures-service.js';
-import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
-import { BASE_URL } from '$env/static/private';
-import { LOCK_EXPIRATION_MINUTES } from '$lib/constants.js';
+import { fail } from '@sveltejs/kit';
+import { superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
+import type { Actions, PageServerLoad } from './$types.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -47,13 +47,6 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!checkAvailability(date, hour)) {
-			logger.info('Già prenotato');
-			return fail(500, {
-				message: 'Qualcuno ha prenotato questo slot prima di te'
-			});
-		}
-
 		if (user) {
 			// Logged in user
 			logger.info('Creating reservation with existing user');
@@ -71,13 +64,17 @@ export const actions: Actions = {
 				expiresAt
 			});
 
-			if (response) {
-				return {
-					newReservation: response
-				};
-			} else {
-				return fail(500);
+			if (!response.ok) {
+				if (response.error === 'conflict') {
+					return fail(409);
+				} else {
+					return fail(500);
+				}
 			}
+
+			return {
+				newReservation: response.value
+			};
 		} else if (name && email) {
 			// No auth user
 			const response = await insertReservation({
@@ -90,23 +87,27 @@ export const actions: Actions = {
 				expiresAt: new Date(Date.now() + LOCK_EXPIRATION_MINUTES),
 				pending: true
 			});
-			if (!response) {
+			if (!response.ok) {
+				if (response.error === 'conflict') {
+					return fail(409);
+				}
 				return fail(500);
 			}
 
 			const { error } = await newReservationEmail(
 				name,
 				email,
-				`${BASE_URL}?reservation=${response.id}`
+				`${BASE_URL}?reservation=${response.value.id}`
 			);
 
 			if (error) {
+				deleteReservation(response.value.id);
 				return fail(500);
 			}
 
 			return {
 				pending: true,
-				newReservation: response
+				newReservation: response.value
 			};
 		} else {
 			return fail(500);

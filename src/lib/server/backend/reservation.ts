@@ -1,10 +1,16 @@
 import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
 import type { Reservation } from '$lib/server/db/schema';
-import { eq, and, count, lt, gt, sql } from 'drizzle-orm';
+import * as table from '$lib/server/db/schema';
+import { and, count, eq, gt, lt, sql } from 'drizzle-orm';
 import { logger } from '../logger';
+import type { Result } from './result.type';
 
-export async function insertReservation(reservation: Reservation): Promise<Reservation | null> {
+export async function insertReservation(reservation: Reservation): Promise<Result<Reservation>> {
+	if (!checkAvailability(reservation.date, reservation.hour)) {
+		logger.info('Già prenotato');
+		return { ok: false, error: 'conflict' };
+	}
+
 	const queryRes = await db
 		.insert(table.reservation)
 		.values({ ...reservation })
@@ -13,10 +19,10 @@ export async function insertReservation(reservation: Reservation): Promise<Reser
 	const res = queryRes[0];
 	if (!res) {
 		logger.error('Could not insert a reservation');
-		return null;
+		return { ok: false, error: 'db_error' };
 	}
 	logger.info('Reservation created successfully');
-	return res;
+	return { ok: true, value: res };
 }
 
 export async function deleteReservation(id: string) {
