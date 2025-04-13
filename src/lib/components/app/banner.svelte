@@ -3,6 +3,6 @@
 	const { message } = $props();
 </script>
 
-<Alert.Root class="mb-3 rounded-[5px] bg-blue-500 p-2 text-white">
+<Alert.Root class="mb-3 rounded-[5px] bg-blue-500 p-2">
 	<Alert.Description>{message}</Alert.Description>
 </Alert.Root>

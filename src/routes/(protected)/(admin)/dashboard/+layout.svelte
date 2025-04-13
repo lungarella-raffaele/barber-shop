@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index';
 	import { page } from '$app/state';
+	import { Button } from '$lib/components/ui/button/index';
 
 	const { children } = $props();
 

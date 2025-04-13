@@ -28,7 +28,7 @@
 			<div class="flex items-center">
 				<RadioGroup.Item value={service.id} id={service.id} class="mr-4" />
 				<div class="flex-1 text-left">
-					<div class="text-lg font-semibold text-white">{service.name}</div>
+					<div class="text-lg font-semibold">{service.name}</div>
 					<div class="text-sm text-gray-400">{service.duration} minuti</div>
 				</div>
 			</div>
