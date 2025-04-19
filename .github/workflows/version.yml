@@ -1,0 +1,22 @@
+name: Bump Version
+on:
+    push:
+        branches: [main]
+jobs:
+    bump-version:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Setup Git
+              run: |
+                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
+                  git config --local user.name "github-actions[bot]"
+
+            - name: Bump version using built-in npm commands
+              run: |
+                  npm version patch -m "Bump version to %s [skip ci]"
+                  git push
