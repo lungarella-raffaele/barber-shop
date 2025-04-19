@@ -2,13 +2,15 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import Logo from '$lib/components/app/logo.svelte';
+	import ReservationConfirmed from '$lib/components/app/reservationconfirmed.svelte';
+	import { Check } from '$lib/components/icons/index';
+	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { Progress } from '$lib/components/ui/progress';
+	import Timer from '$lib/composables/timer.svelte';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 	import type { PageProps } from './$types';
-	import ConfirmReservation from './confirmreservation.svelte';
-	import Timer from './timer.svelte';
 
 	const { data }: PageProps = $props();
 
@@ -47,7 +49,7 @@
 </script>
 
 {#if confirmReservation && data.reservation}
-	<ConfirmReservation
+	<ReservationConfirmed
 		reservation={data.reservation}
 		reservationConfirmed={data.reservationConfirmed}
 	/>
@@ -77,9 +79,20 @@
 			</Card.Root>
 		{/if}
 
-		{#if confirmUser}
+		{#if confirmUser && data.userConfirmed}
 			<!-- TODO -->
-			<div class="mb-4 text-xl font-bold">BENVENUTO</div>
+
+			<Alert.Root class="w-400 background-primary-muted my-10 text-primary" variant="success">
+				<Check class="size-4" />
+				<Alert.Title>Congratulazioni!</Alert.Title>
+				<Alert.Description>
+					Hai correttamente verificato la tua email, benvenuto!
+				</Alert.Description>
+			</Alert.Root>
+		{:else if confirmUser && !data.userConfirmed}
+			<div class="mb-4 text-xl font-bold">
+				C'è stato un problema nella verifica della tua utenza
+			</div>
 		{/if}
 
 		<Button href="/newreservation">Prenota</Button>

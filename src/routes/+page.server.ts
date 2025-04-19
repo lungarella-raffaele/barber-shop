@@ -1,7 +1,8 @@
 import { getReservationByID, updateReservationExpiration } from '$lib/server/backend/reservation';
+import { getUserByID, patchPendingUser } from '$lib/server/backend/user';
+import { expired } from '$lib/utils';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { expired } from '$lib/utils';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const confirmReservation = url.searchParams.get('reservation');
@@ -23,15 +24,21 @@ export const load: PageServerLoad = async ({ url }) => {
 			reservation: available ? reservation : null
 		};
 	} else if (confirmUser) {
-		// const reservation = await getReservationByID(reservationID);
-		// if (!reservation || !reservation.pending) {
-		// 	redirect(307, '/');
-		// }
-		// const updated = await updateReservation(reservation.id);
-		// return {
-		// 	reservationConfirmed: true,
-		// 	reservation: updated
-		// };
+		const user = await getUserByID(confirmUser);
+		if (!user?.pending) {
+			redirect(307, '/');
+		}
+
+		if (user) {
+			const response = await patchPendingUser(user.id);
+			if (response) {
+				return {
+					userConfirmed: true
+				};
+			}
+		} else {
+			return { userConfirmed: false };
+		}
 	} else if (pendingReservation) {
 		const reservation = await getReservationByID(pendingReservation);
 
