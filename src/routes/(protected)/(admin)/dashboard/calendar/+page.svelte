@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { CalendarDate } from '@internationalized/date';
-	import { RangeCalendar } from '$lib/components/ui/range-calendar/index.js';
-	import { Button } from '$lib/components/ui/button/index';
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import { CirclePlus, Trash } from '$lib/components/icons/index';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+	import { Button } from '$lib/components/ui/button/index';
+	import { RangeCalendar } from '$lib/components/ui/range-calendar/index.js';
+	import { formatDateRange } from '$lib/utils';
+	import { CalendarDate } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
-	import type { PageProps } from './$types';
-	import { formatDateRange } from '$lib/utils';
-	import { CirclePlus, Trash } from '$lib/components/icons/index';
 	import { slide } from 'svelte/transition';
-	import { invalidateAll } from '$app/navigation';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
 
@@ -56,20 +56,23 @@
 
 <div class="mb-4 rounded-md border p-4 shadow">
 	{#if data.periods}
-		Periodi di chiusura inseriti:
-		{#each data.periods as p (p.id)}
-			<div class="my-4 flex items-center justify-between rounded border p-2">
-				<span class="ml-2 font-bold">{formatDateRange(p.start, p.end)}</span>
+		{#if data.periods.length > 0}
+			<h2 class="my-2 text-lg font-bold">Periodi di chiusura inseriti:</h2>
 
-				<Button
-					type="button"
-					variant="ghost"
-					class="text-destructive"
-					onclick={() => deleteAction(p.id)}
-					><Trash />
-				</Button>
-			</div>
-		{/each}
+			{#each data.periods as p (p.id)}
+				<div
+					class="my-4 flex items-center justify-between rounded rounded-lg border bg-muted p-2"
+				>
+					<span class="ml-2 font-bold">{formatDateRange(p.start, p.end)}</span>
+
+					<Button type="button" variant="destructive" onclick={() => deleteAction(p.id)}
+						><Trash />
+					</Button>
+				</div>
+			{/each}
+		{:else}
+			<h2 class="my-4 text-center text-lg font-bold">Nessun periodo di chiusura inserito</h2>
+		{/if}
 
 		{#if !isAddingPeriod}
 			<Button class="w-full" variant="icon" onclick={toggleAddPeriod}><CirclePlus /></Button>

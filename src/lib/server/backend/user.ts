@@ -1,17 +1,42 @@
-import { db } from '$lib/server/db';
 import * as auth from '$lib/server/auth';
+import { db } from '$lib/server/db';
+import * as table from '$lib/server/db/schema';
 import { type RequestEvent } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
-import * as table from '$lib/server/db/schema';
+import { logger } from '../logger';
 import { deleteAllReservationsOfUser } from './reservation';
 
 export async function insertUser(user: table.User) {
-	await db.insert(table.user).values({ ...user, email: user.email.toLowerCase() });
+	return await db
+		.insert(table.user)
+		.values({ ...user, email: user.email.toLowerCase() })
+		.returning()
+		.get();
 }
 
 export async function getUser(email: string) {
 	const lowercaseEmail = email.toLowerCase();
-	return await db.select().from(table.user).where(eq(table.user.email, lowercaseEmail));
+	return await db.select().from(table.user).where(eq(table.user.email, lowercaseEmail)).get();
+}
+
+export async function patchPendingUser(id: string) {
+	return await db
+		.update(table.user)
+		.set({
+			pending: false
+		})
+		.where(eq(table.user.id, id))
+		.returning()
+		.get();
+}
+
+export async function getUserByID(id: string) {
+	try {
+		const user = await db.select().from(table.user).where(eq(table.user.id, id));
+		return user[0] ?? null;
+	} catch (err) {
+		logger.error(err);
+	}
 }
 
 export async function insertSession(session: table.Session) {

@@ -1,11 +1,13 @@
-import { redirect } from '@sveltejs/kit';
-import { hash } from 'argon2';
-import { encodeBase32LowerCase } from '@oslojs/encoding';
-import type { Actions, PageServerLoad } from './$types';
-import { message, superValidate } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
+import { BASE_URL } from '$env/static/private';
+import { verifyEmail } from '$lib/emails/verify-email';
 import { signup } from '$lib/schemas/signup';
 import { getUser, insertUser } from '$lib/server/backend/user';
+import { encodeBase32LowerCase } from '@oslojs/encoding';
+import { redirect } from '@sveltejs/kit';
+import { hash } from 'argon2';
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -28,9 +30,8 @@ export const actions: Actions = {
 			});
 		}
 
-		const results = await getUser(form.data.email);
+		const existingUser = await getUser(form.data.email);
 
-		const existingUser = results.at(0);
 		if (existingUser) {
 			return message(form, {
 				text: `L'email che hai inserito è gia un uso. Prova con un altro indirizzo email.`,
@@ -49,7 +50,7 @@ export const actions: Actions = {
 		});
 
 		try {
-			await insertUser({
+			const user = await insertUser({
 				id: userID,
 				email,
 				passwordHash,
@@ -58,6 +59,8 @@ export const actions: Actions = {
 				isAdmin: false,
 				pending: true
 			});
+
+			verifyEmail(name, email, `${BASE_URL}?user=${user.id}`);
 
 			return message(form, { text: `Abbiamo inviato una mail di verifica a ${email}` });
 

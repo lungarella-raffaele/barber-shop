@@ -20,8 +20,8 @@
 			name: 'Calendario'
 		},
 		{
-			href: 'banner',
-			name: 'Banner'
+			href: 'general',
+			name: 'Generali'
 		}
 	];
 

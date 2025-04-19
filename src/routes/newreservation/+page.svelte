@@ -16,7 +16,6 @@
 	import { parseDate, parseTime } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
-	import { fly } from 'svelte/transition';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
@@ -198,20 +197,7 @@
 				<Card.Content class="space-y-2">
 					<DatePicker bind:value={reservationManager.date} closures={data.closures} />
 
-					<!-- The grid is used to make the elements live in the same place thus avoiding glithes when animating -->
-					<div class="grid overflow-hidden">
-						{#if reservationManager.date}
-							{#key reservationManager.date}
-								<div
-									class="col-span-full row-span-full"
-									in:fly={{ x: 150, delay: 50 }}
-									out:fly={{ x: -150 }}
-								>
-									<SlotPicker {availableSlots} />
-								</div>
-							{/key}
-						{/if}
-					</div>
+					<SlotPicker {availableSlots} />
 				</Card.Content>
 				<Card.Footer class="mt-8 items-center justify-between">
 					<Button

@@ -1,11 +1,11 @@
-import { verify } from 'argon2';
-import { fail, redirect } from '@sveltejs/kit';
+import { login } from '$lib/schemas/login';
 import * as auth from '$lib/server/auth';
-import type { Actions, PageServerLoad } from './$types';
+import { getUser } from '$lib/server/backend/user';
+import { fail, redirect } from '@sveltejs/kit';
+import { verify } from 'argon2';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { login } from '$lib/schemas/login';
-import { getUser } from '$lib/server/backend/user';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -28,9 +28,8 @@ export const actions: Actions = {
 			});
 		}
 
-		const results = await getUser(form.data.email);
+		const existingUser = await getUser(form.data.email);
 
-		const existingUser = results.at(0);
 		if (!existingUser || existingUser.pending) {
 			return fail(400, {
 				message: 'Email o password errati',

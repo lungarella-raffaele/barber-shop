@@ -107,3 +107,16 @@ export function minutesToTime(totalMinutes: number) {
 export function isEqualTime(t1: Time, t2: Time) {
 	return t1.compare(t2) === 0;
 }
+
+export function getString(data: FormData, key: string): string {
+	return data.get(key)?.toString() ?? '';
+}
+
+export function getNumber(data: FormData, key: string): number {
+	const val = Number(data.get(key));
+	return isNaN(val) ? 0 : val;
+}
+
+export function getBoolean(data: FormData, key: string): boolean {
+	return data.get(key) === 'on'; // or 'true' depending on form
+}

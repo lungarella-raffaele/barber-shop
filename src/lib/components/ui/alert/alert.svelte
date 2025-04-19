@@ -7,7 +7,8 @@
 			variant: {
 				default: 'bg-background text-foreground',
 				destructive:
-					'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive'
+					'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
+				success: 'border-primary/50 text-primary dark:border-primary [&>svg]:text-primary'
 			}
 		},
 		defaultVariants: {
@@ -19,9 +20,9 @@
 </script>
 
 <script lang="ts">
-	import type { HTMLAttributes } from 'svelte/elements';
-	import type { WithElementRef } from 'bits-ui';
 	import { cn } from '$lib/utils.js';
+	import type { WithElementRef } from 'bits-ui';
+	import type { HTMLAttributes } from 'svelte/elements';
 
 	let {
 		ref = $bindable(null),

@@ -4,6 +4,7 @@
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
 	import type { Slot } from '$lib/types';
 	import { formatDate, formatTime } from '$lib/utils';
+	import { fly } from 'svelte/transition';
 	import { CalendarX, ClockAlert } from '../icons';
 	import Label from '../ui/label/label.svelte';
 
@@ -12,24 +13,44 @@
 	const { availableSlots }: { availableSlots: Slot[] } = $props();
 </script>
 
-<ScrollArea
-	type="always"
-	class="{availableSlots.length > 0 ? 'h-[300px]' : ''} rounded-md border p-4"
->
-	<ToggleGroup.Root type="single" class="flex flex-col" bind:value={reservationManager.slot}>
-		{#if availableSlots.length > 0}
-			{#each availableSlots as s (s)}
-				{@render SlotEntry(s)}
-			{/each}
-		{:else if reservationManager.date}
-			<h2 class="text-lg font-bold">
-				Nessun orario disponibile per {formatDate(reservationManager.date.toString())}
-			</h2>
-		{:else}
-			Nessun orario disponibile
-		{/if}
-	</ToggleGroup.Root>
-</ScrollArea>
+{#if reservationManager.date}
+	<!-- The grid is used to make the elements live in the same place thus avoiding glithes when animating -->
+	<h2 class="font-semibold leading-none">Orario</h2>
+	<p class="text-sm text-muted-foreground">Seleziona un orario</p>
+
+	{#if availableSlots.length > 0}
+		<div class="grid overflow-hidden">
+			{#key reservationManager.date}
+				<div
+					class="col-span-full row-span-full"
+					in:fly={{ x: 150, delay: 50 }}
+					out:fly={{ x: -150 }}
+				>
+					<ScrollArea
+						type="always"
+						class="{availableSlots.length > 0 ? 'h-[300px]' : ''} rounded-md border p-4"
+					>
+						<ToggleGroup.Root
+							type="single"
+							class="flex flex-col"
+							bind:value={reservationManager.slot}
+						>
+							{#each availableSlots as s (s)}
+								{@render SlotEntry(s)}
+							{/each}
+						</ToggleGroup.Root>
+					</ScrollArea>
+				</div>
+			{/key}
+		</div>
+	{:else if reservationManager.date}
+		<h2 class="text-lg font-bold">
+			Nessun orario disponibile per {formatDate(reservationManager.date.toString())}
+		</h2>
+	{:else}
+		Nessun orario disponibile
+	{/if}
+{/if}
 
 {#snippet SlotEntry(s: Slot)}
 	<ToggleGroup.Item
