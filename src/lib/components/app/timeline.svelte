@@ -26,7 +26,6 @@
 
 	const getStartingPosition = (start: string) => {
 		// 2(t-8) where t chosen time
-
 		const { hours, minutes } = extractHoursAndMinutes(start);
 		const res = 2 * (toDecimalHours(hours, minutes) - day.start.hour) * TIME_SLOT;
 		return res;
@@ -83,7 +82,6 @@
 				return colorPalette[3];
 			case 60:
 				return colorPalette[4];
-
 			case 90:
 				return colorPalette[5];
 			default:

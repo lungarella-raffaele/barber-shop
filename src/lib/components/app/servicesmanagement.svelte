@@ -7,8 +7,9 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import type { Service } from '$lib/models/types';
 
-	let { services } = $props();
+	let { services }: { services: Service[] } = $props();
 
 	const serviceBackup = services;
 
@@ -27,7 +28,7 @@
 	{/each}
 </Accordion.Root>
 
-{#snippet serviceItem(service)}
+{#snippet serviceItem(service: Service)}
 	<Accordion.Item value={service.id} disabled={isEditing}>
 		<Accordion.Trigger>
 			<h1 class="flex items-center">
@@ -35,7 +36,7 @@
 					{service.name}
 				</span>
 
-				{#if service.inactive}
+				{#if service.active}
 					<Check size={17} color="green" />
 				{:else}
 					<X color="red" size={17} />
@@ -85,13 +86,13 @@
 
 				<div class="mt-4 flex items-center space-x-2">
 					<Switch
-						id={service.id + '-inactive'}
-						checked={service.inactive}
+						id={service.id + '-active'}
+						checked={service.active}
 						disabled={!isEditing}
-						name="inactive"
+						name="active"
 					/>
 
-					<Label for={service.id + '-inactive'}>Disponibilità</Label>
+					<Label for={service.id + '-active'}>Disponibilità</Label>
 				</div>
 
 				<div class="mt-8 flex flex-row-reverse gap-2">

@@ -1,6 +1,6 @@
+import type { BusinessHours } from '$lib/models/types';
 import { Time } from '@internationalized/date';
 import { Day } from './enums/days';
-import type { BusinessHours } from './types';
 
 /**
  * Monday 2 PM – 7 PM

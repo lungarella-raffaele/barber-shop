@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import PasswordInput from '$lib/components/app/passwordinput.svelte';
-	import { CircleAlert, LoaderCircle } from '$lib/components/icons/index';
-	import * as Alert from '$lib/components/ui/alert/';
+	import { LoaderCircle } from '$lib/components/icons/index';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Card from '$lib/components/ui/card';
 	import * as Form from '$lib/components/ui/form';
@@ -24,33 +23,14 @@
 					toast.warning('Email di verifica', { description: form.message.text });
 					goto('/');
 				} else {
-					showAlert = true;
-					alertMessage = form.message.text;
+					toast.error(`C'è stato un errore`, { description: form.message.text });
 				}
 			}
 		}
 	});
 
 	const { form: formData, enhance, delayed } = sForm;
-
-	function focus(node: HTMLDivElement) {
-		node.scrollIntoView({
-			behavior: 'smooth',
-			block: 'center'
-		});
-	}
-	let showAlert = $state(false);
-	let alertMessage = $state('');
 </script>
-
-{#if showAlert}
-	<Alert.Root variant="destructive" class="mb-3">
-		<div use:focus>
-			<CircleAlert class="size-4" />
-			<Alert.Description>{alertMessage}</Alert.Description>
-		</div>
-	</Alert.Root>
-{/if}
 
 <form method="post" use:enhance>
 	<Card.Root>
@@ -65,6 +45,7 @@
 					{#snippet children({ props })}
 						<Form.Label>Email</Form.Label>
 						<Input
+							autocomplete="email"
 							{...props}
 							bind:value={$formData.email}
 							placeholder="mariorossi@esempio.com"
@@ -112,7 +93,12 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Nome</Form.Label>
-						<Input {...props} bind:value={$formData.name} placeholder="Nome" />
+						<Input
+							{...props}
+							bind:value={$formData.name}
+							placeholder="Nome"
+							autocomplete="name"
+						/>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

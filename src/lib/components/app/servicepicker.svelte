@@ -12,7 +12,7 @@
 			duration: number;
 			price: number;
 			description: string;
-			inactive: boolean | null;
+			active: boolean | null;
 		}[];
 	} = $props();
 

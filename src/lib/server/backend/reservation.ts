@@ -1,13 +1,12 @@
+import type { Result } from '$lib/models/types';
 import { db } from '$lib/server/db';
 import type { Reservation } from '$lib/server/db/schema';
 import * as table from '$lib/server/db/schema';
 import { and, count, eq, gt, lt, sql } from 'drizzle-orm';
 import { logger } from '../logger';
-import type { Result } from './result.type';
 
 export async function insertReservation(reservation: Reservation): Promise<Result<Reservation>> {
 	if (!checkAvailability(reservation.date, reservation.hour)) {
-		logger.info('Già prenotato');
 		return { ok: false, error: 'conflict' };
 	}
 
@@ -19,7 +18,7 @@ export async function insertReservation(reservation: Reservation): Promise<Resul
 	const res = queryRes[0];
 	if (!res) {
 		logger.error('Could not insert a reservation');
-		return { ok: false, error: 'db_error' };
+		return { ok: false, error: 'server_error' };
 	}
 	logger.info('Reservation created successfully');
 	return { ok: true, value: res };

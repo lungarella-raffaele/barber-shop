@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const user = sqliteTable('user', {
 	id: text('id').primaryKey(),
@@ -37,7 +37,7 @@ export const service = sqliteTable('service', {
 	duration: integer('duration').notNull(),
 	price: integer('price').notNull(),
 	description: text('description').notNull(),
-	inactive: integer({ mode: 'boolean' })
+	active: integer({ mode: 'boolean' }).notNull()
 });
 
 export const banner = sqliteTable('banner', {

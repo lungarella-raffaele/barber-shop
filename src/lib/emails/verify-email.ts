@@ -6,7 +6,7 @@ const resend = new Resend(MAILER);
 
 export async function verifyEmail(name: string, email: string, link: string) {
 	return await resend.emails.send({
-		from: 'Emiliano Lo Russo <users@mailer.emihairclub.com>',
+		from: 'Emi Hair Club <users@mailer.emihairclub.com>',
 		to: [email],
 		subject: 'Verifica email',
 		html: `
@@ -108,7 +108,7 @@ export async function verifyEmail(name: string, email: string, link: string) {
 		<p>Per confermare la tua utenza clicca il pulsante in basso.</p>
 
 		<div class="confirm-wrapper">
-		<a class="confirm-button" href="${link}">Conferma Prenotazione</a>
+		<a class="confirm-button" href="${link}">Verifica email</a>
 		</div>
 
 		<div class="salon-info">
@@ -131,7 +131,7 @@ export async function verifyEmail(name: string, email: string, link: string) {
 
 export async function newUser(name: string, email: string, confirmLink: string) {
 	return await resend.emails.send({
-		from: 'Emiliano Lo Russo <account@mailer.emihairclub.com>',
+		from: 'Emi Hair Club <account@mailer.emihairclub.com>',
 		to: [email],
 		subject: 'Conferma il tuo account!',
 		html: `Ciao ${name}, <br/>

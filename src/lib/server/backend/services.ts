@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 
 export async function getAllServices(onlyActive: boolean = true) {
 	if (onlyActive) {
-		return await db.select().from(table.service).where(eq(table.service.inactive, true));
+		return await db.select().from(table.service).where(eq(table.service.active, true));
 	} else {
 		return await db.select().from(table.service);
 	}

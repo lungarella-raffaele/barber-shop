@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { cn } from '$lib/utils.js';
 	import { RangeCalendar as RangeCalendarPrimitive, type WithoutChildrenOrChild } from 'bits-ui';
 	import * as RangeCalendar from './index.js';
-	import { cn } from '$lib/utils.js';
 
 	let {
 		ref = $bindable(null),
@@ -31,7 +31,7 @@
 			{#each months as month}
 				<RangeCalendar.Grid>
 					<RangeCalendar.GridHead>
-						<RangeCalendar.GridRow class="flex">
+						<RangeCalendar.GridRow class="flex w-full justify-between">
 							{#each weekdays as weekday}
 								<RangeCalendar.HeadCell>
 									{weekday.slice(0, 2)}
@@ -41,7 +41,7 @@
 					</RangeCalendar.GridHead>
 					<RangeCalendar.GridBody>
 						{#each month.weeks as weekDates}
-							<RangeCalendar.GridRow class="mt-2 w-full">
+							<RangeCalendar.GridRow class="mt-2 flex w-full justify-between">
 								{#each weekDates as date}
 									<RangeCalendar.Cell {date} month={month.value}>
 										<RangeCalendar.Day />

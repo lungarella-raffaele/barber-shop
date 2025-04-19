@@ -28,7 +28,7 @@ export const actions: Actions = {
 		const description = getString(data, 'description');
 		const duration = getNumber(data, 'duration');
 		const price = getNumber(data, 'price');
-		const inactive = getBoolean(data, 'inactive');
+		const active = getBoolean(data, 'active');
 
 		if (!id || !name || !description || !duration || !price) {
 			return {
@@ -42,7 +42,7 @@ export const actions: Actions = {
 			description,
 			duration,
 			price,
-			inactive
+			active
 		});
 
 		if (response) {

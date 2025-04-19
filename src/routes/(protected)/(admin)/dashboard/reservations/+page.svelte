@@ -1,19 +1,19 @@
 <script lang="ts">
-	import type { PageProps } from './$types';
-	import CalendarIcon from 'lucide-svelte/icons/calendar';
-	import { type DateValue, getLocalTimeZone, today } from '@internationalized/date';
-	import { cn, formatDate } from '$lib/utils.js';
+	import { enhance } from '$app/forms';
+	import { columns } from '$lib/components/app/datatable/column';
+	import DataTable from '$lib/components/app/datatable/datatable.svelte';
+	import Timeline from '$lib/components/app/timeline.svelte';
+	import { ChartGantt, Rows3, Search } from '$lib/components/icons';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { enhance } from '$app/forms';
+	import { cn, formatDate } from '$lib/utils.js';
+	import { type DateValue, getLocalTimeZone, today } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import DataTable from '$lib/components/app/datatable/datatable.svelte';
-	import { columns } from '$lib/components/app/datatable/column';
-	import { ChartGantt, Rows3, Search } from '$lib/components/icons';
-	import Timeline from '$lib/components/app/timeline.svelte';
-	import { date } from './date.svelte';
+	import CalendarIcon from 'lucide-svelte/icons/calendar';
 	import { onMount } from 'svelte';
+	import type { PageProps } from './$types';
+	import { date } from './date.svelte';
 
 	const { form }: PageProps = $props();
 
@@ -34,15 +34,12 @@
 	let reservations = $state(form?.reservations);
 	let formElement: HTMLFormElement | undefined = $state();
 
-	let loading = $state(false);
 	const submitFunction: SubmitFunction = ({ formData }) => {
-		loading = true;
 		if (selectedDate) formData.append('date', selectedDate.toString());
 		return ({ result }) => {
 			if (result.type === 'success' && result.data) {
 				reservations = result.data.reservations;
 			}
-			loading = false;
 		};
 	};
 
@@ -102,14 +99,10 @@
 	</Button>
 </div>
 
-{#if reservations && reservations.length > 0}
-	{#if selectedView === 'list'}
-		<DataTable data={reservations} {columns} />
-	{:else}
-		<Timeline data={reservations} />
-	{/if}
-{:else if !loading}
-	<div class="rounded-md border p-4">Nessuna prenotazione</div>
-{:else if loading}
-	<div class="h-[500px] rounded-md border p-4"></div>
+{#if !reservations || !reservations.length}
+	<div class="rounded-md border p-4 text-center font-semibold">Nessuna prenotazione</div>
+{:else if selectedView === 'timeline'}
+	<Timeline data={reservations} />
+{:else}
+	<DataTable data={reservations} {columns} />
 {/if}

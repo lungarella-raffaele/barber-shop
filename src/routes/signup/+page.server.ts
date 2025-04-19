@@ -62,17 +62,16 @@ export const actions: Actions = {
 
 			verifyEmail(name, email, `${BASE_URL}?user=${user.id}`);
 
-			return message(form, { text: `Abbiamo inviato una mail di verifica a ${email}` });
-
-			// const sessionToken = auth.generateSessionToken();
-			// const session = await auth.createSession(sessionToken, userID);
-			// auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+			return message(form, {
+				text: `Abbiamo inviato una mail di verifica a ${email}`,
+				success: true
+			});
 		} catch (e) {
 			console.log(e);
 
 			return message(form, {
 				text: 'Al momento il servizio non risponde. Riprova in seguito.',
-				success: true
+				success: false
 			});
 		}
 	}

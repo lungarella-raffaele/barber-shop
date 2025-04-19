@@ -1,5 +1,5 @@
+import type { Slot } from '$lib/models/types';
 import { parseTime } from '@internationalized/date';
-import type { Slot } from './types';
 
 // The following days have plain 30 minutes slots
 export const monday: Slot[] = [

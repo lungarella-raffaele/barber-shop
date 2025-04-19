@@ -7,16 +7,14 @@
 	import Footer from '$lib/components/app/footer.svelte';
 	import Logo from '$lib/components/app/logo.svelte';
 	import Modeswitcher from '$lib/components/app/modeswitcher.svelte';
-	import { CircleUser, Citrus } from '$lib/components/icons/index';
+	import { CircleUser, Citrus, Instagram } from '$lib/components/icons/index';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 	import { ModeWatcher } from 'mode-watcher';
 	import '../app.css';
-
-	import { Instagram } from '$lib/components/icons/index';
-	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 
 	const { data, children } = $props();
 
@@ -25,7 +23,7 @@
 
 	let logoutForm: HTMLFormElement | undefined = $state();
 
-	const siteUnavailable = true;
+	const siteUnavailable = false;
 </script>
 
 <svelte:head>
