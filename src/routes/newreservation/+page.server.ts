@@ -1,5 +1,5 @@
 import { BASE_URL } from '$env/static/private';
-import { LOCK_EXPIRATION_MINUTES } from '$lib/constants.js';
+import { LOCK_DURATION } from '$lib/constants.js';
 import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
 import { reservation } from '$lib/schemas/reservation.js';
 import { getClosures } from '$lib/server/backend/closures-service.js';
@@ -10,6 +10,7 @@ import {
 } from '$lib/server/backend/reservation.js';
 import { getAllServices } from '$lib/server/backend/services.js';
 import { logger } from '$lib/server/logger.js';
+import { formatDate, formatTime } from '$lib/utils.js';
 import { fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -84,7 +85,7 @@ export const actions: Actions = {
 				serviceID: service,
 				name,
 				email,
-				expiresAt: new Date(Date.now() + LOCK_EXPIRATION_MINUTES),
+				expiresAt: new Date(Date.now() + LOCK_DURATION),
 				pending: true
 			});
 			if (!response.ok) {
@@ -98,8 +99,8 @@ export const actions: Actions = {
 				name,
 				email,
 				`${BASE_URL}?reservation=${response.value.id}`,
-				response.value.date,
-				response.value.hour
+				formatDate(response.value.date),
+				formatTime(response.value.hour)
 			);
 
 			if (error) {

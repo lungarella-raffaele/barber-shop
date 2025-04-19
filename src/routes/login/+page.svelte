@@ -2,6 +2,7 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import Button from '$lib/components/ui/button/button.svelte';
 
+	import Passwordinput from '$lib/components/app/passwordinput.svelte';
 	import { CircleAlert, LoaderCircle } from '$lib/components/icons/index';
 	import * as Card from '$lib/components/ui/card';
 	import * as Form from '$lib/components/ui/form';
@@ -10,7 +11,6 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import type { ActionData, PageData } from './$types';
-	import Passwordinput from '$lib/components/app/passwordinput.svelte';
 
 	let { form, data }: { form: ActionData; data: PageData } = $props();
 
@@ -40,6 +40,7 @@
 					{#snippet children({ props })}
 						<Form.Label>Email</Form.Label>
 						<Input
+							autocomplete="email"
 							{...props}
 							bind:value={$formData.email}
 							placeholder="Inserisci il tua nome"

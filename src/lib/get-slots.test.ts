@@ -1,18 +1,18 @@
-import { describe, it } from 'vitest';
-import { workingHours } from './working-hours';
+import type { ReservedSlot, Slot } from '$lib/models/types';
 import { CalendarDate, parseDate, parseTime, Time } from '@internationalized/date';
 import { expect } from '@playwright/test';
+import { describe, it } from 'vitest';
 import { Day } from './enums/days';
 import { getSlots } from './get-slots';
-import type { Slot, Reservation } from './types';
 import { monday, normalDay, saturday } from './mocks';
 import { isEqualTime } from './utils';
+import { workingHours } from './working-hours';
 
 describe('Get slots', () => {
 	describe('should disable occupied slots', () => {
 		it('monday', () => {
 			const date = new CalendarDate(2022, 1, 3);
-			const currentReservations: Reservation[] = [
+			const currentReservations: ReservedSlot[] = [
 				{
 					date: parseDate('2022-01-03'),
 					start: parseTime('14:00:00'),
@@ -36,7 +36,7 @@ describe('Get slots', () => {
 
 		it('normal day', () => {
 			const date = new CalendarDate(2022, 1, 4);
-			const currentReservations: Reservation[] = [
+			const currentReservations: ReservedSlot[] = [
 				{
 					date: parseDate('2022-02-03'),
 					start: parseTime('09:00:00'),
@@ -64,7 +64,7 @@ describe('Get slots', () => {
 		});
 		it('saturday', () => {
 			const date = new CalendarDate(2022, 1, 8);
-			const currentReservations: Reservation[] = [
+			const currentReservations: ReservedSlot[] = [
 				{
 					date: parseDate('2022-07-03'),
 					start: parseTime('11:30:00'),
@@ -133,7 +133,7 @@ describe('Get slots', () => {
 
 	it('should work for long duration services', () => {
 		const date = new CalendarDate(2022, 2, 3);
-		const currentReservations: Reservation[] = [
+		const currentReservations: ReservedSlot[] = [
 			{
 				date: parseDate('2022-02-03'),
 				start: parseTime('09:00:00'),
@@ -179,7 +179,7 @@ describe('Get slots', () => {
 	describe('should handle invalid slots correctly', () => {
 		it('first scenario', () => {
 			const date = new CalendarDate(2022, 2, 3);
-			const currentReservations: Reservation[] = [
+			const currentReservations: ReservedSlot[] = [
 				{
 					date: parseDate('2022-02-03'),
 					start: parseTime('09:00:00'),
@@ -270,13 +270,13 @@ function equalSlot(item1: Slot, item2: Slot, index: number): boolean {
 	return false;
 }
 
-function printSlots(slots: Slot[]) {
-	slots.forEach((slot) => {
-		const hour = String(slot.start.hour).padStart(2, '0');
-		const minute = String(slot.start.minute).padStart(2, '0');
-		const available = String(slot.available).padEnd(5, ' ');
-		const invalid = String(slot.invalid).padEnd(5, ' ');
+// function printSlots(slots: Slot[]) {
+// 	slots.forEach((slot) => {
+// 		const hour = String(slot.start.hour).padStart(2, '0');
+// 		const minute = String(slot.start.minute).padStart(2, '0');
+// 		const available = String(slot.available).padEnd(5, ' ');
+// 		const invalid = String(slot.invalid).padEnd(5, ' ');
 
-		console.log(`Hour: ${hour}:${minute}  |  Available: ${available}  |  Invalid: ${invalid}`);
-	});
-}
+// 		console.log(`Hour: ${hour}:${minute}  |  Available: ${available}  |  Invalid: ${invalid}`);
+// 	});
+// }

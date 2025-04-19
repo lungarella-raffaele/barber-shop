@@ -1,19 +1,21 @@
-const TEN_MINUTES = 10 * 60 * 1000;
+import { LOCK_DURATION } from '$lib/constants';
+
 export default class Timer {
 	timeLeft: number = $state(0);
 	// @ts-expect-error any
 	timerInterval;
 	isRunning = $state(false);
+	isEnded = $derived(this.timeLeft <= 0);
 
 	getTimer() {
 		return this.timeLeft;
 	}
 
 	setTimer(newValue: number) {
-		if (newValue > TEN_MINUTES) {
-			return TEN_MINUTES;
+		if (newValue > LOCK_DURATION) {
+			return LOCK_DURATION;
 		}
-		if (newValue < 0) {
+		if (newValue <= 0) {
 			return 0;
 		}
 		return newValue;
@@ -47,7 +49,7 @@ export default class Timer {
 
 	reset() {
 		this.stop();
-		this.timeLeft = TEN_MINUTES;
+		this.timeLeft = LOCK_DURATION;
 	}
 
 	pause() {
@@ -65,6 +67,9 @@ export default class Timer {
 	}
 
 	show() {
+		if (!this.timeLeft || this.timeLeft < 0) {
+			return `00:00`;
+		}
 		const totalSeconds = Math.floor(this.timeLeft / 1000);
 		const minutes = Math.floor(totalSeconds / 60);
 		const seconds = totalSeconds % 60;

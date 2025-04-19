@@ -1,8 +1,8 @@
-import Page from './+page.svelte';
-import type { PageData } from './$types';
-import { describe, it } from 'vitest';
-import { render, fireEvent } from '@testing-library/svelte';
 import { expect } from '@playwright/test';
+import { fireEvent, render } from '@testing-library/svelte';
+import { describe, it } from 'vitest';
+import type { PageData } from './$types';
+import Page from './+page.svelte';
 
 describe('New reservation page', () => {
 	it('should render three steps for not authenticated users', () => {
@@ -40,7 +40,7 @@ describe('New reservation page', () => {
 });
 
 const userProps: PageData = {
-	banner: undefined,
+	banner: null,
 	currentReservations: [],
 	services: [
 		{
@@ -49,7 +49,7 @@ const userProps: PageData = {
 			description: 'Nice haircut',
 			duration: 30,
 			price: 22,
-			inactive: false
+			active: false
 		}
 	],
 	user: {
@@ -83,7 +83,7 @@ const userProps: PageData = {
 };
 
 const noUserProps: PageData = {
-	banner: undefined,
+	banner: null,
 	currentReservations: [],
 	services: [
 		{
@@ -92,7 +92,7 @@ const noUserProps: PageData = {
 			description: 'Nice haircut',
 			duration: 30,
 			price: 22,
-			inactive: false
+			active: false
 		}
 	],
 	user: null,

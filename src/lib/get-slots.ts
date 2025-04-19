@@ -1,3 +1,4 @@
+import type { ReservedSlot, Slot } from '$lib/models/types';
 import {
 	getDayOfWeek,
 	getLocalTimeZone,
@@ -6,12 +7,11 @@ import {
 	Time,
 	type DateValue
 } from '@internationalized/date';
-import type { Reservation, Slot } from './types';
 import { workingHours } from './working-hours';
 
 export const SlotDuration = new Time(0, 30);
 
-export const getSlots = (date: DateValue, reservations: Reservation[], service?: Time) => {
+export const getSlots = (date: DateValue, reservations: ReservedSlot[], service?: Time) => {
 	let slots = generateSlots(date);
 
 	// reserved slots
@@ -76,7 +76,7 @@ function slotsWithoutGaps(slots: Slot[]) {
 	return true;
 }
 
-function isAvailable(slot: Slot, reservations: Reservation[]): boolean {
+function isAvailable(slot: Slot, reservations: ReservedSlot[]): boolean {
 	for (const r of reservations) {
 		const startInterval = r.start;
 		const endInterval = r.start.add({ hours: r.duration.hour, minutes: r.duration.minute });
@@ -89,7 +89,7 @@ function isAvailable(slot: Slot, reservations: Reservation[]): boolean {
 	return true;
 }
 
-function reserved(slots: Slot[], reservations: Reservation[]): Slot[] {
+function reserved(slots: Slot[], reservations: ReservedSlot[]): Slot[] {
 	return slots.map((s) => ({ ...s, available: isAvailable(s, reservations) }));
 }
 
