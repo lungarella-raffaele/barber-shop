@@ -1,9 +1,7 @@
 name: CI
 on:
-    push:
-        branches: [main]
     pull_request:
-        branches: [main]
+        branches: [main, dev]
 jobs:
     # e2e_tests:
     # timeout-minutes: 60
