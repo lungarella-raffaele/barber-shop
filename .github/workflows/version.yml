@@ -1,54 +1,22 @@
-name: Bump Version
-
+name: Bump version
 on:
-    workflow_dispatch:
-
-permissions:
-    contents: write
-    pull-requests: write
-
+    push:
+        branches:
+            - master
+            - test-versioning
 jobs:
-    bump-version:
+    build:
         runs-on: ubuntu-latest
-
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+            - uses: actions/checkout@v4
+            - name: Bump version and push tag
+              id: tag_version
+              uses: mathieudutour/github-tag-action@v6.2
               with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+            - name: Create a GitHub release
+              uses: ncipollo/release-action@v1
               with:
-                  node-version: '20'
-
-            - name: Install dependencies
-              run: npm ci
-
-            - name: Bump version (minor)
-              run: |
-                  npm version minor --no-git-tag-version
-                  echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
-
-            - name: Commit version bump
-              run: |
-                  git config user.name "github-actions[bot]"
-                  git config user.email "github-actions[bot]@users.noreply.github.com"
-
-                  BRANCH_NAME=version-bump-${{ github.run_id }}
-                  git checkout -b $BRANCH_NAME
-
-                  git add package.json package-lock.json
-                  git commit -m "chore: bump version to $VERSION"
-                  git push origin $BRANCH_NAME
-
-                  echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-
-            - name: Create Pull Request
-              uses: peter-evans/create-pull-request@v5
-              with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  base: main
-                  head: ${{ env.BRANCH_NAME }}
-                  title: 'chore: bump version to ${{ env.VERSION }}'
-                  draft: false
+                  tag: ${{ steps.tag_version.outputs.new_tag }}
+                  name: Release ${{ steps.tag_version.outputs.new_tag }}
+                  body: ${{ steps.tag_version.outputs.changelog }}
