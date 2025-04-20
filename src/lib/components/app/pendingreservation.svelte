@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Progress } from '$lib/components/ui/progress';
 	import Timer from '$lib/composables/timer.svelte';
-	import { BARBER_SHOP_DETAILS, LOCK_EXPIRATION_MINUTES } from '$lib/constants';
+	import { BARBER_SHOP_DETAILS, LOCK_DURATION } from '$lib/constants';
 
 	const { reservation, error, success } = $props();
 
@@ -57,9 +57,9 @@
 					{timer.show()}
 				</div>
 				{#if !timer.isEnded}
-					<Progress value={timer.timeLeft} max={LOCK_EXPIRATION_MINUTES} />
+					<Progress value={timer.timeLeft} max={LOCK_DURATION} />
 				{:else}
-					<Progress value={0} max={LOCK_EXPIRATION_MINUTES} />
+					<Progress value={0} max={LOCK_DURATION} />
 
 					<Button class="mt-8" data-sveltekit-reload href="/">Home</Button>
 				{/if}

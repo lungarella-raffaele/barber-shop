@@ -33,7 +33,7 @@
 						<ToggleGroup.Root
 							type="single"
 							class="flex flex-col"
-							bind:value={reservationManager.slot}
+							bind:value={reservationManager.hour}
 						>
 							{#each availableSlots as s (s)}
 								{@render SlotEntry(s)}

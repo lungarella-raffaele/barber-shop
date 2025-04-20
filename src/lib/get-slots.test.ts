@@ -269,14 +269,3 @@ function equalSlot(item1: Slot, item2: Slot, index: number): boolean {
 	console.error(`The element at position ${index} is not equal!`);
 	return false;
 }
-
-// function printSlots(slots: Slot[]) {
-// 	slots.forEach((slot) => {
-// 		const hour = String(slot.start.hour).padStart(2, '0');
-// 		const minute = String(slot.start.minute).padStart(2, '0');
-// 		const available = String(slot.available).padEnd(5, ' ');
-// 		const invalid = String(slot.invalid).padEnd(5, ' ');
-
-// 		console.log(`Hour: ${hour}:${minute}  |  Available: ${available}  |  Invalid: ${invalid}`);
-// 	});
-// }

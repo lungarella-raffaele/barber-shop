@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Logo from '$lib/components/app/logo.svelte';
-	import {
-		default as Pendingreservation,
-		default as ReservationConfirmed
-	} from '$lib/components/app/reservationconfirmed.svelte';
+	import Pendingreservation from '$lib/components/app/pendingreservation.svelte';
+	import ReservationConfirmed from '$lib/components/app/reservationconfirmed.svelte';
 	import UserConfirmed from '$lib/components/app/userconfirmed.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';

@@ -3,12 +3,13 @@
 	import { goto } from '$app/navigation';
 	import ConfirmReservationDialog from '$lib/components/app/confirmreservationdialog.svelte';
 	import DatePicker from '$lib/components/app/datepicker.svelte';
-	import Personalinfoform from '$lib/components/app/personalinfoform.svelte';
 	import ServicePicker from '$lib/components/app/servicepicker.svelte';
 	import SlotPicker from '$lib/components/app/slotpicker.svelte';
 	import { ChevronLeft, ChevronRight } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button/index';
 	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
 	import { getSlots } from '$lib/get-slots';
@@ -43,7 +44,7 @@
 		}
 
 		formData.append('date', reservationManager.date.toString());
-		formData.append('hour', reservationManager.slot);
+		formData.append('hour', reservationManager.hour);
 		formData.append('service', reservationManager.selectedService);
 		formData.append('name', reservationManager.name);
 		formData.append('email', reservationManager.email);
@@ -59,7 +60,7 @@
 					goto('/');
 				}
 			} else if (result.type === 'failure') {
-				if (result.status === 404 && result.data) {
+				if (result.status === 400 && result.data) {
 					const step = result.data.step;
 					toast.warning(result.data.message);
 					reservationManager.goToTab(step);
@@ -110,7 +111,7 @@
 			{name}
 			{email}
 			date={reservationManager.date}
-			hour={reservationManager.slot}
+			hour={reservationManager.hour}
 			service={service.name}
 		/>
 	{/if}
@@ -137,7 +138,19 @@
 						<Card.Description>Inserisci le tue informazioni personali</Card.Description>
 					</Card.Header>
 					<Card.Content class="space-y-2">
-						<Personalinfoform />
+						<Label>Nome</Label>
+						<Input
+							name="name"
+							bind:value={reservationManager.name}
+							placeholder="Inserisci il tuo nome"
+						/>
+
+						<Label>Email</Label>
+						<Input
+							name="email"
+							bind:value={reservationManager.email}
+							placeholder="Inserisci la tua email"
+						/>
 					</Card.Content>
 					<Card.Footer class="mt-8 items-center justify-between">
 						<Button

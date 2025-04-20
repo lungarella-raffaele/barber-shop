@@ -1,12 +1,11 @@
 import { z } from 'zod';
 
 export const reservation = z.object({
-	name: z.string(),
-	surname: z.string(),
+	name: z.string().min(2),
 	email: z.string().email(),
-	date: z.string(),
-	slot: z.string(),
-	service: z.string()
+	date: z.string().date(),
+	hour: z.string().nonempty(),
+	service: z.string().nonempty()
 });
 
 export type FormSchema = typeof reservation;

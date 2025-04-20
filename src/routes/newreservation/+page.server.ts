@@ -1,7 +1,7 @@
 import { BASE_URL } from '$env/static/private';
 import { LOCK_DURATION } from '$lib/constants.js';
 import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
-import { reservation } from '$lib/schemas/reservation.js';
+import { reservation } from '$lib/schemas/reservation';
 import { getClosures } from '$lib/server/backend/closures-service.js';
 import {
 	deleteReservation,
@@ -12,8 +12,6 @@ import { getAllServices } from '$lib/server/backend/services.js';
 import { logger } from '$lib/server/logger.js';
 import { formatDate, formatTime } from '$lib/utils.js';
 import { fail } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types.js';
 
 export const actions: Actions = {
@@ -23,29 +21,39 @@ export const actions: Actions = {
 
 		const date = data.get('date') as string;
 		const hour = data.get('hour') as string;
+		const service = data.get('service') as string;
 		const name = data.get('name') as string;
 		const email = data.get('email') as string;
 
-		if (!date || !hour) {
-			return fail(404, {
-				step: 'date',
-				message: 'Devi inserire una data per la prenotazione'
-			});
-		}
+		const schema = reservation.safeParse({
+			name,
+			hour,
+			service,
+			email,
+			date
+		});
 
-		const service = data.get('service') as string;
-		if (!service) {
-			return fail(404, {
-				step: 'service',
-				message: 'Devi inserire un servizio per poter proseguire'
-			});
-		}
+		if (!schema.success) {
+			const { path } = schema.error.issues[0];
 
-		// No info provided for the user
-		if ((!name || !email) && !user) {
-			return fail(404, {
-				message: 'Non è stato possibile effettuare una prenotazione con i dati inseriti'
-			});
+			if (path.includes('date') || path.includes('hour')) {
+				return fail(400, {
+					step: 'date',
+					message: 'Devi scegliere una data per la prenotazione.'
+				});
+			} else if (path.includes('service')) {
+				return fail(400, {
+					step: 'service',
+					message: 'Devi scegliere un servizio per poter proseguire.'
+				});
+			} else if ((path.includes('email') || path.includes('name')) && !user) {
+				return fail(400, {
+					step: 'info',
+					message: 'Devi inserire un nome e una mail valida.'
+				});
+			} else {
+				return fail(400);
+			}
 		}
 
 		if (user) {
@@ -128,7 +136,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		closures,
 		services,
 		user: locals.user,
-		form: await superValidate(zod(reservation)),
 		title: 'Nuova prenotazione | '
 	};
 };
