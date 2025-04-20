@@ -2,7 +2,7 @@ import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { type RequestEvent } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { and, count, eq, lt } from 'drizzle-orm';
 import { logger } from '../logger';
 import { deleteAllReservationsOfUser } from './reservation';
 
@@ -23,7 +23,7 @@ export async function patchPendingUser(id: string) {
 	return await db
 		.update(table.user)
 		.set({
-			pending: false
+			verifiedEmail: true
 		})
 		.where(eq(table.user.id, id))
 		.returning()
@@ -56,4 +56,14 @@ export async function logout(id: string, event: RequestEvent) {
 
 async function deleteAllSessionOfUser(id: string) {
 	return await db.delete(table.session).where(eq(table.session.userID, id));
+}
+
+export async function getAllUnverifiedExpiredUsers() {
+	const entries = await db
+		.select({ count: count() })
+		.from(table.user)
+		.where(and(eq(table.user.verifiedEmail, false), lt(table.user.expiresAt, new Date())))
+		.get();
+
+	return entries?.count;
 }

@@ -25,6 +25,7 @@ export { default as House } from 'lucide-svelte/icons/house';
 export { default as Inbox } from 'lucide-svelte/icons/inbox';
 export { default as Info } from 'lucide-svelte/icons/info';
 export { default as Instagram } from 'lucide-svelte/icons/instagram';
+export { default as Leaf } from 'lucide-svelte/icons/leaf';
 export { default as Library } from 'lucide-svelte/icons/library';
 export { default as LoaderCircle } from 'lucide-svelte/icons/loader-circle';
 export { default as Lock } from 'lucide-svelte/icons/lock';

@@ -6,6 +6,9 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const date = formData.get('date') as string;
 		const reservations = await getDayReservations(date);
-		return { reservations };
+		return {
+			reservations,
+			title: 'Admin |'
+		};
 	}
 };

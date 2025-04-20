@@ -71,7 +71,7 @@ export const load: PageServerLoad = async (event) => {
 				};
 			}
 			const user = await getUserByID(id);
-			if (!user?.pending || !user) {
+			if (user?.verifiedEmail || !user) {
 				return {
 					pageCase,
 					success: false,

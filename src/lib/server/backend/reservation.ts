@@ -162,3 +162,13 @@ export async function checkAvailability(date: string, hour: string): Promise<boo
 		return false;
 	}
 }
+
+export async function getAllExpiredReservations() {
+	const entries = await db
+		.select({ count: count() })
+		.from(table.reservation)
+		.where(lt(table.reservation.expiresAt, new Date()))
+		.get();
+
+	return entries?.count;
+}

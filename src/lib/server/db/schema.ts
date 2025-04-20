@@ -7,7 +7,8 @@ export const user = sqliteTable('user', {
 	email: text('email').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
 	isAdmin: integer({ mode: 'boolean' }),
-	pending: integer({ mode: 'boolean' })
+	verifiedEmail: integer('verified_email', { mode: 'boolean' }),
+	expiresAt: integer('expires_at', { mode: 'timestamp' })
 });
 
 export const session = sqliteTable('session', {

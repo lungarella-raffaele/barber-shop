@@ -54,53 +54,49 @@
 	<input type="hidden" value={idToDelete} name="id" />
 </form>
 
-<div class="mb-4 rounded-md border p-4 shadow">
-	{#if data.periods}
-		{#if data.periods.length > 0}
-			<h2 class="my-2 text-lg font-bold">Periodi di chiusura inseriti:</h2>
+{#if data.periods}
+	{#if data.periods.length > 0}
+		<h2 class="text-lg font-bold">Periodi di chiusura inseriti:</h2>
 
-			{#each data.periods as p (p.id)}
-				<div
-					class="my-4 flex items-center justify-between rounded rounded-lg border bg-muted p-2"
-				>
-					<span class="ml-2 font-bold">{formatDateRange(p.start, p.end)}</span>
+		{#each data.periods as p (p.id)}
+			<div class="my-4 flex items-center justify-between rounded-lg border bg-muted p-2">
+				<span class="ml-2 font-bold">{formatDateRange(p.start, p.end)}</span>
 
-					<Button type="button" variant="destructive" onclick={() => deleteAction(p.id)}
-						><Trash />
-					</Button>
-				</div>
-			{/each}
-		{:else}
-			<h2 class="my-4 text-center text-lg font-bold">Nessun periodo di chiusura inserito</h2>
-		{/if}
-
-		{#if !isAddingPeriod}
-			<Button class="w-full" variant="icon" onclick={toggleAddPeriod}><CirclePlus /></Button>
-		{/if}
-		{#if isAddingPeriod}
-			<div transition:slide class="rounded-md border shadow">
-				<RangeCalendar bind:value />
-
-				<div class="flex flex-col p-4">
-					<form use:enhance={submit} method="post" action="?/create">
-						<Button type="submit" class="w-full truncate" disabled={!selectedPeriod}
-							>Conferma periodo di chiusura</Button
-						>
-					</form>
-
-					<Button
-						type="button"
-						variant="ghost"
-						onclick={toggleAddPeriod}
-						class="mt-2 w-full truncate"
-					>
-						Annulla
-					</Button>
-				</div>
+				<Button type="button" variant="destructive" onclick={() => deleteAction(p.id)}
+					><Trash />
+				</Button>
 			</div>
-		{/if}
+		{/each}
+	{:else}
+		<h2 class="my-4 text-center text-lg font-bold">Nessun periodo di chiusura inserito</h2>
 	{/if}
-</div>
+
+	{#if !isAddingPeriod}
+		<Button class="w-full" variant="icon" onclick={toggleAddPeriod}><CirclePlus /></Button>
+	{/if}
+	{#if isAddingPeriod}
+		<div transition:slide class="rounded-md border shadow">
+			<RangeCalendar bind:value />
+
+			<div class="flex flex-col p-4">
+				<form use:enhance={submit} method="post" action="?/create">
+					<Button type="submit" class="w-full truncate" disabled={!selectedPeriod}
+						>Conferma periodo di chiusura</Button
+					>
+				</form>
+
+				<Button
+					type="button"
+					variant="ghost"
+					onclick={toggleAddPeriod}
+					class="mt-2 w-full truncate"
+				>
+					Annulla
+				</Button>
+			</div>
+		</div>
+	{/if}
+{/if}
 
 <AlertDialog.Root bind:open={isDialogOpen}>
 	<AlertDialog.Content>

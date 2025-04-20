@@ -1,4 +1,5 @@
 import { BASE_URL } from '$env/static/private';
+import { DAY_IN_MS } from '$lib/constants';
 import { verifyEmail } from '$lib/emails/verify-email';
 import { signup } from '$lib/schemas/signup';
 import { getUser, insertUser } from '$lib/server/backend/user';
@@ -57,7 +58,8 @@ export const actions: Actions = {
 				name,
 				phoneNumber,
 				isAdmin: false,
-				pending: true
+				verifiedEmail: false,
+				expiresAt: new Date(Date.now() + DAY_IN_MS)
 			});
 
 			verifyEmail(name, email, `${BASE_URL}?user=${user.id}`);
