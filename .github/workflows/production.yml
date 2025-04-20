@@ -1,0 +1,25 @@
+name: Sync main with dev
+on:
+    workflow_dispatch:
+
+jobs:
+    sync:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout main branch
+              uses: actions/checkout@v4
+              with:
+                  ref: main
+
+            - name: Configure Git
+              run: |
+                  git config user.name "Raffaele Lungarella"
+                  git config user.email "lungarellaraffaele@gmail.com"
+
+            - name: Add dev as remote branch
+              run: git fetch origin dev
+
+            - name: Merge dev into main (fast-forward only)
+              run: |
+                  git merge --ff-only origin/dev
+                  git push origin main
