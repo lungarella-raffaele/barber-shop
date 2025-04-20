@@ -59,22 +59,8 @@ const userProps: PageData = {
 		email: 'johndoes@test.com',
 		passwordHash: 'axsdqeow',
 		isAdmin: null,
-		pending: false
-	},
-	form: {
-		id: '',
-		valid: false,
-		posted: false,
-		data: {
-			date: '',
-			name: '',
-			email: '',
-			service: ''
-		},
-		constraints: undefined,
-		message: undefined,
-		shape: undefined,
-		errors: {}
+		verifiedEmail: false,
+		expiresAt: new Date()
 	},
 	title: '',
 	closures: []
@@ -94,22 +80,6 @@ const noUserProps: PageData = {
 		}
 	],
 	user: null,
-	form: {
-		id: '',
-		valid: false,
-		posted: false,
-		data: {
-			date: '',
-			name: '',
-			email: '',
-			service: '',
-			slot: ''
-		},
-		constraints: undefined,
-		message: undefined,
-		shape: undefined,
-		errors: {}
-	},
 	title: '',
 	closures: []
 };

@@ -30,7 +30,7 @@ export const actions: Actions = {
 
 		const existingUser = await getUser(form.data.email);
 
-		if (!existingUser || existingUser.pending) {
+		if (!existingUser || !existingUser.verifiedEmail) {
 			return fail(400, {
 				message: 'Email o password errati',
 				form

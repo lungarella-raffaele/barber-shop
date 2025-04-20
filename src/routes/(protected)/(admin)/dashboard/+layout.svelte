@@ -11,22 +11,26 @@
 
 	const dashboardItems: DashBoardItem[] = [
 		{
-			href: 'reservations',
+			href: '/dashboard',
 			name: 'Prenotazioni'
 		},
 
 		{
-			href: 'calendar',
+			href: '/dashboard/calendar',
 			name: 'Calendario'
 		},
 		{
-			href: 'general',
+			href: '/dashboard/general',
 			name: 'Generali'
+		},
+		{
+			href: '/dashboard/database',
+			name: 'Database'
 		}
 	];
 
 	function isItemActive(itemHref: string) {
-		return page.route.id?.includes(itemHref);
+		return page.url.pathname === itemHref;
 	}
 </script>
 
@@ -39,11 +43,13 @@
 				? 'underline decoration-primary decoration-2 underline-offset-[16px]'
 				: ''}
 		>
-			<Button href="/dashboard/{dI.href}" variant="ghost">
+			<Button href={dI.href} variant="ghost">
 				{dI.name}
 			</Button>
 		</li>
 	{/each}
 </ul>
 
-{@render children()}
+<div class="mb-4 rounded-md border p-6 shadow">
+	{@render children()}
+</div>
