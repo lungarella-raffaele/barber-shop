@@ -1,3 +1,4 @@
+import { reservation } from '$lib/schemas/reservation';
 import { type DateValue } from '@internationalized/date';
 import { getContext, hasContext, setContext } from 'svelte';
 import { toast } from 'svelte-sonner';
@@ -11,7 +12,7 @@ export default class ReservationManager {
 	currentTab: Tab | undefined = $state();
 
 	date: DateValue | undefined = $state();
-	slot: string = $state('');
+	hour: string = $state('');
 	selectedService = $state('');
 
 	name: string = $state('');
@@ -43,16 +44,34 @@ export default class ReservationManager {
 	 * @returns true if the values are all inserted
 	 */
 	check(): boolean {
-		if (!this.date || !this.slot) {
-			toast.warning('Devi inserire una data per poter proseguire');
+		const schema = reservation.safeParse({
+			name: this.name,
+			hour: this.hour,
+			service: this.selectedService,
+			email: this.email,
+			date: this.date?.toString()
+		});
+
+		if (schema.success) {
+			return false;
+		}
+
+		const { path } = schema.error.issues[0];
+
+		if (path.includes('date')) {
+			toast.warning('Devi scegliere una data per poter proseguire');
 			this.goToTab('date');
 			return true;
-		} else if (!this.selectedService) {
-			toast.warning('Devi inserire un servizio per poter proseguire ');
+		} else if (path.includes('hour')) {
+			toast.warning('Devi scegliere un orario per poter proseguire');
+			this.goToTab('date');
+			return true;
+		} else if (path.includes('service')) {
+			toast.warning('Devi scegliere un servizio per poter proseguire');
 			this.goToTab('service');
 			return true;
-		} else if ((!this.name || !this.email) && !this.isLogged) {
-			toast.warning('Devi inserire i tuoi nominativi');
+		} else if ((path.includes('email') || path.includes('name')) && !this.isLogged) {
+			toast.warning('Devi inserire un nome e una mail valida');
 			this.goToTab('info');
 			return true;
 		} else {
@@ -106,7 +125,7 @@ export default class ReservationManager {
 
 	private constructor(isLogged: boolean) {
 		this.date = undefined;
-		this.slot = '';
+		this.hour = '';
 		this.name = '';
 		this.email = '';
 		this.isLogged = isLogged;

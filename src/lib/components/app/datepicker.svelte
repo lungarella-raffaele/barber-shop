@@ -37,7 +37,7 @@
 <Calendar
 	{isDateDisabled}
 	{isDateUnavailable}
-	onValueChange={() => (reservationManager.slot = '')}
+	onValueChange={() => (reservationManager.hour = '')}
 	type="single"
 	bind:value
 	class="rounded-md border"

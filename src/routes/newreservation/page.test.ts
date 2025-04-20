@@ -69,9 +69,7 @@ const userProps: PageData = {
 			date: '',
 			name: '',
 			email: '',
-			service: '',
-			surname: '',
-			slot: ''
+			service: ''
 		},
 		constraints: undefined,
 		message: undefined,
@@ -105,7 +103,6 @@ const noUserProps: PageData = {
 			name: '',
 			email: '',
 			service: '',
-			surname: '',
 			slot: ''
 		},
 		constraints: undefined,
