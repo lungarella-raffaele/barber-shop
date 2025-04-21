@@ -2,6 +2,7 @@ export { default as ArrowLeft } from 'lucide-svelte/icons/arrow-left';
 export { default as ArrowRight } from 'lucide-svelte/icons/arrow-right';
 export { default as ArrowUpRight } from 'lucide-svelte/icons/arrow-up-right';
 export { default as BadgeCheck } from 'lucide-svelte/icons/badge-check';
+export { default as BadgeX } from 'lucide-svelte/icons/badge-x';
 export { default as Calendar, default as CalendarIcon } from 'lucide-svelte/icons/calendar';
 export { default as CalendarX } from 'lucide-svelte/icons/calendar-x';
 export { default as ChartGantt } from 'lucide-svelte/icons/chart-gantt';
