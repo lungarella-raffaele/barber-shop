@@ -22,42 +22,13 @@ export const actions: Actions = {
 		const date = data.get('date') as string;
 		const hour = data.get('hour') as string;
 		const service = data.get('service') as string;
+
 		const name = data.get('name') as string;
 		const email = data.get('email') as string;
 
-		const schema = reservation.safeParse({
-			name,
-			hour,
-			service,
-			email,
-			date
-		});
-
-		if (!schema.success) {
-			const { path } = schema.error.issues[0];
-
-			if (path.includes('date') || path.includes('hour')) {
-				return fail(400, {
-					step: 'date',
-					message: 'Devi scegliere una data per la prenotazione.'
-				});
-			} else if (path.includes('service')) {
-				return fail(400, {
-					step: 'service',
-					message: 'Devi scegliere un servizio per poter proseguire.'
-				});
-			} else if ((path.includes('email') || path.includes('name')) && !user) {
-				return fail(400, {
-					step: 'info',
-					message: 'Devi inserire un nome e una mail valida.'
-				});
-			} else {
-				return fail(400);
-			}
-		}
-
 		if (user) {
 			// Logged in user
+
 			logger.info('Creating reservation with existing user');
 			const expiresAt = new Date(date);
 			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
@@ -67,7 +38,7 @@ export const actions: Actions = {
 				hour,
 				id: crypto.randomUUID(),
 				serviceID: service,
-				name: user.name,
+				name: user.isAdmin ? name : user.name,
 				email: user.email,
 				pending: false,
 				expiresAt
@@ -85,6 +56,37 @@ export const actions: Actions = {
 				newReservation: response.value
 			};
 		} else if (name && email) {
+			const schema = reservation.safeParse({
+				name,
+				hour,
+				service,
+				email,
+				date
+			});
+
+			if (!schema.success) {
+				const { path } = schema.error.issues[0];
+				logger.warn({ reason: path }, 'Could not create reservation');
+
+				if (path.includes('date') || path.includes('hour')) {
+					return fail(400, {
+						step: 'date',
+						message: 'Devi scegliere una data per la prenotazione.'
+					});
+				} else if (path.includes('service')) {
+					return fail(400, {
+						step: 'service',
+						message: 'Devi scegliere un servizio per poter proseguire.'
+					});
+				} else if ((path.includes('email') || path.includes('name')) && !user) {
+					return fail(400, {
+						step: 'info',
+						message: 'Devi inserire un nome e una mail valida.'
+					});
+				} else {
+					return fail(400);
+				}
+			}
 			// No auth user
 			const response = await insertReservation({
 				date,

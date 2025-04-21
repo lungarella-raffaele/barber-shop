@@ -2,6 +2,7 @@
 	import { generateSlotsFromInterval, SlotDuration } from '$lib/get-slots';
 	import { extractHoursAndMinutes, formatTime, toDecimalHours } from '$lib/utils';
 	import { Time } from '@internationalized/date';
+	import { Check, Shield, X } from '../icons';
 
 	const {
 		data
@@ -15,6 +16,8 @@
 			serviceName: string;
 			serviceDuration: number;
 			servicePrice: number;
+			pending: boolean;
+			isAdmin: boolean;
 		}[];
 	} = $props();
 
@@ -111,19 +114,50 @@
 
 		{#each data as d (d.id)}
 			{@const color = getColor(d.serviceDuration)}
+
 			<div
 				style:height="{getSlotHeight(d.serviceDuration)}px"
 				style:top="{getStartingPosition(d.hour)}px"
-				style:background-color={rgbaToString(changeOpacity(color, 0.7))}
+				style:background-color={rgbaToString(changeOpacity(color, 0.6))}
 				style:border-color={rgbaToString(color)}
-				class="absolute w-full overflow-y-hidden rounded border-l-4 border-primary bg-primary bg-opacity-60 p-2 text-sm text-foreground"
+				class="absolute w-full overflow-y-hidden rounded border-l-4 border-primary bg-primary bg-opacity-60 p-2 text-xs"
 			>
-				<span class="font-bold">
-					{d.name} | {d.serviceName}
-				</span>
-				<div class="text-foreground-muted text-xs">
-					{formatTime(d.hour)} - {d.serviceDuration}min
-				</div>
+				<a href="/{d.id}">
+					<span class="flex justify-between font-bold">
+						{d.name} | {d.serviceName}
+						<div class="absolute right-2 top-2 flex gap-2">
+							{#if !d.pending}
+								<Check
+									class="rounded-lg bg-white bg-opacity-90 p-1 shadow-md"
+									color="green"
+									size={20}
+									strokeWidth={3}
+								/>
+							{:else}
+								<X
+									class="rounded-lg bg-white bg-opacity-90 p-1 shadow-md"
+									color="red"
+									size={20}
+									strokeWidth={3}
+								/>
+							{/if}
+
+							{#if d.isAdmin}
+								<Shield
+									class="rounded-lg bg-white bg-opacity-90 p-1 shadow-md"
+									color="green"
+									size={20}
+									strokeWidth={3}
+								/>
+							{/if}
+						</div>
+					</span>
+					{#if d.serviceDuration >= 30}
+						<div class="flex items-center text-xs text-secondary-foreground">
+							{formatTime(d.hour)} - {d.serviceDuration}min
+						</div>
+					{/if}
+				</a>
 			</div>
 		{/each}
 	</div>

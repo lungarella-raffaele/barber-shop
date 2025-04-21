@@ -16,6 +16,7 @@ export { default as CircleCheckBig } from 'lucide-svelte/icons/circle-check-big'
 export { default as CirclePlus } from 'lucide-svelte/icons/circle-plus';
 export { default as CircleUser } from 'lucide-svelte/icons/circle-user';
 export { default as Citrus } from 'lucide-svelte/icons/citrus';
+export { default as Clock } from 'lucide-svelte/icons/clock';
 export { default as ClockAlert } from 'lucide-svelte/icons/clock-alert';
 export { default as Cookie } from 'lucide-svelte/icons/cookie';
 export { default as DollarSign } from 'lucide-svelte/icons/dollar-sign';
@@ -41,6 +42,7 @@ export { default as Rows3 } from 'lucide-svelte/icons/rows-3';
 export { default as Save } from 'lucide-svelte/icons/save';
 export { default as Search } from 'lucide-svelte/icons/search';
 export { default as Settings } from 'lucide-svelte/icons/settings';
+export { default as Shield } from 'lucide-svelte/icons/shield';
 export { default as Sun } from 'lucide-svelte/icons/sun';
 export { default as Timer } from 'lucide-svelte/icons/timer';
 export { default as Trash } from 'lucide-svelte/icons/trash-2';

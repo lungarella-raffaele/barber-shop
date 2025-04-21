@@ -43,7 +43,7 @@
 							autocomplete="email"
 							{...props}
 							bind:value={$formData.email}
-							placeholder="Inserisci il tua nome"
+							placeholder="Inserisci la tua email"
 						/>
 					{/snippet}
 				</Form.Control>
