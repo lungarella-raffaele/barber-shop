@@ -20,7 +20,10 @@
 		onUpdated({ form }) {
 			if (form.message) {
 				if (form.message.success) {
-					toast.warning('Email di verifica', { description: form.message.text });
+					toast.warning('Email di verifica', {
+						description: form.message.text,
+						duration: 4000
+					});
 					goto('/');
 				} else {
 					toast.error(`C'è stato un errore`, { description: form.message.text });
