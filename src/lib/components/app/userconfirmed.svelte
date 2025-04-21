@@ -1,6 +1,8 @@
 <script>
+	import { BadgeCheck, BadgeX, Calendar, CircleUser, House } from '$lib/components/icons';
 	import { Button } from '$lib/components/ui/button';
-	const { user, success, error } = $props();
+	import Callout from './callout.svelte';
+	const { success, error } = $props();
 </script>
 
 <div
@@ -10,16 +12,39 @@
 		class="prose prose-sm mx-auto text-center dark:prose-invert sm:prose-base lg:prose-lg xl:prose-xl 2xl:prose-2xl"
 	>
 		<div class="flex flex-col items-center text-center">
-			{#if success}
-				<h2>Benvenuto {user.name}, hai correttamente verificato la tua mail</h2>
-			{:else if error === 'not_pending'}
-				<h2>Ciao {user.name}</h2>
+			{#if success || error === 'not_pending'}
+				<Callout title="Account confermato con successo" variant="success" class="text-sm">
+					<BadgeCheck size={60} />
+					<h2>Account confermato con successo</h2>
+					<p>
+						Grazie per aver verificato la tua mail. Le prenotazioni future avranno
+						automaticamente il nome e l'email che hai specificato alla login. Le tue
+						prenotazioni saranno disponibili nella sezione 'prenotazioni'.
+
+						<br />
+						<strong>N.B. Le prenotazioni passate non verranno persistite</strong>
+					</p>
+				</Callout>
+
+				<div class="mt-8 flex justify-center gap-3">
+					<Button href="/"><House />Home</Button>
+					<Button href="/newreservation"><Calendar />Prenota</Button>
+					<Button href="/profile"><CircleUser />Profilo</Button>
+				</div>
 			{:else}
-				daje
+				<Callout
+					title="Account confermato con successo"
+					variant="destructive"
+					class="text-sm"
+				>
+					<BadgeX size={60} />
+					<h2>C'è stato un problema nella verifica della mail</h2>
+					<p>
+						Ci scusiamo per il disagio, non è stato possibile verificare la tua mail. Se
+						il problema persiste non esitare a contattarci.
+					</p>
+				</Callout>
 			{/if}
 		</div>
-		<Button href="/">Home</Button>
-		<Button href="/">Prenota</Button>
-		<Button href="/">Profilo</Button>
 	</article>
 </div>

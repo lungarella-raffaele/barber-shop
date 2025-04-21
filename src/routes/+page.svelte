@@ -22,7 +22,7 @@
 		error={data.error}
 	/>
 {:else if pageCase === PageCase.CONFIRM_USER}
-	<UserConfirmed success={data.success} error={data.error} user={data.pendingUser} />
+	<UserConfirmed success={data.success} error={data.error} />
 {:else}
 	<div class="mb-16 mt-16 flex flex-col items-center">
 		<Logo />

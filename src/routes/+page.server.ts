@@ -1,6 +1,8 @@
+import * as auth from '$lib/server/auth';
 import { getReservationByID, updateReservationExpiration } from '$lib/server/backend/reservation';
 import { getUserByID, patchPendingUser } from '$lib/server/backend/user';
 import { expired } from '$lib/utils';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { PageCase, getPageCase } from './page-cases';
 
@@ -70,6 +72,7 @@ export const load: PageServerLoad = async (event) => {
 					error: 'server_error'
 				};
 			}
+
 			const user = await getUserByID(id);
 			if (user?.verifiedEmail || !user) {
 				return {
@@ -90,12 +93,11 @@ export const load: PageServerLoad = async (event) => {
 				};
 			}
 
-			return {
-				pageCase,
-				success: true,
-				pendingUser: response,
-				error: null
-			};
+			const sessionToken = auth.generateSessionToken();
+			const session = await auth.createSession(sessionToken, response.id);
+			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+
+			throw redirect(302, url.pathname + url.search);
 		}
 		case PageCase.PENDING_RESERVATION: {
 			const id = url.searchParams.get('pending');

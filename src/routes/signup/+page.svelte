@@ -36,7 +36,12 @@
 	<Card.Root>
 		<Card.Header>
 			<Card.Title>Sign up</Card.Title>
-			<Card.Description>Benvenuto! Registrati per prenotare più velocemente</Card.Description>
+			<Card.Description
+				>La registrazione ti consente di saltare uno step durante la prenotazione, poiché i
+				nominativi associati saranno automaticamente quelli inseriti nel tuo profilo. Puoi
+				eliminare l'account in qualsiasi momento e non conserveremo alcuna informazione
+				fornita durante la registrazione.
+			</Card.Description>
 		</Card.Header>
 		<Card.Content>
 			<!--email -->
