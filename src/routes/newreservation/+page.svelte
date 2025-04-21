@@ -175,6 +175,16 @@
 		<Tabs.Content value="service">
 			<Card.Root>
 				<Card.Header>
+					{#if data.user?.isAdmin}
+						<Card.Title>Nome</Card.Title>
+						<Input
+							name="name"
+							bind:value={reservationManager.name}
+							placeholder="Inserisci il nome di chi sta prenotando"
+						/>
+					{/if}
+				</Card.Header>
+				<Card.Header>
 					<Card.Title>Servizio</Card.Title>
 					<Card.Description>Scegli il taglio di capelli dai seguenti</Card.Description>
 				</Card.Header>

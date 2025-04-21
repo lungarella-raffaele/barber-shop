@@ -69,13 +69,16 @@ export async function getDayReservations(date: string) {
 			date: table.reservation.date,
 			hour: table.reservation.hour,
 			name: table.reservation.name,
+			pending: table.reservation.pending,
 			email: table.reservation.email,
 			serviceName: table.service.name,
 			serviceDuration: table.service.duration,
-			servicePrice: table.service.price
+			servicePrice: table.service.price,
+			isAdmin: table.user.isAdmin
 		})
 		.from(table.reservation)
 		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id))
+		.innerJoin(table.user, eq(table.reservation.email, table.user.email))
 		.where(and(eq(table.reservation.date, date), eq(table.reservation.pending, false)));
 }
 

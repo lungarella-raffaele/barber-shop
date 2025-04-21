@@ -36,11 +36,11 @@
 
 <h1 class="title">Dashboard</h1>
 
-<ul class="mb-5 flex flex-row gap-2">
+<ul class="mb-5 flex flex-row gap-2 overflow-auto">
 	{#each dashboardItems as dI (dI.name)}
 		<li
 			class={isItemActive(dI.href)
-				? 'underline decoration-primary decoration-2 underline-offset-[16px]'
+				? 'mb-4 underline decoration-primary decoration-2 underline-offset-[16px]'
 				: ''}
 		>
 			<Button href={dI.href} variant="ghost">
@@ -50,6 +50,6 @@
 	{/each}
 </ul>
 
-<div class="mb-4 rounded-md border p-6 shadow">
+<div class="mb-4 rounded-md border p-4 shadow">
 	{@render children()}
 </div>
