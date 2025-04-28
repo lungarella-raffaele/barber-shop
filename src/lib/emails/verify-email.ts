@@ -128,14 +128,3 @@ export async function verifyEmail(name: string, email: string, link: string) {
 		`
 	});
 }
-
-export async function newUser(name: string, email: string, confirmLink: string) {
-	return await resend.emails.send({
-		from: 'Emi Hair Club <account@mailer.emihairclub.com>',
-		to: [email],
-		subject: 'Conferma il tuo account!',
-		html: `Ciao ${name}, <br/>
-		per verificare il tuo account clicca questo link <a href=${confirmLink}>verifica</a>
-		`
-	});
-}

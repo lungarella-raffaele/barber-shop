@@ -1,8 +1,17 @@
 <script lang="ts">
 	import Profile from '$lib/components/app/profile.svelte';
-	import type { PageData } from './$types';
+	import { toast } from 'svelte-sonner';
+	import type { PageProps } from './$types';
 
-	const { data }: { data: PageData } = $props();
+	const { data, form }: PageProps = $props();
+
+	$effect(() => {
+		if (form && !form.success) {
+			toast.error('Nome obbligatorio', {
+				description: `L'informazione del nome è obbligatorio per il profilo`
+			});
+		}
+	});
 </script>
 
 {#if data.user}

@@ -1,21 +1,32 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/button/button.svelte';
-	import { Label } from '$lib/components/ui/label/index.js';
-	import type { User } from '$lib/server/db/schema';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { enhance } from '$app/forms';
+	import { goto, invalidateAll } from '$app/navigation';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { emailSchema } from '$lib/schemas/email';
+	import { newPassword as newPasswordSchema } from '$lib/schemas/password';
+	import type { User } from '$lib/server/db/schema';
+	import { getString } from '$lib/utils';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { KeyRound, Mail, Pencil, Save } from '../icons';
+	import Passwordinput from './passwordinput.svelte';
 
-	const { user }: { user: User } = $props();
+	let { user }: { user: User } = $props();
+
+	const infoBackup = {
+		name: user.name,
+		phoneNumber: user.phoneNumber
+	};
 
 	let isOpen = $state(false);
 
-	const submitFunction: SubmitFunction = () => {
+	const deleteAccount: SubmitFunction = () => {
 		return async ({ result }) => {
 			if (result.type === 'success' || result.type === 'redirect') {
 				toast.success('Account eliminato');
@@ -27,6 +38,82 @@
 			isOpen = false;
 		};
 	};
+
+	const changeEmail: SubmitFunction = ({ cancel, formData }) => {
+		const email = getString(formData, 'email');
+		const correctEmail = emailSchema.safeParse({ email });
+
+		if (!correctEmail.success) {
+			toast.error('Non è stato possibile cambiare la mail', {
+				description: 'Inserisci una mail valida'
+			});
+			return cancel();
+		}
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				toast.warning('Email inviata', {
+					description: `Controlla la tua casella di posta: ${email}`
+				});
+			} else if (result.type === 'failure' && result.data) {
+				toast.error('Non è stato possibile cambiare la mail', {
+					description: result.data.message ? result.data.message : ''
+				});
+			}
+			changeEmailDialog = false;
+		};
+	};
+
+	const changePassword: SubmitFunction = ({ formData, cancel }) => {
+		const newPass = formData.get('new-pass');
+		const confirmPass = formData.get('confirm-pass');
+		const oldPass = formData.get('confirm-pass');
+
+		if (!newPass || !confirmPass || !oldPass) {
+			toast.error('Inserisci tutte le informazioni necessarie');
+			return cancel();
+		}
+
+		if (newPass !== confirmPass) {
+			toast.error('La password di conferma non coincide con la nuova password');
+			return cancel();
+		}
+
+		const isPasswordSafe = newPasswordSchema.safeParse({ password: newPass });
+		console.log(isPasswordSafe);
+
+		if (!isPasswordSafe.success) {
+			toast.error('La password inserita è troppo semplice', {
+				description:
+					'Deve contenere minimo 8 caratteri, un carattere speciale e un carattere maiuscolo'
+			});
+			return cancel();
+		}
+
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				toast.success('Password aggiornata con successo!');
+				changePasswordDialog = false;
+			} else if (result.type === 'failure' && result.data) {
+				toast.error('Non è stato possibile aggiornare la password', {
+					description: result.data.message ? result.data.message : ''
+				});
+			}
+		};
+	};
+
+	let updateInfo = $state(false);
+
+	const toggleInfoUpdate = () => {
+		updateInfo = !updateInfo;
+
+		// If no change is made restore previous values
+		if (!updateInfo) {
+			user = { ...user, ...infoBackup };
+		}
+	};
+
+	let changeEmailDialog = $state(false);
+	let changePasswordDialog = $state(false);
 </script>
 
 <h1 class="title">Profilo</h1>
@@ -35,22 +122,50 @@
 		<Card.Title>Informazioni personali</Card.Title>
 	</Card.Header>
 	<Card.Content>
-		<form>
+		<form action="?/updateInfo" method="post" class="mb-8">
 			<Label for="name">Nome</Label>
-			<Input class="mb-4" id="name" value={user.name} placeholder="Il tuo nome" disabled />
+			<Input
+				class="mb-4"
+				name="name"
+				value={user.name}
+				placeholder="Il tuo nome"
+				disabled={!updateInfo}
+			/>
 
 			<Label for="name">Numero di telefono</Label>
 			<Input
 				class="mb-4"
-				id="name"
-				value={user.phoneNumber ? user.phoneNumber : 'Nessuna informazione'}
+				name="phone"
+				value={user.phoneNumber}
 				placeholder="Il tuo numero di cellulare"
-				disabled
+				disabled={!updateInfo}
 			/>
-
-			<Label for="name">Email</Label>
-			<Input id="name" value={user.email} placeholder="La tua email" disabled />
+			<Button type="button" class="mr-2" onclick={toggleInfoUpdate} variant="icon">
+				<Pencil />
+			</Button>
+			<Button type="submit" disabled={!updateInfo}><Save />Salva</Button>
 		</form>
+
+		<Label for="name">Email</Label>
+		<Input
+			class="mr-4 w-[400px]"
+			id="name"
+			value={user.email}
+			placeholder="La tua email"
+			disabled
+		/>
+
+		<div class="mt-4 flex gap-4">
+			<Button type="button" onclick={() => (changeEmailDialog = !changeEmailDialog)}>
+				<Mail />
+				Cambia email
+			</Button>
+
+			<Button type="button" onclick={() => (changePasswordDialog = !changePasswordDialog)}>
+				<KeyRound />
+				Cambia password
+			</Button>
+		</div>
 	</Card.Content>
 </Card.Root>
 
@@ -81,7 +196,7 @@
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel>Annulla</AlertDialog.Cancel>
-			<form action="?/deleteAccount" method="post" use:enhance={submitFunction}>
+			<form action="?/deleteAccount" method="post" use:enhance={deleteAccount}>
 				<AlertDialog.Action class="{buttonVariants({ variant: 'destructive' })} w-full">
 					Elimina account
 				</AlertDialog.Action>
@@ -89,3 +204,66 @@
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>
+
+<Dialog.Root bind:open={changeEmailDialog}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title>Cambia email</Dialog.Title>
+			<Dialog.Description>
+				Inserisci la nuova mail, ti verrà inviata una mail di conferma.
+			</Dialog.Description>
+		</Dialog.Header>
+		<form action="?/changeEmail" method="post" use:enhance={changeEmail}>
+			<div class="py-8">
+				<Label for="name" class="text-right">Email</Label>
+				<Input
+					id="name"
+					name="email"
+					placeholder="Inserisci la nuova mail"
+					class="col-span-3"
+				/>
+			</div>
+			<Dialog.Footer>
+				<Button
+					variant="secondary"
+					type="button"
+					onclick={() => (changeEmailDialog = false)}
+				>
+					Annulla
+				</Button>
+				<Button type="submit">Cambia</Button>
+			</Dialog.Footer>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={changePasswordDialog}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title>Cambia password</Dialog.Title>
+		</Dialog.Header>
+		<form action="?/changePassword" method="post" use:enhance={changePassword}>
+			<Label for="name" class="text-right">Password attuale</Label>
+			<Passwordinput name="old-pass" id="old-pass" />
+
+			<div class="py-8">
+				<Label for="name">Nuova password</Label>
+				<Passwordinput class="mb-4" name="new-pass" id="new-pass" />
+
+				<Label for="name">Conferma password</Label>
+				<Passwordinput name="confirm-pass" id="confirm-pass" />
+			</div>
+
+			<Dialog.Footer>
+				<Button
+					variant="secondary"
+					type="button"
+					onclick={() => (changeEmailDialog = false)}
+				>
+					Annulla
+				</Button>
+				<Button type="submit">Cambia</Button>
+			</Dialog.Footer>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
