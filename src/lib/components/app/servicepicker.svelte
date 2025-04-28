@@ -32,9 +32,9 @@
 					<div class="text-sm text-gray-400">{service.duration} minuti</div>
 				</div>
 			</div>
-			<span class="text-muted-foreground">
+			<!-- <span class="text-muted-foreground">
 				{service.price} &euro;
-			</span>
+			</span> -->
 		</Label>
 	{/each}
 </RadioGroup.Root>
