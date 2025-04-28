@@ -17,3 +17,9 @@ export const password = z
 export const confirmPassword = z.string().refine((confirmPassword) => confirmPassword, {
 	message: 'Le password non coincidono'
 });
+
+export const newPassword = z.object({
+	password
+});
+
+export type FormSchema = typeof newPassword;

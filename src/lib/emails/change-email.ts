@@ -4,24 +4,18 @@ import { Resend } from 'resend';
 
 const resend = new Resend(MAILER);
 
-export async function newReservationEmail(
-	name: string,
-	email: string,
-	link: string,
-	date: string,
-	hour: string
-) {
+export async function changeEmail(name: string, email: string, link: string) {
 	return await resend.emails.send({
-		from: 'Emi Hair Club <reservations@mailer.emihairclub.com>',
+		from: 'Emi Hair Club <users@mailer.emihairclub.com>',
 		to: [email],
-		subject: 'Conferma prenotazione',
+		subject: 'Cambio mail',
 		html: `
 		<!doctype html>
 		<html lang="it">
 		<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Conferma Prenotazione</title>
+		<title>Cambio Email</title>
 		<style>
 		body {
 		font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -107,23 +101,15 @@ export async function newReservationEmail(
 		<div class="email-container">
 		<div class="content">
 		<h1>Emi Hair Club</h1>
-		<p>Conferma prenotazione</p>
+		<p>Cambio della mail</p>
 		<hr />
 
 		<p>Ciao <strong>${name}</strong>,</p>
-		<p>Grazie per aver prenotato un appuntamento presso Emi Hair Club! Per continuare conferma la prenotazione con il pulsante in basso.</p>
-
-		<div class="detail-box">
-		<h3 class="detail-title">Dettagli della prenotazione</h3>
-		<p><strong>Data: </strong> ${date}</p>
-		<p><strong>Ora: </strong> ${hour}</p>
-		</div>
+		<p>Per confermare il cambio di mail clicca il link.</p>
 
 		<div class="confirm-wrapper">
-		<a class="confirm-button" href="${link}">Conferma Prenotazione</a>
+		<a class="confirm-button" href="${link}">Verifica cambio email</a>
 		</div>
-
-		<p>Se non hai effettuato questa prenotazione, puoi ignorare questa email.</p>
 
 		<div class="salon-info">
 		<p>
