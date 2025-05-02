@@ -1,6 +1,12 @@
-import { getAllServices, updateService } from '$lib/server/backend/services';
+import {
+	addService,
+	deleteService,
+	getAllServices,
+	updateService
+} from '$lib/server/backend/services';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
+import { logger } from '$lib/server/logger';
 import { getBoolean, getNumber, getString } from '$lib/utils';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
@@ -32,6 +38,7 @@ export const actions: Actions = {
 
 		if (!id || !name || !description || !duration || !price) {
 			return {
+				isUpdatingService: true,
 				success: false
 			};
 		}
@@ -47,10 +54,86 @@ export const actions: Actions = {
 
 		if (response) {
 			return {
+				isUpdatingService: true,
 				success: true
 			};
 		} else {
 			return {
+				isUpdatingService: true,
+				success: false
+			};
+		}
+	},
+	addService: async ({ request }) => {
+		const data = await request.formData();
+
+		const name = getString(data, 'name');
+		const description = getString(data, 'description');
+		const duration = getNumber(data, 'duration');
+		const price = getNumber(data, 'price');
+		const active = getBoolean(data, 'active');
+
+		console.log(name);
+		console.log(description);
+		console.log(duration);
+		console.log(price);
+		console.log(active);
+
+		if (!name || !description || !duration || !price) {
+			logger.error('Data is not enough to add a service');
+			return {
+				isAddingService: true,
+				success: false
+			};
+		}
+
+		const response = await addService({
+			id: crypto.randomUUID(),
+			name,
+			description,
+			duration,
+			price,
+			active
+		});
+
+		if (response) {
+			return {
+				isAddingService: true,
+				success: true
+			};
+		} else {
+			logger.error('Could not add service');
+			return {
+				isAddingService: true,
+				success: false
+			};
+		}
+	},
+	deleteService: async ({ request }) => {
+		const data = await request.formData();
+
+		const id = getString(data, 'id');
+
+		if (!id) {
+			logger.error('Id not sent');
+			return {
+				isDeletingService: true,
+				success: false
+			};
+		}
+
+		const response = await deleteService(id);
+
+		if (response) {
+			logger.info('Delete service' + `${response.name}`);
+			return {
+				isDeletingService: true,
+				success: true
+			};
+		} else {
+			logger.error('Could not add service');
+			return {
+				isDeletingService: true,
 				success: false
 			};
 		}
