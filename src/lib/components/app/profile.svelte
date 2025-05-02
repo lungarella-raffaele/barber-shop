@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
+	import EditButton from '$lib/components/app/editbutton.svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -14,7 +15,7 @@
 	import { getString } from '$lib/utils';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
-	import { KeyRound, Mail, Pencil, Save } from '../icons';
+	import { KeyRound, Mail, Save } from '../icons';
 	import Passwordinput from './passwordinput.svelte';
 
 	let { user }: { user: User } = $props();
@@ -101,13 +102,11 @@
 		};
 	};
 
-	let updateInfo = $state(false);
+	let isEditingInfo = $state(false);
 
 	const toggleInfoUpdate = () => {
-		updateInfo = !updateInfo;
-
 		// If no change is made restore previous values
-		if (!updateInfo) {
+		if (!isEditingInfo) {
 			user = { ...user, ...infoBackup };
 		}
 	};
@@ -129,7 +128,7 @@
 				name="name"
 				value={user.name}
 				placeholder="Il tuo nome"
-				disabled={!updateInfo}
+				disabled={!isEditingInfo}
 			/>
 
 			<Label for="name">Numero di telefono</Label>
@@ -138,24 +137,16 @@
 				name="phone"
 				value={user.phoneNumber}
 				placeholder="Il tuo numero di cellulare"
-				disabled={!updateInfo}
+				disabled={!isEditingInfo}
 			/>
-			<Button type="button" class="mr-2" onclick={toggleInfoUpdate} variant="icon">
-				<Pencil />
-			</Button>
-			<Button type="submit" disabled={!updateInfo}><Save />Salva</Button>
+			<EditButton bind:pressed={isEditingInfo} onclick={toggleInfoUpdate} />
+			<Button class="ml-2" type="submit" disabled={!isEditingInfo}><Save />Salva</Button>
 		</form>
 
 		<Label for="name">Email</Label>
-		<Input
-			class="mr-4 w-[400px]"
-			id="name"
-			value={user.email}
-			placeholder="La tua email"
-			disabled
-		/>
+		<Input class="mr-4" id="name" value={user.email} placeholder="La tua email" disabled />
 
-		<div class="mt-4 flex gap-4">
+		<div class="mt-4 flex flex-col gap-4">
 			<Button type="button" onclick={() => (changeEmailDialog = !changeEmailDialog)}>
 				<Mail />
 				Cambia email

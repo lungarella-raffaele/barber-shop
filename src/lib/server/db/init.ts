@@ -1,4 +1,4 @@
-import { getAllServices, insertService } from '../backend/services';
+import { addService, getAllServices } from '../backend/services';
 import { logger } from '../logger';
 import type { Service } from './schema';
 
@@ -9,7 +9,7 @@ export const init = async () => {
 	const result = await getAllServices();
 	if (result.length === 0) {
 		services.forEach(async (ser) => {
-			await insertService(ser);
+			await addService(ser);
 		});
 		logger.info('Services table seeded successfully!');
 	}

@@ -19,10 +19,14 @@
 	);
 
 	$effect(() => {
-		if (form && form.success) {
-			toast.success('Servizio Aggiornato');
-		} else if (form) {
-			toast.error('Il servizio non è stato aggiornato correttamente, contatta Raffaele');
+		if (form && !form.success) {
+			if (form.isUpdatingService) {
+				toast.error('Nome obbligatorio', {
+					description: `L'informazione del nome è obbligatorio per il profilo`
+				});
+			} else if (form.isAddingService) {
+				toast.error('Non è stato possibile aggiungere il servizio');
+			}
 		}
 	});
 </script>
