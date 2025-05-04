@@ -54,6 +54,14 @@
 	};
 </script>
 
+<svelte:head>
+	<meta
+		name="description"
+		content="Visualizza tutte le prenotazioni relative ad un determinato giorno."
+	/>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="mb-2 flex">
 	<Popover.Root bind:open={isCalendarOpen}>
 		<Popover.Trigger>

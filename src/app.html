@@ -2,7 +2,31 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+
+		<meta name="title" content="Emi Hair Club | Emiliano Lo Russo" />
+		<meta
+			name="description"
+			content="Prenota il tuo appuntamento da Emi Hair Club, il salone di Emiliano Lo Russo. Scopri servizi di hairstyling professionale e cura dei capelli."
+		/>
+
+		<!-- Default favicon (for browsers that don't support media queries in link tags) -->
+		<link rel="icon" href="%sveltekit.assets%/favicon-light.ico" type="image/x-icon" />
+
+		<!-- Light mode favicon -->
+		<link
+			rel="icon"
+			href="%sveltekit.assets%/favicon-dark.ico"
+			type="image/x-icon"
+			media="(prefers-color-scheme: light)"
+		/>
+
+		<!-- Dark mode favicon -->
+		<link
+			href="%sveltekit.assets%/favicon-light.ico"
+			rel="icon"
+			type="image/x-icon"
+			media="(prefers-color-scheme: dark)"
+		/>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		%sveltekit.head%
 	</head>
@@ -10,3 +34,5 @@
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>
+
+<head> </head>

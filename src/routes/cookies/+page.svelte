@@ -2,7 +2,13 @@
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 </script>
 
-<article class="prose dark:prose-invert p-4">
+<svelte:head>
+	<meta
+		name="description"
+		content="Informativa completa sull'utilizzo dei cookie sul sito di Emi Hair Club. Scopri come utilizziamo i cookie per migliorare la tua esperienza sul nostro sito web."
+	/>
+</svelte:head>
+<article class="prose p-4 dark:prose-invert">
 	<h1>Cookie Policy</h1>
 
 	<section>
@@ -57,26 +63,6 @@
 			potrebbe non essere possibile accedere a certe aree o utilizzare alcuni dei servizi
 			offerti.
 		</p>
-
-		<h4>Come gestire i cookie nei principali browser:</h4>
-		<ul>
-			<li>
-				<strong>Chrome</strong>: Menu → Impostazioni → Mostra impostazioni avanzate →
-				Privacy → Impostazioni contenuti → Cookie
-			</li>
-			<li>
-				<strong>Firefox</strong>: Menu → Opzioni → Privacy → Utilizzare impostazioni
-				personalizzate → Cookie
-			</li>
-			<li>
-				<strong>Internet Explorer</strong>: Menu → Opzioni Internet → Privacy → Avanzate
-			</li>
-			<li><strong>Safari</strong>: Preferenze → Privacy</li>
-			<li>
-				<strong>Edge</strong>: Impostazioni e altro → Impostazioni → Autorizzazioni sito →
-				Cookie e dati del sito
-			</li>
-		</ul>
 	</section>
 
 	<section>

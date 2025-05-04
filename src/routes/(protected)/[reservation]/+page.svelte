@@ -2,8 +2,8 @@
 	import type { PageData } from './$types';
 
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { formatTime, formatCurrency, formatDate } from '$lib/utils';
 	import * as Table from '$lib/components/ui/table/index.js';
+	import { formatCurrency, formatDate, formatTime } from '$lib/utils';
 
 	const { data }: { data: PageData } = $props();
 
@@ -57,6 +57,14 @@
 		return value;
 	};
 </script>
+
+<svelte:head>
+	<meta
+		name="description"
+		content="Visualizza i dettagli della tua prenotazione: nome, email, data e servizio selezionato."
+	/>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
 
 <Card.Root>
 	<Card.Header>
