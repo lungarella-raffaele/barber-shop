@@ -35,6 +35,9 @@
 	const { form: formData, enhance, delayed } = sForm;
 </script>
 
+<svelte:head>
+	<meta name="description" content="Registrati al sito." />
+</svelte:head>
 <form method="post" use:enhance>
 	<Card.Root>
 		<Card.Header>

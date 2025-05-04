@@ -1,4 +1,15 @@
-<article class="prose dark:prose-invert p-4">
+<script>
+	import { BARBER_SHOP_DETAILS } from '$lib/constants';
+</script>
+
+<svelte:head>
+	<meta
+		name="description"
+		content="Informativa completa sulla privacy sul sito di Emi Hair Club."
+	/>
+</svelte:head>
+
+<article class="prose p-4 dark:prose-invert">
 	<h1>Privacy Policy</h1>
 
 	<section>
@@ -13,9 +24,8 @@
 	<section>
 		<h2>Titolare del Trattamento</h2>
 		<p>
-			Il Titolare del trattamento dei dati personali è [Nome del Barbiere/Azienda], con sede
-			in [Indirizzo completo], P.IVA [Numero P.IVA], contattabile all'indirizzo email [email
-			di contatto].
+			Il Titolare del trattamento dei dati personali è Emiliano Lo Russo | Emi Hair Club, con
+			sede in {BARBER_SHOP_DETAILS.street}, contattabile all'indirizzo email {BARBER_SHOP_DETAILS.email}.
 		</p>
 	</section>
 
@@ -154,6 +164,6 @@
 	</section>
 
 	<footer>
-		<p>Data ultimo aggiornamento: [inserisci qui la data]</p>
+		<p>Data ultimo aggiornamento: 3 Maggio 2025</p>
 	</footer>
 </article>

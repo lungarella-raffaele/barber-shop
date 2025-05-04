@@ -17,6 +17,7 @@ export default class ReservationManager {
 
 	name: string = $state('');
 	email: string = $state('');
+	phone: string = $state('');
 
 	isLogged: boolean = $state(false);
 

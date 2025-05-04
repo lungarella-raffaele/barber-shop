@@ -10,6 +10,11 @@
 	const { services } = data;
 </script>
 
+<meta
+	name="description"
+	content="Scopri il listino prezzi completo di Emi Hair Club di Emiliano Lo Russo. Tagli di capelli, servizi barba, trattamenti e pacchetti personalizzati a prezzi competitivi. Qualità professionale e trasparenza nei costi."
+/>
+
 <h1 class="title">Listino Prezzi</h1>
 <div class="flex flex-col items-center">
 	<Table.Root>
@@ -37,9 +42,12 @@
 
 					<Table.Cell>
 						<Popover.Root>
-							<Popover.Trigger class={buttonVariants({ variant: 'icon' })}>
-								<Info /></Popover.Trigger
+							<Popover.Trigger
+								aria-label="Show service description"
+								class={buttonVariants({ variant: 'icon' })}
 							>
+								<Info />
+							</Popover.Trigger>
 
 							<Popover.Content>{service.description}</Popover.Content>
 						</Popover.Root>

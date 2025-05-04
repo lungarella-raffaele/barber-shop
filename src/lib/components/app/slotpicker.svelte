@@ -58,19 +58,21 @@
 		value={s.start.toString()}
 		disabled={!s.available || s.invalid || s.past}
 	>
-		<Label for={s.start.toString()}>{formatTime(s.start)}</Label>
-		{#if !s.available}
-			<div class="flex items-center">
-				Riservato<CalendarX class="ml-1" />
-			</div>
-		{:else if s.past}
-			<div class="flex items-center">
-				Scaduto<ClockAlert class="ml-1" />
-			</div>
-		{:else if s.invalid}
-			<div class="flex items-center">
-				Tempo insufficiente<ClockAlert class="ml-1" />
-			</div>
-		{/if}
+		<div class="flex w-full items-center justify-between">
+			<Label class="mb-0" for={s.start.toString()}>{formatTime(s.start)}</Label>
+			{#if !s.available}
+				<div class="flex items-center">
+					Riservato<CalendarX class="ml-1" />
+				</div>
+			{:else if s.past}
+				<div>
+					Scaduto<ClockAlert class="ml-1" />
+				</div>
+			{:else if s.invalid}
+				<div class="flex items-center">
+					Tempo insufficiente<ClockAlert class="ml-1" />
+				</div>
+			{/if}
+		</div>
 	</ToggleGroup.Item>
 {/snippet}

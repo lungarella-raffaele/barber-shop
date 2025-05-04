@@ -31,6 +31,14 @@
 	});
 </script>
 
+<svelte:head>
+	<meta
+		name="description"
+		content="Visualizza tutte le prenotazioni relative ad un determinato giorno."
+	/>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <h2 class="mb-4 text-2xl font-bold">Banner</h2>
 <form method="post" action="/updateBanner">
 	<Input

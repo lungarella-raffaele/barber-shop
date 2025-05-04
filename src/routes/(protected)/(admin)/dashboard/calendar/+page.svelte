@@ -50,6 +50,11 @@
 	let idToDelete = $state('');
 </script>
 
+<svelte:head>
+	<meta name="description" content="Pagina di gestione periodi di chiusura." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <form action="?/delete" method="post" id="deleteForm">
 	<input type="hidden" value={idToDelete} name="id" />
 </form>

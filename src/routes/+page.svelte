@@ -13,6 +13,13 @@
 	const pageCase = $derived(getPageCase(page.url));
 </script>
 
+<svelte:head>
+	<meta
+		name="description"
+		content="Prenota il tuo appuntamento da Emi Hair Club, il salone di Emiliano Lo Russo. Tagli di capelli, barba e trattamenti personalizzati con un servizio professionale e di qualità. Prenota online in pochi secondi."
+	/>
+</svelte:head>
+
 {#if pageCase === PageCase.PENDING_RESERVATION && data.reservation?.pending}
 	<Pendingreservation reservation={data.reservation} error={data.error} success={data.success} />
 {:else if pageCase === PageCase.CONFIRM_RESERVATION || (pageCase === PageCase.PENDING_RESERVATION && !data.reservation?.pending)}

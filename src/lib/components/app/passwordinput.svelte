@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { WithElementRef } from 'bits-ui';
-	import { Input } from '../ui/input';
 	import { Eye, EyeClosed } from '$lib/components/icons/index';
-	import Button from '../ui/button/button.svelte';
+	import type { WithElementRef } from 'bits-ui';
 	import type { HTMLInputAttributes, HTMLInputTypeAttribute } from 'svelte/elements';
+	import Button from '../ui/button/button.svelte';
+	import { Input } from '../ui/input';
 
 	type InputType = Exclude<HTMLInputTypeAttribute, 'file'>;
 	type Props = WithElementRef<
@@ -27,6 +27,7 @@
 <div class="relative">
 	<Button
 		tabindex={-1}
+		aria-label="Show password"
 		type="button"
 		onclick={togglePasswordVisibility}
 		variant="icon"

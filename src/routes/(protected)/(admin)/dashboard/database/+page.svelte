@@ -5,6 +5,11 @@
 	const { data } = $props();
 </script>
 
+<svelte:head>
+	<meta name="description" content="Pagina di gestione database." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 {@render ExpiredEntries('Utenti', data.usersCount)}
 {@render ExpiredEntries('Prenotazioni', data.reservationsCounts)}
 
