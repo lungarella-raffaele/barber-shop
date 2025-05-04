@@ -13,7 +13,8 @@
 		email,
 		hour,
 		date,
-		service
+		service,
+		phone
 	}: {
 		isOpen: boolean;
 		loading: boolean;
@@ -22,6 +23,7 @@
 		hour: string;
 		date: DateValue;
 		service: string;
+		phone?: string;
 	} = $props();
 
 	const df = new DateFormatter('it-IT', {
@@ -45,25 +47,34 @@
 			</Dialog.Description>
 		</Dialog.Header>
 		<div class="grid grid-cols-4 grid-rows-4 items-center gap-4 p-6">
-			<Label class="text-right text-muted-foreground">Nome</Label>
+			<Label class="mb-0 text-right text-muted-foreground">Nome</Label>
 			<span class="col-span-3">
 				{name}
 			</span>
 
-			<Label class="text-right text-muted-foreground">Email</Label>
+			<Label class="mb-0 text-right text-muted-foreground">Email</Label>
 			<span class="col-span-3">
 				{email}
 			</span>
 
-			<Label class="text-right text-muted-foreground">Data</Label>
+			<Label class="mb-0 text-right text-muted-foreground">Data</Label>
 			<span class="col-span-3">
 				{date ? df.format(date.toDate(getLocalTimeZone())) : ''} alle
 				{formatTime(hour)}
 			</span>
 
-			<Label class="text-right text-muted-foreground">Servizio</Label>
+			<Label class="mb-0 text-right text-muted-foreground">Servizio</Label>
 			<span class="col-span-3">
 				{service}
+			</span>
+
+			<Label class="mb-0 text-right text-muted-foreground">Numero di telefono</Label>
+			<span class="col-span-3">
+				{#if phone}
+					{phone}
+				{:else}
+					Non specificato
+				{/if}
 			</span>
 		</div>
 		<Dialog.Footer>

@@ -1,5 +1,1 @@
-import type { PageLoad } from './$types';
-
-export const load: PageLoad = () => {
-	return { title: 'Cookies | ' };
-};
+export const prerender = true;

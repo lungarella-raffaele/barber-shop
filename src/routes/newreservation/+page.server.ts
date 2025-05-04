@@ -10,7 +10,7 @@ import {
 } from '$lib/server/backend/reservation.js';
 import { getAllServices } from '$lib/server/backend/services.js';
 import { logger } from '$lib/server/logger.js';
-import { formatDate, formatTime } from '$lib/utils.js';
+import { formatDate, formatTime, getString } from '$lib/utils.js';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
 
@@ -19,12 +19,13 @@ export const actions: Actions = {
 		const user = locals.user;
 		const data = await request.formData();
 
-		const date = data.get('date') as string;
-		const hour = data.get('hour') as string;
-		const service = data.get('service') as string;
+		const date = getString(data, 'date');
+		const hour = getString(data, 'hour');
+		const service = getString(data, 'service');
 
-		const name = data.get('name') as string;
-		const email = data.get('email') as string;
+		const name = getString(data, 'name');
+		const email = getString(data, 'email');
+		const phoneNumber = getString(data, 'phone');
 
 		if (user) {
 			// Logged in user
@@ -39,6 +40,7 @@ export const actions: Actions = {
 				id: crypto.randomUUID(),
 				serviceID: service,
 				name: user.isAdmin ? name : user.name,
+				phoneNumber: user.phoneNumber,
 				email: user.email,
 				pending: false,
 				expiresAt
@@ -95,6 +97,7 @@ export const actions: Actions = {
 				serviceID: service,
 				name,
 				email,
+				phoneNumber,
 				expiresAt: new Date(Date.now() + LOCK_DURATION),
 				pending: true
 			});

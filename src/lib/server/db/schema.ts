@@ -23,13 +23,14 @@ export const reservation = sqliteTable('reservation', {
 	id: text('id').primaryKey(),
 	date: text('date').notNull(),
 	hour: text('hour').notNull(),
+	phoneNumber: text('phone_number'),
 	serviceID: text('service_id')
 		.notNull()
 		.references(() => service.id),
 	name: text('name').notNull(),
 	email: text('email').notNull(),
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
-	pending: integer({ mode: 'boolean' })
+	pending: integer({ mode: 'boolean' }).notNull()
 });
 
 export const service = sqliteTable('service', {

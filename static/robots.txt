@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /dashboard/
+Disallow: /profile/
+Allow: /
+
+Sitemap: https://emihairclub.com/sitemap.text

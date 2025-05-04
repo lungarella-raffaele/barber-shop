@@ -111,6 +111,8 @@ export async function verifyEmail(name: string, email: string, link: string) {
 		<a class="confirm-button" href="${link}">Verifica email</a>
 		</div>
 
+		<p>Se l'email ti è stata inviata per sbaglio, ignorala</p>
+
 		<div class="salon-info">
 		<p>
 		<strong>Emi Hair Club</strong><br />

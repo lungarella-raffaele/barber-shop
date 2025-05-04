@@ -24,6 +24,12 @@
 
 	const confirmReservation = () => {
 		if (!reservationManager.check()) {
+			const { user } = data;
+			if (user && !user.isAdmin) {
+				reservationManager.name = user.name;
+				reservationManager.email = user.email;
+				reservationManager.phone = user.phoneNumber ?? '';
+			}
 			isDialogOpen = true;
 		}
 	};
@@ -48,6 +54,7 @@
 		formData.append('service', reservationManager.selectedService);
 		formData.append('name', reservationManager.name);
 		formData.append('email', reservationManager.email);
+		formData.append('phone', reservationManager.phone);
 
 		return async ({ result }) => {
 			if (result.type === 'success' && result.data) {
@@ -78,8 +85,6 @@
 	let isDialogOpen = $state(false);
 	let loading = $state(false);
 
-	const name = $derived(data.user?.name ?? reservationManager.name);
-	const email = $derived(data.user?.email ?? reservationManager.email);
 	const service = $derived(
 		data.services.find((el) => el.id === reservationManager.selectedService)
 	);
@@ -101,6 +106,13 @@
 	});
 </script>
 
+<svelte:head>
+	<meta
+		name="description"
+		content="Prenota subito il tuo appuntamento da Emi Hair Club di Emiliano Lo Russo. Scegli tra i vari servizi, seleziona data e orario disponibili e ricevi conferma istantanea. Prenota online in pochi click."
+	/>
+</svelte:head>
+
 <h1 class="title">Prenotazione</h1>
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
@@ -108,11 +120,12 @@
 		<ConfirmReservationDialog
 			bind:isOpen={isDialogOpen}
 			{loading}
-			{name}
-			{email}
+			name={reservationManager.name}
+			email={reservationManager.email}
 			date={reservationManager.date}
 			hour={reservationManager.hour}
 			service={service.name}
+			phone={reservationManager.phone}
 		/>
 	{/if}
 	<Tabs.Root bind:value={reservationManager.currentTab}>
@@ -137,12 +150,14 @@
 						<Card.Title>Nominativo</Card.Title>
 						<Card.Description>Inserisci le tue informazioni personali</Card.Description>
 					</Card.Header>
-					<Card.Content class="space-y-2">
+					<Card.Content>
 						<Label>Nome</Label>
 						<Input
 							name="name"
 							bind:value={reservationManager.name}
 							placeholder="Inserisci il tuo nome"
+							class="mb-4"
+							autocomplete="name"
 						/>
 
 						<Label>Email</Label>
@@ -150,7 +165,24 @@
 							name="email"
 							bind:value={reservationManager.email}
 							placeholder="Inserisci la tua email"
+							autocomplete="email"
 						/>
+						<p class="mb-4 ml-2 mt-2 text-sm text-muted-foreground">
+							Ti verrà inviata una mail per confermare la prenotazione all'indirizzo
+							email indicato indicato.
+						</p>
+
+						<Label>Numero di telefono</Label>
+						<Input
+							name="phone"
+							bind:value={reservationManager.phone}
+							placeholder="Inserisci il tuo numero di cellulare"
+							autocomplete="mobile tel"
+						/>
+						<p class="mb-4 ml-2 mt-2 text-sm text-muted-foreground">
+							Il numero di cellulare è opzionale e verrà utilizzato solo nel momento
+							in cui ci saranno comunicazioni urgenti.
+						</p>
 					</Card.Content>
 					<Card.Footer class="mt-8 items-center justify-between">
 						<Button
@@ -176,8 +208,10 @@
 			<Card.Root>
 				<Card.Header>
 					{#if data.user?.isAdmin}
-						<Card.Title>Nome</Card.Title>
+						<Card.Title class="mb-4">Informazioni</Card.Title>
+						<Label>Nome</Label>
 						<Input
+							type="text"
 							name="name"
 							bind:value={reservationManager.name}
 							placeholder="Inserisci il nome di chi sta prenotando"

@@ -139,6 +139,7 @@
 				placeholder="Il tuo numero di cellulare"
 				disabled={!isEditingInfo}
 			/>
+
 			<EditButton bind:pressed={isEditingInfo} onclick={toggleInfoUpdate} />
 			<Button class="ml-2" type="submit" disabled={!isEditingInfo}><Save />Salva</Button>
 		</form>

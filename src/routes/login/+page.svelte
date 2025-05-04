@@ -28,6 +28,10 @@
 	</Alert.Root>
 {/if}
 
+<svelte:head>
+	<meta name="description" content="Accedi al tuo account." />
+</svelte:head>
+
 <form method="post" use:enhance>
 	<Card.Root>
 		<Card.Header>
