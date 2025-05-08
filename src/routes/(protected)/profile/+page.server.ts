@@ -98,7 +98,7 @@ export const actions: Actions = {
 		const { error } = await changeEmail(
 			locals.user.name,
 			email,
-			`${BASE_URL}/profile/?confirm-email-change=${emailVerification.id}`
+			`${BASE_URL}/profile?confirm-email-change=${emailVerification.id}`
 		);
 
 		if (error) {
