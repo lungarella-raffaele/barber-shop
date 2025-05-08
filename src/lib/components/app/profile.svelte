@@ -235,14 +235,14 @@
 			<Dialog.Title>Cambia password</Dialog.Title>
 		</Dialog.Header>
 		<form action="?/changePassword" method="post" use:enhance={changePassword}>
-			<Label for="name" class="text-right">Password attuale</Label>
+			<Label for="old-pass" class="text-right">Password attuale</Label>
 			<Passwordinput name="old-pass" id="old-pass" />
 
 			<div class="py-8">
-				<Label for="name">Nuova password</Label>
+				<Label for="new-pass">Nuova password</Label>
 				<Passwordinput class="mb-4" name="new-pass" id="new-pass" />
 
-				<Label for="name">Conferma password</Label>
+				<Label for="confirm-pass">Conferma password</Label>
 				<Passwordinput name="confirm-pass" id="confirm-pass" />
 			</div>
 

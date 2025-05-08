@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Logo from '$lib/components/app/logo.svelte';
+	import PasswordRecover from '$lib/components/app/passwordrecover.svelte';
 	import Pendingreservation from '$lib/components/app/pendingreservation.svelte';
 	import ReservationConfirmed from '$lib/components/app/reservationconfirmed.svelte';
 	import UserConfirmed from '$lib/components/app/userconfirmed.svelte';
@@ -30,6 +31,8 @@
 	/>
 {:else if pageCase === PageCase.CONFIRM_USER}
 	<UserConfirmed success={data.success} error={data.error} />
+{:else if pageCase === PageCase.RECOVER_PASSWORD}
+	<PasswordRecover id={data.recoverID} success={data.success} error={data.error} />
 {:else}
 	<div class="mb-16 mt-16 flex flex-col items-center">
 		<Logo />

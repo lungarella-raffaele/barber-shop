@@ -63,6 +63,14 @@ export const emailVerification = sqliteTable('email_verification', {
 	email: text('email').notNull()
 });
 
+export const passwordRecover = sqliteTable('password_recover', {
+	id: text('id').primaryKey(),
+	userID: text('user_id')
+		.notNull()
+		.references(() => user.id),
+	expiresAt: integer('expires_at', { mode: 'timestamp' })
+});
+
 export type Session = typeof session.$inferSelect;
 export type User = typeof user.$inferSelect;
 export type Reservation = typeof reservation.$inferSelect;
@@ -70,3 +78,4 @@ export type Service = typeof service.$inferSelect;
 export type Banner = typeof banner.$inferSelect;
 export type Closure = typeof closures.$inferSelect;
 export type EmailVerificationToken = typeof emailVerification.$inferSelect;
+export type PasswordRecover = typeof passwordRecover.$inferSelect;
