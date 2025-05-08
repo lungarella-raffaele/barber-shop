@@ -150,3 +150,32 @@ export async function getEmailVerification(id: string) {
 		.where(eq(table.emailVerification.id, id));
 	return _[0];
 }
+
+export async function insertPasswordRecover(userID: string) {
+	const expiresAt = new Date();
+	expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
+
+	return await db
+		.insert(table.passwordRecover)
+		.values({
+			id: crypto.randomUUID(),
+			userID,
+			expiresAt
+		})
+		.returning()
+		.get();
+}
+
+export async function getPasswordRecover(id: string) {
+	const _ = await db.select().from(table.passwordRecover).where(eq(table.passwordRecover.id, id));
+	return _[0];
+}
+
+export async function expirePasswordRecover(id: string) {
+	return await db
+		.update(table.passwordRecover)
+		.set({ expiresAt: null })
+		.where(eq(table.passwordRecover.id, id))
+		.returning()
+		.get();
+}
