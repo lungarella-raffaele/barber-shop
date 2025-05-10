@@ -87,7 +87,6 @@ export const actions: Actions = {
 
 		const recover = await insertPasswordRecover(user.id);
 
-		// TODO
 		const { error } = await recoverPassword(
 			user.name,
 			email,
