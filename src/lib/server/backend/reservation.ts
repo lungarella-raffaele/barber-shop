@@ -32,7 +32,6 @@ export async function deleteReservation(id: string) {
  * @returns All the non-expired reservations
  */
 export async function getReservations() {
-	// TODO Select only from current date
 	return await db
 		.select({
 			date: table.reservation.date,
@@ -45,7 +44,6 @@ export async function getReservations() {
 }
 
 export async function getAllReservations() {
-	// TODO Exclude all the expired reservations
 	return await db
 		.select({
 			id: table.reservation.id,
