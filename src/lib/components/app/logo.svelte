@@ -1,4 +1,4 @@
-<div class="total mb-12 text-center">
+<div class="total mb-6 text-center">
 	<h1 class="emi">
 		EMI
 		<div class="bg-foreground underline"></div>
