@@ -7,12 +7,14 @@
 	class="flex flex-col lg:flex-row-reverse [&_*]:text-xs [&_*]:font-light [&_*]:text-muted-foreground"
 >
 	<div class="flex justify-center">
-		<Button class="py-1" variant="link" href="Tel: 345 678 91011">
-			{BARBER_SHOP_DETAILS.phone}
-		</Button>
+		{#if BARBER_SHOP_DETAILS.phone}
+			<Button class="py-1" variant="link" href="Tel: 345 678 91011">
+				{BARBER_SHOP_DETAILS.phone}
+			</Button>
+		{/if}
 	</div>
 	<div class="flex justify-center">
-		<Button class="py-1" variant="link" href="#">
+		<Button class="py-1" variant="link" target="_blank" href={BARBER_SHOP_DETAILS.google_page}>
 			{BARBER_SHOP_DETAILS.street}
 		</Button>
 	</div>
