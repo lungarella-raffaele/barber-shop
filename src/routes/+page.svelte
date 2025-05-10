@@ -6,7 +6,6 @@
 	import ReservationConfirmed from '$lib/components/app/reservationconfirmed.svelte';
 	import UserConfirmed from '$lib/components/app/userconfirmed.svelte';
 	import { ArrowUpRight, ChevronRight } from '$lib/components/icons';
-	import { AspectRatio } from '$lib/components/ui/aspect-ratio/index';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 	import type { PageProps } from './$types';
@@ -36,7 +35,7 @@
 {:else if pageCase === PageCase.RECOVER_PASSWORD}
 	<PasswordRecover id={data.recoverID} success={data.success} error={data.error} />
 {:else}
-	<div class="mb-8 mt-16 flex flex-col items-center px-4 text-center">
+	<div class="mb-8 mt-16 flex flex-col items-center p-4 text-center">
 		<Logo />
 
 		<p class="mb-12 text-muted-foreground">
@@ -60,37 +59,35 @@
 		{/if}
 	</div>
 
-	<article class="prose p-4 dark:prose-invert">
+	<article class="prose pl-4 dark:prose-invert lg:pl-40">
 		<h1>Chi sono</h1>
 		<p>
 			Gestito da Emiliano Lo Russo, il nostro salone offre servizi di alta qualità per uomini,
 			donne e bambini. Siamo qui per valorizzare il tuo stile e farti sentire al meglio.
 		</p>
-		<Button variant="link" class="p-0 text-xl" href="/prices">
-			Vedi tutti i servizi
-			<ArrowUpRight />
-		</Button>
-		<Button
-			variant="link"
-			class="p-0 text-xl"
-			target="_blank"
-			href={BARBER_SHOP_DETAILS.instagram}
-		>
-			Seguimi su instagram
-			<ArrowUpRight />
-		</Button>
-		<Button variant="link" class="p-0 text-xl" href={BARBER_SHOP_DETAILS.google_page}>
-			Dove trovarmi
-			<ArrowUpRight />
-		</Button>
+		<div class="flex flex-col items-start">
+			<Button variant="link" class="p-0 text-xl" href="/prices">
+				Vedi tutti i servizi
+				<ArrowUpRight />
+			</Button>
+			<Button
+				variant="link"
+				class="p-0 text-xl"
+				target="_blank"
+				href={BARBER_SHOP_DETAILS.instagram}
+			>
+				Seguimi su instagram
+				<ArrowUpRight />
+			</Button>
+			<Button variant="link" class="p-0 text-xl" href={BARBER_SHOP_DETAILS.google_page}>
+				Dove trovarmi
+				<ArrowUpRight />
+			</Button>
+		</div>
 	</article>
-	<AspectRatio ratio={14 / 9} class="rounded-15px scale-[0.9] bg-transparent">
-		<img src="barber-shop.webp" alt="barber while working" class="rounded-md" />
-	</AspectRatio>
-	<AspectRatio ratio={14 / 9} class="scale-[0.9] bg-muted bg-transparent">
-		<img src="salon.webp" alt="salon" class="rounded-md" />
-	</AspectRatio>
-	<AspectRatio ratio={14 / 9} class="scale-[0.9] bg-muted bg-transparent">
-		<img src="working-picture.webp" alt="salon" class="rounded-md" />
-	</AspectRatio>
+	<div class="mb-40 flex flex-col gap-10 p-4 lg:px-40">
+		<img src="barber-shop.webp" alt="barber while working" class="max-w-[800px] rounded-md" />
+		<img src="salon.webp" alt="salon" class="max-w-[800px] rounded-md" />
+		<img src="working-picture.webp" alt="salon" class="max-w-[800px] rounded-md" />
+	</div>
 {/if}
