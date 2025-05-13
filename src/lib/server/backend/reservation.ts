@@ -61,23 +61,30 @@ export async function getAllReservations() {
 }
 
 export async function getDayReservations(date: string) {
-	return await db
-		.select({
-			id: table.reservation.id,
-			date: table.reservation.date,
-			hour: table.reservation.hour,
-			name: table.reservation.name,
-			pending: table.reservation.pending,
-			email: table.reservation.email,
-			serviceName: table.service.name,
-			serviceDuration: table.service.duration,
-			servicePrice: table.service.price,
-			isAdmin: table.user.isAdmin
-		})
-		.from(table.reservation)
-		.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id))
-		.innerJoin(table.user, eq(table.reservation.email, table.user.email))
-		.where(and(eq(table.reservation.date, date), eq(table.reservation.pending, false)));
+	try {
+		const reservations = await db
+			.select({
+				id: table.reservation.id,
+				date: table.reservation.date,
+				hour: table.reservation.hour,
+				name: table.reservation.name,
+				pending: table.reservation.pending,
+				email: table.reservation.email,
+				serviceName: table.service.name,
+				serviceDuration: table.service.duration,
+				servicePrice: table.service.price,
+				isAdmin: table.user.isAdmin
+			})
+			.from(table.reservation)
+			.innerJoin(table.service, eq(table.reservation.serviceID, table.service.id))
+			.leftJoin(table.user, eq(table.reservation.email, table.user.email))
+			.where(and(eq(table.reservation.date, date), eq(table.reservation.pending, false)));
+
+		return reservations;
+	} catch (err) {
+		console.error(err);
+		return null;
+	}
 }
 
 export async function getReservationsByUser(email: string) {
