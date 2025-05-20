@@ -74,7 +74,12 @@
 				} else if (result.status === 500) {
 					toast.error('Non è stato possibile effettuare la prenotazione!', {
 						description: 'Riprova più tardi',
-						duration: 2000
+						duration: 4000
+					});
+				} else if (result.status === 409) {
+					toast.error('Prenotazione non disponibile', {
+						description: `Purtroppo la data da te scelta non è più disponibile. Scegli un'altra data`,
+						duration: 4000
 					});
 				}
 			}

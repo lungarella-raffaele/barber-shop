@@ -65,7 +65,7 @@
 					Riservato<CalendarX class="ml-1" />
 				</div>
 			{:else if s.past}
-				<div>
+				<div class="flex items-center">
 					Scaduto<ClockAlert class="ml-1" />
 				</div>
 			{:else if s.invalid}
