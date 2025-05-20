@@ -1,8 +1,8 @@
 import { renderComponent, renderSnippet } from '$lib/components/ui/data-table';
+import { formatDate, formatTime } from '$lib/utils';
 import type { ColumnDef } from '@tanstack/table-core';
 import { createRawSnippet } from 'svelte';
 import DatatableActions from './datatableactions.svelte';
-import { formatTime, formatDate } from '$lib/utils';
 
 type Reservation = {
 	id: string;
@@ -16,6 +16,10 @@ type Reservation = {
 };
 
 export const columns: ColumnDef<Reservation>[] = [
+	{
+		accessorKey: 'name',
+		header: 'Nome'
+	},
 	{
 		accessorKey: 'date',
 		header: 'Giorno',

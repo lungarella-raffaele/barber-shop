@@ -103,7 +103,6 @@ export const actions: Actions = {
 
 		if (error) {
 			logger.error('Email bounced');
-			console.log(error);
 			await deleteEmailVerification(emailVerification.id);
 			return fail(500, {
 				message: 'Riprova più tardi',
