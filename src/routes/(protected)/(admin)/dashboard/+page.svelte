@@ -1,47 +1,36 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import { columns } from '$lib/components/app/datatable/column';
 	import DataTable from '$lib/components/app/datatable/datatable.svelte';
 	import Timeline from '$lib/components/app/timeline.svelte';
-	import { ChartGantt, Rows3, Search } from '$lib/components/icons';
+	import { ChartGantt, Rows3 } from '$lib/components/icons';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { cn, formatDate } from '$lib/utils.js';
-	import { type DateValue, getLocalTimeZone, today } from '@internationalized/date';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import {
+		CalendarDate,
+		type DateValue,
+		getLocalTimeZone,
+		parseDate,
+		today
+	} from '@internationalized/date';
 	import CalendarIcon from 'lucide-svelte/icons/calendar';
-	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
-	import { date } from './date.svelte';
 
-	const { form }: PageProps = $props();
+	const { data }: PageProps = $props();
 
-	onMount(() => {
-		if (selectedDate) {
-			formElement?.requestSubmit();
-		}
-	});
+	const date: CalendarDate | null = data.date ? parseDate(data.date) : null;
 
-	let selectedDate = $state<DateValue>(date.value ? date.value : today(getLocalTimeZone()));
+	let selectedDate = $state<DateValue>(date ? date : today(getLocalTimeZone()));
 	const onValueChange = () => {
-		date.value = selectedDate;
-		formElement?.requestSubmit();
-		isCalendarOpen = false;
+		if (selectedDate) {
+			goto(`?date=${selectedDate}`);
+			isCalendarOpen = false;
+		}
 	};
 	let isCalendarOpen = $state(false);
-
-	let reservations = $state(form?.reservations);
-	let formElement: HTMLFormElement | undefined = $state();
-
-	const submitFunction: SubmitFunction = ({ formData }) => {
-		if (selectedDate) formData.append('date', selectedDate.toString());
-		return ({ result }) => {
-			if (result.type === 'success' && result.data) {
-				reservations = result.data.reservations;
-			}
-		};
-	};
+	const reservations = $derived(data?.reservations);
 
 	type View = 'timeline' | 'list';
 	let selectedView: View = $state('timeline');
@@ -69,7 +58,7 @@
 				<Button
 					variant="outline"
 					class={cn(
-						'w-[280px] justify-start rounded-r-none text-left font-normal',
+						'w-[280px] justify-start rounded-md text-left font-normal',
 						!selectedDate && 'text-muted-foreground'
 					)}
 					{...props}
@@ -86,17 +75,6 @@
 		</Popover.Content>
 	</Popover.Root>
 
-	<form
-		bind:this={formElement}
-		action="?/getReservation"
-		use:enhance={submitFunction}
-		method="post"
-	>
-		<Button class="w-full rounded-l-none border-l-0" variant="icon" type="submit"
-			><Search /></Button
-		>
-	</form>
-
 	<Button onclick={toggleView} variant="icon" size="icon" class="ml-2">
 		{#if selectedView === 'timeline'}
 			<Rows3 />
@@ -110,7 +88,7 @@
 {#if !reservations || !reservations.length}
 	<div class="rounded-md border p-4 text-center font-semibold">Nessuna prenotazione</div>
 {:else if selectedView === 'timeline'}
-	<Timeline data={reservations} />
+	<Timeline {reservations} />
 {:else}
 	<DataTable data={reservations} {columns} />
 {/if}

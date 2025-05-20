@@ -80,7 +80,6 @@
 		}
 
 		const isPasswordSafe = newPasswordSchema.safeParse({ password: newPass });
-		console.log(isPasswordSafe);
 
 		if (!isPasswordSafe.success) {
 			toast.error('La password inserita è troppo semplice', {

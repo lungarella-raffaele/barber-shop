@@ -73,12 +73,6 @@ export const actions: Actions = {
 		const price = getNumber(data, 'price');
 		const active = getBoolean(data, 'active');
 
-		console.log(name);
-		console.log(description);
-		console.log(duration);
-		console.log(price);
-		console.log(active);
-
 		if (!name || !description || !duration || !price) {
 			logger.error('Data is not enough to add a service');
 			return {

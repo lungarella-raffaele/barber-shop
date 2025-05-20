@@ -29,6 +29,37 @@ export const actions: Actions = {
 
 		if (user) {
 			// Logged in user
+			const schema = reservation.safeParse({
+				name: user.name,
+				hour,
+				service,
+				email: user.email,
+				date
+			});
+
+			if (!schema.success) {
+				const { path } = schema.error.issues[0];
+				logger.warn({ reason: path }, 'Could not create reservation');
+
+				if (path.includes('date') || path.includes('hour')) {
+					return fail(400, {
+						step: 'date',
+						message: 'Devi scegliere una data per la prenotazione.'
+					});
+				} else if (path.includes('service')) {
+					return fail(400, {
+						step: 'service',
+						message: 'Devi scegliere un servizio per poter proseguire.'
+					});
+				} else if ((path.includes('email') || path.includes('name')) && !user) {
+					return fail(400, {
+						step: 'info',
+						message: 'Devi inserire un nome e una mail valida.'
+					});
+				} else {
+					return fail(400);
+				}
+			}
 
 			logger.info('Creating reservation with existing user');
 			const expiresAt = new Date(date);
