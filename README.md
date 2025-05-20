@@ -1,7 +1,13 @@
-# Emi Hair Club
+# EMI Hair Club
 
-![example event parameter](https://github.com/lungarella-raffaele/emis-barber-shop/actions/workflows/ci.yml/badge.svg?event=push)
+![CI](https://github.com/lungarella-raffaele/emis-barber-shop/actions/workflows/ci.yml/badge.svg?event=push)
 
-Fullstack application for handling booking of Emiliano Lo russo.
+EMI Hair Club is a learning project built with SvelteKit designed to explore modern web application development. This project serves as a playground to experiment with various tools and technologies while building a performant and scalable application.
 
-This project is licensed under the [MIT License](https://it.wikipedia.org/wiki/Licenza_MIT)
+## Project Structure
+
+The project follows standard SvelteKit conventions with directories for source code, static assets, and configuration files.
+
+## License
+
+This project is licensed under the terms found in the [LICENSE](./LICENSE) file.

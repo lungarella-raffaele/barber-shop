@@ -10,6 +10,23 @@ export async function insertReservation(reservation: Reservation): Promise<Resul
 		return { ok: false, error: 'conflict' };
 	}
 
+	const existing = await db
+		.select()
+		.from(table.reservation)
+		.where(
+			and(
+				eq(table.reservation.date, reservation.date),
+				eq(table.reservation.hour, reservation.hour),
+				eq(table.reservation.pending, false),
+				gt(table.reservation.expiresAt, new Date())
+			)
+		);
+
+	if (existing.length > 0) {
+		logger.error('Conflict while creating reservation');
+		return { ok: false, error: 'conflict' };
+	}
+
 	const queryRes = await db
 		.insert(table.reservation)
 		.values({ ...reservation })
@@ -20,6 +37,7 @@ export async function insertReservation(reservation: Reservation): Promise<Resul
 		logger.error('Could not insert a reservation');
 		return { ok: false, error: 'server_error' };
 	}
+
 	logger.info('Reservation created successfully');
 	return { ok: true, value: res };
 }
