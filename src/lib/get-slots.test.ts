@@ -16,12 +16,12 @@ describe('Get slots', () => {
 				{
 					date: parseDate('2022-01-03'),
 					start: parseTime('14:00:00'),
-					duration: new Time(0, 30)
+					duration: new Time(0, 15)
 				},
 				{
 					date: parseDate('2022-01-03'),
 					start: parseTime('15:30:00'),
-					duration: new Time(0, 30)
+					duration: new Time(0, 15)
 				},
 				{
 					date: parseDate('2022-01-03'),
@@ -153,22 +153,39 @@ describe('Get slots', () => {
 
 		const correctSlots: Slot[] = [
 			{ start: parseTime('09:00:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('09:15:00'), available: false, invalid: false, past: false },
 			{ start: parseTime('09:30:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('09:45:00'), available: true, invalid: false, past: false },
 			{ start: parseTime('10:00:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('10:15:00'), available: true, invalid: false, past: false },
 			{ start: parseTime('10:30:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('10:45:00'), available: true, invalid: false, past: false },
 			{ start: parseTime('11:00:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('11:15:00'), available: true, invalid: false, past: false },
 			{ start: parseTime('11:30:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('11:45:00'), available: true, invalid: false, past: false },
 			{ start: parseTime('12:00:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('12:15:00'), available: true, invalid: false, past: false },
 			{ start: parseTime('12:30:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('12:45:00'), available: true, invalid: false, past: false },
 			{ start: parseTime('14:00:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('14:15:00'), available: false, invalid: false, past: false },
 			{ start: parseTime('14:30:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('14:45:00'), available: false, invalid: false, past: false },
 			{ start: parseTime('15:00:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('15:15:00'), available: false, invalid: false, past: false },
 			{ start: parseTime('15:30:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('15:45:00'), available: false, invalid: false, past: false },
 			{ start: parseTime('16:00:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('16:15:00'), available: true, invalid: false, past: false },
 			{ start: parseTime('16:30:00'), available: true, invalid: false, past: false },
+			{ start: parseTime('16:45:00'), available: true, invalid: false, past: false },
 			{ start: parseTime('17:00:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('17:15:00'), available: false, invalid: false, past: false },
 			{ start: parseTime('17:30:00'), available: false, invalid: false, past: false },
-			{ start: parseTime('18:00:00'), available: false, invalid: false, past: false }
+			{ start: parseTime('17:45:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('18:00:00'), available: false, invalid: false, past: false },
+			{ start: parseTime('18:15:00'), available: false, invalid: false, past: false }
 		];
 
 		const slots = getSlots(date, currentReservations);
@@ -199,22 +216,39 @@ describe('Get slots', () => {
 
 			const correctSlots: Slot[] = [
 				{ start: parseTime('09:00:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('09:15:00'), available: false, invalid: false, past: false },
 				{ start: parseTime('09:30:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('09:45:00'), available: true, invalid: true, past: false },
 				{ start: parseTime('10:00:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('10:15:00'), available: false, invalid: false, past: false },
 				{ start: parseTime('10:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('10:45:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('11:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('11:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('11:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('11:45:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('12:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('12:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('12:30:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('12:45:00'), available: true, invalid: true, past: false },
 				{ start: parseTime('14:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('14:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('14:30:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('14:45:00'), available: true, invalid: true, past: false },
 				{ start: parseTime('15:00:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('15:15:00'), available: false, invalid: false, past: false },
 				{ start: parseTime('15:30:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('15:45:00'), available: false, invalid: false, past: false },
 				{ start: parseTime('16:00:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('16:15:00'), available: false, invalid: false, past: false },
 				{ start: parseTime('16:30:00'), available: false, invalid: false, past: false },
+				{ start: parseTime('16:45:00'), available: false, invalid: false, past: false },
 				{ start: parseTime('17:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('17:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('17:30:00'), available: true, invalid: false, past: false },
-				{ start: parseTime('18:00:00'), available: true, invalid: true, past: false }
+				{ start: parseTime('17:45:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('18:00:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('18:15:00'), available: true, invalid: true, past: false }
 			];
 
 			const slots = getSlots(date, currentReservations, new Time(0, 45));
@@ -230,22 +264,39 @@ describe('Get slots', () => {
 
 			const correctSlots: Slot[] = [
 				{ start: parseTime('09:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('09:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('09:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('09:45:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('10:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('10:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('10:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('10:45:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('11:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('11:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('11:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('11:45:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('12:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('12:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('12:30:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('12:45:00'), available: true, invalid: true, past: false },
 				{ start: parseTime('14:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('14:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('14:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('14:45:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('15:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('15:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('15:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('15:45:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('16:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('16:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('16:30:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('16:45:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('17:00:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('17:15:00'), available: true, invalid: false, past: false },
 				{ start: parseTime('17:30:00'), available: true, invalid: false, past: false },
-				{ start: parseTime('18:00:00'), available: true, invalid: true, past: false }
+				{ start: parseTime('17:45:00'), available: true, invalid: false, past: false },
+				{ start: parseTime('18:00:00'), available: true, invalid: true, past: false },
+				{ start: parseTime('18:15:00'), available: true, invalid: true, past: false }
 			];
 
 			const slots = getSlots(date, [], new Time(0, 45));
