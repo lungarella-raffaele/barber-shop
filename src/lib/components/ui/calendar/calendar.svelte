@@ -18,6 +18,7 @@ Discriminated Unions + Destructing (required for bindable) do not
 get along, so we shut typescript up by casting `value` to `never`.
 -->
 <CalendarPrimitive.Root
+	locale="it-IT"
 	bind:value={value as never}
 	bind:ref
 	bind:placeholder

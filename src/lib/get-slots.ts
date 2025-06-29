@@ -9,7 +9,7 @@ import {
 } from '@internationalized/date';
 import { workingHours } from './working-hours';
 
-export const SlotDuration = new Time(0, 30);
+export const SlotDuration = new Time(0, 15);
 
 export const getSlots = (date: DateValue, reservations: ReservedSlot[], service?: Time) => {
 	let slots = generateSlots(date);
@@ -69,7 +69,7 @@ function slotsWithoutGaps(slots: Slot[]) {
 			(next.start.hour - current.start.hour) * 60 +
 			(next.start.minute - current.start.minute);
 
-		if (diffMinutes > 30) {
+		if (diffMinutes > SlotDuration.hour * 60 + SlotDuration.minute) {
 			return false;
 		}
 	}
