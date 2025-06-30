@@ -28,9 +28,9 @@
 	const slots = generateSlotsFromInterval(day.start, day.end);
 
 	const getStartingPosition = (start: string) => {
-		// 2(t-8) where t chosen time
 		const { hours, minutes } = extractHoursAndMinutes(start);
-		const res = 2 * (toDecimalHours(hours, minutes) - day.start.hour) * TIME_SLOT;
+		const slotPerHour = 60 / SlotDuration.minute;
+		const res = slotPerHour * (toDecimalHours(hours, minutes) - day.start.hour) * TIME_SLOT;
 		return res;
 	};
 
@@ -38,8 +38,8 @@
 		return duration * pixelPerMinute;
 	};
 
-	const pixelPerMinute = 2;
-	const minutesPerSlot = SlotDuration.minute;
+	const pixelPerMinute = 4;
+	const minutesPerSlot = 15;
 
 	const TIME_SLOT = pixelPerMinute * minutesPerSlot;
 </script>
