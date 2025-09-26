@@ -4,8 +4,8 @@ import { sha256 } from '@oslojs/crypto/sha2';
 import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { insertSession } from './backend/user';
 import { DAY_IN_MS } from '$lib/constants';
+import { UserService } from '@services/user.service';
 
 export const sessionCookieName = 'auth-session';
 
@@ -22,7 +22,7 @@ export async function createSession(token: string, userID: string) {
 		userID,
 		expiresAt: new Date(Date.now() + DAY_IN_MS * 30)
 	};
-	await insertSession(session);
+	await new UserService().insertSession(session);
 	return session;
 }
 

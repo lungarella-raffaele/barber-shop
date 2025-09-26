@@ -1,9 +1,9 @@
+import { ReservationService } from '@services/reservation.service';
 import type { PageServerLoad } from './$types';
-import { getReservationByID } from '$lib/server/backend/reservation';
 import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	const reservation = await getReservationByID(params.reservation);
+	const reservation = await new ReservationService().getByID(params.reservation);
 
 	if (!reservation || (reservation.email !== locals.user?.email && !locals.user?.isAdmin)) {
 		return error(404, 'Non hai nessuna prenotazione con questo codice');

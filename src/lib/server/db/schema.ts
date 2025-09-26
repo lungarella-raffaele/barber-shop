@@ -24,16 +24,16 @@ export const reservation = sqliteTable('reservation', {
 	date: text('date').notNull(),
 	hour: text('hour').notNull(),
 	phoneNumber: text('phone_number'),
-	serviceID: text('service_id')
+	kindID: text('kind_id')
 		.notNull()
-		.references(() => service.id),
+		.references(() => kind.id),
 	name: text('name').notNull(),
 	email: text('email').notNull(),
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
 	pending: integer({ mode: 'boolean' }).notNull()
 });
 
-export const service = sqliteTable('service', {
+export const kind = sqliteTable('kind', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull().unique(),
 	duration: integer('duration').notNull(),
@@ -48,7 +48,7 @@ export const banner = sqliteTable('banner', {
 	visible: integer({ mode: 'boolean' })
 });
 
-export const closures = sqliteTable('closure', {
+export const shutdowns = sqliteTable('shutdown', {
 	id: text('id').primaryKey(),
 	start: text('start').notNull(),
 	end: text('end').notNull()
@@ -74,8 +74,8 @@ export const passwordRecover = sqliteTable('password_recover', {
 export type Session = typeof session.$inferSelect;
 export type User = typeof user.$inferSelect;
 export type Reservation = typeof reservation.$inferSelect;
-export type Service = typeof service.$inferSelect;
+export type Kind = typeof kind.$inferSelect;
 export type Banner = typeof banner.$inferSelect;
-export type Closure = typeof closures.$inferSelect;
+export type Shutdown = typeof shutdowns.$inferSelect;
 export type EmailVerificationToken = typeof emailVerification.$inferSelect;
 export type PasswordRecover = typeof passwordRecover.$inferSelect;

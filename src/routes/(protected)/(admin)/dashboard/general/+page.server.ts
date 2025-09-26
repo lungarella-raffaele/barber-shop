@@ -1,22 +1,19 @@
-import {
-	addService,
-	deleteService,
-	getAllServices,
-	updateService
-} from '$lib/server/backend/services';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { logger } from '$lib/server/logger';
 import { getBoolean, getNumber, getString } from '$lib/utils';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
+import { KindService } from '@services/kind.service';
 
 export const load: PageServerLoad = async () => {
+	const kinds = new KindService();
 	return {
 		banner: await db.select().from(table.banner).where(eq(table.banner.id, 1)).get(),
-		services: await getAllServices(false)
+		kinds: await kinds.getAll(false)
 	};
 };
+
 export const actions: Actions = {
 	updateBanner: async ({ request }) => {
 		const data = await request.formData();
@@ -43,7 +40,8 @@ export const actions: Actions = {
 			};
 		}
 
-		const response = await updateService({
+		const kinds = new KindService();
+		const response = await kinds.update({
 			id,
 			name,
 			description,
@@ -81,7 +79,8 @@ export const actions: Actions = {
 			};
 		}
 
-		const response = await addService({
+		const kinds = new KindService();
+		const response = await kinds.insert({
 			id: crypto.randomUUID(),
 			name,
 			description,
@@ -116,7 +115,8 @@ export const actions: Actions = {
 			};
 		}
 
-		const response = await deleteService(id);
+		const kinds = new KindService();
+		const response = await kinds.delete(id);
 
 		if (response) {
 			logger.info('Delete service' + `${response.name}`);

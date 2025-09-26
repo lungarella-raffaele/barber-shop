@@ -1,9 +1,9 @@
 import type { DateValue, Time } from '@internationalized/date';
-import type { Banner, Closure, Reservation, Service, Session, User } from '../server/db/schema';
-export type { Banner, Closure, Reservation, Service, Session, User };
+import type { Banner, Shutdown, Reservation, Kind, Session, User } from '../server/db/schema';
+export type { Banner, Shutdown as Closure, Reservation, Kind as Service, Session, User };
 // You can also add client-specific utility types here
 export type UserWithoutPassword = Omit<User, 'passwordHash'>;
-export type ServiceSummary = Pick<Service, 'id' | 'name' | 'price' | 'duration'>;
+export type ServiceSummary = Pick<Kind, 'id' | 'name' | 'price' | 'duration'>;
 export type BusinessHours = {
 	start: Time;
 	end: Time;
