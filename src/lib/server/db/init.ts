@@ -1,23 +1,24 @@
-import { addService, getAllServices } from '../backend/services';
 import { logger } from '../logger';
-import type { Service } from './schema';
+import type { Kind } from './schema';
 
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
+import { KindService } from '@services/kind.service';
 
 export const init = async () => {
-	const result = await getAllServices();
+	const kinds = new KindService();
+	const result = await kinds.getAll();
 	if (result.length === 0) {
-		services.forEach(async (ser) => {
-			await addService(ser);
-		});
+		for (const service of services) {
+			await kinds.insert(service);
+		}
 		logger.info('Services table seeded successfully!');
 	}
 	db.insert(table.banner).values({ id: 1, message: '', visible: false });
 };
 
 // Database entries for salon services
-const services: Service[] = [
+const services: Kind[] = [
 	{
 		id: '1',
 		name: 'Taglio base',

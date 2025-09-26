@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async () => {
 	return {
-		periods: await db.select().from(table.closures)
+		periods: await db.select().from(table.shutdowns)
 	};
 };
 
@@ -23,14 +23,14 @@ export const actions: Actions = {
 
 		return {
 			result: await db
-				.insert(table.closures)
+				.insert(table.shutdowns)
 				.values({ id: crypto.randomUUID(), start, end })
-				.returning({ id: table.closures.id })
+				.returning({ id: table.shutdowns.id })
 		};
 	},
 	delete: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id') as string;
-		await db.delete(table.closures).where(eq(table.closures.id, id));
+		await db.delete(table.shutdowns).where(eq(table.shutdowns.id, id));
 	}
 };

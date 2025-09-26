@@ -2,13 +2,13 @@ import { BASE_URL } from '$env/static/private';
 import { DAY_IN_MS } from '$lib/constants';
 import { verifyEmail } from '$lib/emails/verify-email';
 import { signup } from '$lib/schemas/signup';
-import { getUser, insertUser } from '$lib/server/backend/user';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { redirect } from '@sveltejs/kit';
 import { hash } from 'argon2';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
+import { UserService } from '@services/user.service';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -31,7 +31,8 @@ export const actions: Actions = {
 			});
 		}
 
-		const existingUser = await getUser(form.data.email);
+		const userService = new UserService();
+		const existingUser = await userService.get(form.data.email);
 
 		if (existingUser) {
 			return message(form, {
@@ -50,27 +51,25 @@ export const actions: Actions = {
 			parallelism: 1
 		});
 
-		try {
-			const user = await insertUser({
-				id: userID,
-				email,
-				passwordHash,
-				name,
-				phoneNumber,
-				isAdmin: false,
-				verifiedEmail: false,
-				expiresAt: new Date(Date.now() + DAY_IN_MS)
-			});
+		const user = await userService.insert({
+			id: userID,
+			email,
+			passwordHash,
+			name,
+			phoneNumber,
+			isAdmin: false,
+			verifiedEmail: false,
+			expiresAt: new Date(Date.now() + DAY_IN_MS)
+		});
 
-			verifyEmail(name, email, `${BASE_URL}?user=${user.id}`);
+		verifyEmail(name, email, `${BASE_URL}?user=${user.unwrap().id}`);
 
+		if (user.isOk()) {
 			return message(form, {
 				text: `Abbiamo inviato una mail di verifica a ${email}`,
 				success: true
 			});
-		} catch (e) {
-			console.log(e);
-
+		} else {
 			return message(form, {
 				text: 'Al momento il servizio non risponde. Riprova in seguito.',
 				success: false

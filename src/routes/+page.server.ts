@@ -1,22 +1,19 @@
 import * as auth from '$lib/server/auth';
-import { getReservationByID, updateReservationExpiration } from '$lib/server/backend/reservation';
-import {
-	expirePasswordRecover,
-	getPasswordRecover,
-	getUserByID,
-	patchPassword,
-	patchPendingUser
-} from '$lib/server/backend/user';
 import { logger } from '$lib/server/logger';
 import { expired, getString } from '$lib/utils';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { hash } from 'argon2';
 import type { PageServerLoad } from './$types';
 import { PageCase, getPageCase } from './page-cases';
+import { ReservationService } from '@services/reservation.service';
+import { UserService } from '@services/user.service';
 
 export const load: PageServerLoad = async (event) => {
 	const url = event.url;
 	const pageCase = getPageCase(url);
+
+	const resService = new ReservationService();
+	const userService = new UserService();
 
 	switch (pageCase) {
 		case PageCase.CONFIRM_RESERVATION: {
@@ -31,7 +28,7 @@ export const load: PageServerLoad = async (event) => {
 				};
 			}
 			// Check if reservation exists
-			const reservation = await getReservationByID(id);
+			const reservation = await resService.getByID(id);
 
 			// Display error
 			if (!reservation) {
@@ -61,7 +58,7 @@ export const load: PageServerLoad = async (event) => {
 					error: null
 				};
 			}
-			const updatedReservation = await updateReservationExpiration(reservation.id);
+			const updatedReservation = await resService.updateExpiration(reservation.id);
 
 			return {
 				pageCase,
@@ -81,7 +78,7 @@ export const load: PageServerLoad = async (event) => {
 				};
 			}
 
-			const user = await getUserByID(id);
+			const user = await userService.getByID(id);
 			if (user?.verifiedEmail || !user) {
 				return {
 					pageCase,
@@ -91,7 +88,7 @@ export const load: PageServerLoad = async (event) => {
 				};
 			}
 
-			const response = await patchPendingUser(user.id);
+			const response = await userService.patchPending(user.id);
 			if (!response) {
 				return {
 					pageCase,
@@ -117,7 +114,7 @@ export const load: PageServerLoad = async (event) => {
 					error: 'server_error'
 				};
 			}
-			const reservation = await getReservationByID(id);
+			const reservation = await resService.getByID(id);
 
 			if (!reservation) {
 				return {
@@ -154,7 +151,7 @@ export const load: PageServerLoad = async (event) => {
 					error: 'server_error'
 				};
 			}
-			const passwordRecover = await getPasswordRecover(id);
+			const passwordRecover = await userService.getPasswordRecover(id);
 			if (!passwordRecover) {
 				return {
 					pageCase,
@@ -198,11 +195,13 @@ export const actions: Actions = {
 		const password = getString(data, 'new-pass');
 		const recoverID = getString(data, 'recover-id');
 
+		const userService = new UserService();
+
 		if (!password) {
 			return fail(400, { message: 'Inserisci le informazioni necessarie' });
 		}
 
-		const passwordRecover = await getPasswordRecover(recoverID);
+		const passwordRecover = await userService.getPasswordRecover(recoverID);
 
 		if (!passwordRecover) {
 			logger.error(
@@ -222,13 +221,13 @@ export const actions: Actions = {
 			return fail(500, { message: 'La richiesta è scaduta', error: 'expired' });
 		}
 
-		expirePasswordRecover(passwordRecover.id);
+		userService.expirePasswordRecover(passwordRecover.id);
 		const passwordHash = await hash(password, {
 			memoryCost: 19456,
 			timeCost: 2,
 			parallelism: 1
 		});
-		const response = await patchPassword(passwordHash, passwordRecover.userID);
+		const response = await userService.patchPassword(passwordHash, passwordRecover.userID);
 
 		if (!response) {
 			logger.error(
@@ -239,7 +238,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const user = await getUserByID(passwordRecover.userID);
+		const user = await userService.getByID(passwordRecover.userID);
 
 		if (!user) {
 			logger.error(`${event.url}: Could not find user`);

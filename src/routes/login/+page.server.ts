@@ -3,13 +3,13 @@ import { recoverPassword } from '$lib/emails/recover-password';
 import { emailSchema } from '$lib/schemas/email';
 import { login } from '$lib/schemas/login';
 import * as auth from '$lib/server/auth';
-import { getUser, insertPasswordRecover } from '$lib/server/backend/user';
 import { getString } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import { verify } from 'argon2';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
+import { UserService } from '@services/user.service';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -33,7 +33,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const existingUser = await getUser(form.data.email);
+		const existingUser = await new UserService().get(form.data.email);
 
 		if (!existingUser || !existingUser.verifiedEmail) {
 			return fail(400, {
@@ -76,7 +76,8 @@ export const actions: Actions = {
 			return fail(404, { success: false, message: 'Inserisci una mail valida' });
 		}
 
-		const user = await getUser(email);
+		const userService = new UserService();
+		const user = await userService.get(email);
 		if (!user) {
 			return {
 				success: true,
@@ -85,7 +86,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const recover = await insertPasswordRecover(user.id);
+		const recover = await userService.insertPasswordRecover(user.id);
 
 		const { error } = await recoverPassword(
 			user.name,

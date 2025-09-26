@@ -90,9 +90,7 @@
 	let isDialogOpen = $state(false);
 	let loading = $state(false);
 
-	const service = $derived(
-		data.services.find((el) => el.id === reservationManager.selectedService)
-	);
+	const service = $derived(data.kinds.find((el) => el.id === reservationManager.selectedService));
 	const availableSlots = $derived.by(() => {
 		if (!reservationManager.date) {
 			return [];
@@ -228,7 +226,7 @@
 					<Card.Description>Scegli il taglio di capelli dai seguenti</Card.Description>
 				</Card.Header>
 				<Card.Content class="space-y-2">
-					<ServicePicker services={data.services} />
+					<ServicePicker services={data.kinds} />
 				</Card.Content>
 				<Card.Footer class="mt-8 items-center justify-between">
 					<Button
