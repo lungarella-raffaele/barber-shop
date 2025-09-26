@@ -1,11 +1,13 @@
-import { deleteReservation, getDayReservations } from '$lib/server/backend/reservation';
 import { getLocalTimeZone, today } from '@internationalized/date';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import { ReservationService } from '@services/reservation.service';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const date = url.searchParams.get('date');
-	const reservations = await getDayReservations(date ?? today(getLocalTimeZone()).toString());
+
+	const resService = new ReservationService();
+	const reservations = await resService.getToday(date ?? today(getLocalTimeZone()).toString());
 	return {
 		reservations,
 		date,
@@ -15,11 +17,12 @@ export const load: PageServerLoad = async ({ url }) => {
 
 export const actions: Actions = {
 	delete: async ({ request }) => {
+		const resService = new ReservationService();
 		const data = await request.formData();
 
 		const id = data.get('id') as string;
 
-		const res = await deleteReservation(id);
+		const res = await resService.delete(id);
 
 		if (res) {
 			return {

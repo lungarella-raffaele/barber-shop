@@ -34,3 +34,6 @@ vite.config.ts.timestamp-*
 /blob-report/
 /playwright/
 /migrations
+
+# Editors
+.zed

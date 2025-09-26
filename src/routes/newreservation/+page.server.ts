@@ -2,26 +2,23 @@ import { BASE_URL } from '$env/static/private';
 import { LOCK_DURATION } from '$lib/constants.js';
 import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
 import { reservation } from '$lib/schemas/reservation';
-import { getClosures } from '$lib/server/backend/closures-service.js';
-import {
-	deleteReservation,
-	getReservations,
-	insertReservation
-} from '$lib/server/backend/reservation.js';
-import { getAllServices } from '$lib/server/backend/services.js';
 import { logger } from '$lib/server/logger.js';
 import { formatDate, formatTime, getString } from '$lib/utils.js';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
+import { ReservationService } from '@services/reservation.service.js';
+import { KindService } from '@services/kind.service.js';
+import { ShutdownService } from '@services/shutdown.service.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
+		const reservationService = new ReservationService();
 		const user = locals.user;
 		const data = await request.formData();
 
 		const date = getString(data, 'date');
 		const hour = getString(data, 'hour');
-		const service = getString(data, 'service');
+		const kindID = getString(data, 'service');
 
 		const name = getString(data, 'name');
 		const email = getString(data, 'email');
@@ -32,7 +29,7 @@ export const actions: Actions = {
 			const schema = reservation.safeParse({
 				name: user.name,
 				hour,
-				service,
+				service: kindID,
 				email: user.email,
 				date
 			});
@@ -65,11 +62,12 @@ export const actions: Actions = {
 			const expiresAt = new Date(date);
 			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
 			expiresAt.setHours(23, 59, 59, 999); // Set to end of the day
-			const response = await insertReservation({
+
+			const response = await reservationService.insert({
 				date,
 				hour,
 				id: crypto.randomUUID(),
-				serviceID: service,
+				kindID,
 				name: user.isAdmin ? name : user.name,
 				phoneNumber: user.phoneNumber,
 				email: user.email,
@@ -92,7 +90,7 @@ export const actions: Actions = {
 			const schema = reservation.safeParse({
 				name,
 				hour,
-				service,
+				service: kindID,
 				email,
 				date
 			});
@@ -121,11 +119,11 @@ export const actions: Actions = {
 				}
 			}
 			// No auth user
-			const response = await insertReservation({
+			const response = await reservationService.insert({
 				date,
 				hour,
 				id: crypto.randomUUID(),
-				serviceID: service,
+				kindID,
 				name,
 				email,
 				phoneNumber,
@@ -148,7 +146,7 @@ export const actions: Actions = {
 			);
 
 			if (error) {
-				deleteReservation(response.value.id);
+				reservationService.delete(response.value.id);
 				return fail(500);
 			}
 
@@ -163,14 +161,19 @@ export const actions: Actions = {
 };
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const services = await getAllServices();
-	const currentReservations = await getReservations();
-	const closures = await getClosures();
+	const kind = new KindService();
+	const reservationService = new ReservationService();
+	const shutdowns = new ShutdownService();
+
+	const kinds = await kind.getAll();
+	const currentReservations = await reservationService.get();
+
+	const closures = await shutdowns.getAll();
 
 	return {
 		currentReservations,
 		closures,
-		services,
+		kinds,
 		user: locals.user,
 		title: 'Nuova prenotazione | '
 	};

@@ -61,4 +61,4 @@
 
 <Separator class="my-8" />
 
-<ServicesManagement services={data.services} />
+<ServicesManagement services={data.kinds} />

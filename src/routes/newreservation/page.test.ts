@@ -30,7 +30,7 @@ describe('New reservation page', () => {
 		const { getAllByRole, getByLabelText } = render(Page, { props: { data: userProps } });
 		const radios = getAllByRole('radio');
 
-		expect(radios.length).toEqual(userProps.services.length);
+		expect(radios.length).toEqual(userProps.kinds.length);
 
 		const firstRadio = radios[0];
 		expect(firstRadio.attributes.getNamedItem('data-state')?.value).toEqual('unchecked');
@@ -42,7 +42,7 @@ describe('New reservation page', () => {
 const userProps: PageData = {
 	banner: null,
 	currentReservations: [],
-	services: [
+	kinds: [
 		{
 			id: '1',
 			name: 'Haircut',
@@ -69,7 +69,7 @@ const userProps: PageData = {
 const noUserProps: PageData = {
 	banner: null,
 	currentReservations: [],
-	services: [
+	kinds: [
 		{
 			id: '1',
 			name: 'Haircut',

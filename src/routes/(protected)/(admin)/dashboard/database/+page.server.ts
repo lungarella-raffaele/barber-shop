@@ -1,11 +1,13 @@
-import { deleteExpiredItems } from '$lib/server/backend/clean-up';
-import { getAllExpiredReservations } from '$lib/server/backend/reservation';
-import { getAllUnverifiedExpiredUsers } from '$lib/server/backend/user';
+import { UserService } from '@services/user.service';
 import type { Actions, PageServerLoad } from './$types';
+import { ReservationService } from '@services/reservation.service';
+import { deleteExpiredItems } from '@services/clean-up.service';
 
 export const load: PageServerLoad = async () => {
-	const usersCount = await getAllUnverifiedExpiredUsers();
-	const reservationsCounts = await getAllExpiredReservations();
+	const user = new UserService();
+	const reservationS = new ReservationService();
+	const usersCount = await user.getAllUnverifiedExpiredUsers();
+	const reservationsCounts = await reservationS.getAllExpired();
 
 	return {
 		usersCount,
