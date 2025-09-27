@@ -9,7 +9,7 @@ import * as T from '../db/schema';
 import { hash } from 'argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { DAY_IN_MS } from '$lib/constants';
-import { emailSchema, passwordSchema } from '@schema';
+import { emailSchema, passwordSchema } from '$lib/modules/zod-schemas';
 
 type InsertError =
 	| 'already-existing'

@@ -4,9 +4,9 @@
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
 
 	const {
-		services
+		kinds
 	}: {
-		services: {
+		kinds: {
 			id: string;
 			name: string;
 			duration: number;
@@ -19,22 +19,19 @@
 	const reservationManager = ReservationManager.get();
 </script>
 
-<RadioGroup.Root bind:value={reservationManager.selectedService}>
-	{#each services as service (service.id)}
+<RadioGroup.Root bind:value={reservationManager.selectedKind}>
+	{#each kinds as kind (kind.id)}
 		<Label
-			for={service.id}
+			for={kind.id}
 			class="flex w-full items-center justify-between space-x-2 rounded-lg border p-4 hover:border-primary"
 		>
 			<div class="flex items-center">
-				<RadioGroup.Item value={service.id} id={service.id} class="mr-4" />
+				<RadioGroup.Item value={kind.id} id={kind.id} class="mr-4" />
 				<div class="flex-1 text-left">
-					<div class="text-lg font-semibold">{service.name}</div>
-					<div class="text-sm text-gray-400">{service.duration} minuti</div>
+					<div class="text-lg font-semibold">{kind.name}</div>
+					<div class="text-sm text-gray-400">{kind.duration} minuti</div>
 				</div>
 			</div>
-			<!-- <span class="text-muted-foreground">
-				{service.price} &euro;
-			</span> -->
 		</Label>
 	{/each}
 </RadioGroup.Root>

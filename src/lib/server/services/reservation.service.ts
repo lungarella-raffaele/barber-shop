@@ -1,46 +1,137 @@
-import type { Result } from '$lib/models/types';
 import { db } from '$lib/server/db';
-import type { Reservation } from '$lib/server/db/schema';
+import type { Reservation, User } from '$lib/server/db/schema';
 import * as table from '$lib/server/db/schema';
 import { and, count, eq, gt, lt, sql } from 'drizzle-orm';
 import { logger } from '../logger';
+import { reservationSchema } from '$lib/modules/zod-schemas';
+import { err, ok, type Result } from '$lib/modules/result';
+import { LOCK_DURATION } from '$lib/constants';
+
+type InsertError =
+	| 'no-date'
+	| 'no-kind'
+	| 'conflict'
+	| 'invalid-email'
+	| 'invalid-data'
+	| 'db-error';
 
 export class ReservationService {
-	async insert(reservation: Reservation): Promise<Result<Reservation>> {
-		if (!this.checkAvailability(reservation.date, reservation.hour)) {
-			return { ok: false, error: 'conflict' };
+	async insertByUser(
+		data: {
+			hour: string;
+			date: string;
+			kind: string;
+		},
+		user: User
+	): Promise<Result<Reservation, InsertError>> {
+		const schema = reservationSchema.safeParse({
+			name: user.name,
+			email: user.email,
+			hour: data.hour,
+			kind: data.kind,
+			date: data.date
+		});
+
+		if (!schema.success) {
+			const { path } = schema.error.issues[0];
+			logger.warn({ reason: path }, 'Could not create reservation');
+
+			if (path.includes('date') || path.includes('hour')) {
+				return err('no-date');
+			} else if (path.includes('kind')) {
+				return err('no-kind');
+			} else if ((path.includes('email') || path.includes('name')) && !user) {
+				return err('invalid-email');
+			} else {
+				return err('invalid-data');
+			}
 		}
 
-		const existing = await db
-			.select()
-			.from(table.reservation)
-			.where(
-				and(
-					eq(table.reservation.date, reservation.date),
-					eq(table.reservation.hour, reservation.hour),
-					eq(table.reservation.pending, false),
-					gt(table.reservation.expiresAt, new Date())
-				)
-			);
+		const expiresAt = new Date(data.date);
+		expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
+		expiresAt.setHours(23, 59, 59, 999); // Set to end of the day
 
-		if (existing.length > 0) {
-			logger.error('Conflict while creating reservation');
-			return { ok: false, error: 'conflict' };
+		if (!this.checkAvailability(data.date, data.hour)) {
+			return err('conflict');
 		}
 
-		const queryRes = await db
-			.insert(table.reservation)
-			.values({ ...reservation })
-			.returning();
+		const reservation: table.Reservation = {
+			date: data.date,
+			hour: data.hour,
+			id: crypto.randomUUID(),
+			kindID: data.kind,
+			name: user.name,
+			phoneNumber: user.phoneNumber,
+			email: user.email,
+			pending: false,
+			expiresAt
+		};
+
+		const queryRes = await db.insert(table.reservation).values(reservation).returning();
 
 		const res = queryRes[0];
 		if (!res) {
-			logger.error('Could not insert a reservation');
-			return { ok: false, error: 'server_error' };
+			return err('db-error');
 		}
 
-		logger.info('Reservation created successfully');
-		return { ok: true, value: res };
+		return ok(res);
+	}
+
+	async insertByUnkown(data: {
+		name: string;
+		hour: string;
+		kind: string;
+		email: string;
+		date: string;
+		phoneNumber: string;
+	}) {
+		const schema = reservationSchema.safeParse({
+			name: data.name,
+			hour: data.hour,
+			kind: data.kind,
+			email: data.email,
+			date: data.date
+		});
+
+		if (!schema.success) {
+			const { path } = schema.error.issues[0];
+			logger.warn({ reason: path }, 'Could not create reservation');
+
+			if (path.includes('date') || path.includes('hour')) {
+				return err('no-date');
+			} else if (path.includes('kind')) {
+				return err('no-kind');
+			} else if (path.includes('email') || path.includes('name')) {
+				return err('invalid-email');
+			} else {
+				return err('invalid-data');
+			}
+		}
+
+		if (!this.checkAvailability(data.date, data.hour)) {
+			return err('conflict');
+		}
+
+		const reservation: table.Reservation = {
+			date: data.date,
+			hour: data.hour,
+			id: crypto.randomUUID(),
+			kindID: data.kind,
+			name: data.name,
+			phoneNumber: data.phoneNumber,
+			email: data.email,
+			expiresAt: new Date(Date.now() + LOCK_DURATION),
+			pending: true
+		};
+
+		const queryRes = await db.insert(table.reservation).values(reservation).returning();
+
+		const res = queryRes[0];
+		if (!res) {
+			return err('db-error');
+		}
+
+		return ok(res);
 	}
 
 	async delete(id: string) {
@@ -70,9 +161,9 @@ export class ReservationService {
 				hour: table.reservation.hour,
 				name: table.reservation.name,
 				email: table.reservation.email,
-				serviceName: table.kind.name,
-				serviceDuration: table.kind.duration,
-				servicePrice: table.kind.price
+				kindName: table.kind.name,
+				kindDuration: table.kind.duration,
+				kindPrice: table.kind.price
 			})
 			.from(table.reservation)
 			.where(eq(table.reservation.pending, false))
@@ -89,9 +180,9 @@ export class ReservationService {
 					name: table.reservation.name,
 					pending: table.reservation.pending,
 					email: table.reservation.email,
-					serviceName: table.kind.name,
-					serviceDuration: table.kind.duration,
-					servicePrice: table.kind.price,
+					kindName: table.kind.name,
+					kindDuration: table.kind.duration,
+					kindPrice: table.kind.price,
 					isAdmin: table.user.isAdmin
 				})
 				.from(table.reservation)
@@ -114,9 +205,9 @@ export class ReservationService {
 				hour: table.reservation.hour,
 				name: table.reservation.name,
 				email: table.reservation.email,
-				serviceName: table.kind.name,
-				serviceDuration: table.kind.duration,
-				servicePrice: table.kind.price
+				kindName: table.kind.name,
+				kindDuration: table.kind.duration,
+				kindPrice: table.kind.price
 			})
 			.from(table.reservation)
 			.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
@@ -133,9 +224,9 @@ export class ReservationService {
 				email: table.reservation.email,
 				pending: table.reservation.pending,
 				expiresAt: table.reservation.expiresAt,
-				serviceName: table.kind.name,
-				serviceDuration: table.kind.duration,
-				servicePrice: table.kind.price
+				kindName: table.kind.name,
+				kindDuration: table.kind.duration,
+				kindPrice: table.kind.price
 			})
 			.from(table.reservation)
 			.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
@@ -175,6 +266,7 @@ export class ReservationService {
 					and(
 						eq(table.reservation.date, date),
 						eq(table.reservation.hour, hour),
+						eq(table.reservation.pending, false),
 						lt(table.reservation.expiresAt, new Date())
 					)
 				);

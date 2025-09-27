@@ -9,16 +9,15 @@ export const init = async () => {
 	const kinds = new KindService();
 	const result = await kinds.getAll();
 	if (result.length === 0) {
-		for (const service of services) {
-			await kinds.insert(service);
+		for (const kind of initialKinds) {
+			await kinds.insert(kind);
 		}
-		logger.info('Services table seeded successfully!');
+		logger.info('Kinds table seeded successfully!');
 	}
 	db.insert(table.banner).values({ id: 1, message: '', visible: false });
 };
 
-// Database entries for salon services
-const services: Kind[] = [
+const initialKinds: Kind[] = [
 	{
 		id: '1',
 		name: 'Taglio base',

@@ -1,7 +1,7 @@
 import { BASE_URL } from '$env/static/private';
 import { changeEmail } from '$lib/emails/change-email';
-import { emailSchema } from '@schema';
-import { newPassword as newPasswordSchema } from '@schema';
+import { emailSchema } from '$lib/modules/zod-schemas';
+import { newPasswordSchema } from '$lib/modules/zod-schemas';
 import { logger } from '$lib/server/logger';
 import { getString } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';

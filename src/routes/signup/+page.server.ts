@@ -1,4 +1,4 @@
-import { signup } from '@schema';
+import { signupSchema } from '$lib/modules/zod-schemas';
 import { redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -13,14 +13,14 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	return {
-		form: await superValidate(zod(signup)),
+		form: await superValidate(zod(signupSchema)),
 		title: 'Sign Up | '
 	};
 };
 
 export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod(signup));
+		const form = await superValidate(event, zod(signupSchema));
 		if (!form.valid) {
 			return message(form, {
 				text: 'Le informazioni che hai inserito non sono valide',

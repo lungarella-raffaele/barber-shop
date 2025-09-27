@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import ConfirmReservationDialog from '$lib/components/app/confirmreservationdialog.svelte';
 	import DatePicker from '$lib/components/app/datepicker.svelte';
-	import ServicePicker from '$lib/components/app/servicepicker.svelte';
+	import KindPicker from '$lib/components/app/kindpicker.svelte';
 	import SlotPicker from '$lib/components/app/slotpicker.svelte';
 	import { ChevronLeft, ChevronRight } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button/index';
@@ -44,14 +44,14 @@
 			console.warn('Date not specified');
 			return cancel();
 		}
-		if (!reservationManager.selectedService) {
-			console.warn('Service not specified');
+		if (!reservationManager.selectedKind) {
+			console.warn('Kind not specified');
 			return cancel();
 		}
 
 		formData.append('date', reservationManager.date.toString());
 		formData.append('hour', reservationManager.hour);
-		formData.append('service', reservationManager.selectedService);
+		formData.append('kind', reservationManager.selectedKind);
 		formData.append('name', reservationManager.name);
 		formData.append('email', reservationManager.email);
 		formData.append('phone', reservationManager.phone);
@@ -90,7 +90,7 @@
 	let isDialogOpen = $state(false);
 	let loading = $state(false);
 
-	const service = $derived(data.kinds.find((el) => el.id === reservationManager.selectedService));
+	const kind = $derived(data.kinds.find((el) => el.id === reservationManager.selectedKind));
 	const availableSlots = $derived.by(() => {
 		if (!reservationManager.date) {
 			return [];
@@ -104,7 +104,7 @@
 					start: parseTime(el.startingTime),
 					duration: minutesToTime(el.duration)
 				})),
-			service?.duration ? minutesToTime(service.duration) : undefined
+			kind?.duration ? minutesToTime(kind.duration) : undefined
 		);
 	});
 </script>
@@ -119,7 +119,7 @@
 <h1 class="title">Prenotazione</h1>
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
-	{#if reservationManager.date && service}
+	{#if reservationManager.date && kind}
 		<ConfirmReservationDialog
 			bind:isOpen={isDialogOpen}
 			{loading}
@@ -127,7 +127,7 @@
 			email={reservationManager.email}
 			date={reservationManager.date}
 			hour={reservationManager.hour}
-			service={service.name}
+			kind={kind.name}
 			phone={reservationManager.phone}
 		/>
 	{/if}
@@ -136,12 +136,8 @@
 			{#if !data.user}
 				<Tabs.Trigger class="flex-1" value="info">Nominativo</Tabs.Trigger>
 			{/if}
-			<Tabs.Trigger class="flex-1" value="service">Servizio</Tabs.Trigger>
-			<Tabs.Trigger
-				class="flex-1"
-				disabled={!reservationManager.selectedService}
-				value="date"
-			>
+			<Tabs.Trigger class="flex-1" value="kind">Servizio</Tabs.Trigger>
+			<Tabs.Trigger class="flex-1" disabled={!reservationManager.selectedKind} value="date">
 				Data
 			</Tabs.Trigger>
 		</Tabs.List>
@@ -207,7 +203,7 @@
 				</Card.Root>
 			</Tabs.Content>
 		{/if}
-		<Tabs.Content value="service">
+		<Tabs.Content value="kind">
 			<Card.Root>
 				<Card.Header>
 					{#if data.user?.isAdmin}
@@ -226,7 +222,7 @@
 					<Card.Description>Scegli il taglio di capelli dai seguenti</Card.Description>
 				</Card.Header>
 				<Card.Content class="space-y-2">
-					<ServicePicker services={data.kinds} />
+					<KindPicker kinds={data.kinds} />
 				</Card.Content>
 				<Card.Footer class="mt-8 items-center justify-between">
 					<Button
@@ -239,7 +235,7 @@
 					>
 					<Button
 						aria-label="Go to next step"
-						disabled={!reservationManager.selectedService}
+						disabled={!reservationManager.selectedKind}
 						class="pl-6"
 						onclick={() => reservationManager.next()}
 						>Avanti <ChevronRight class="w-4" /></Button

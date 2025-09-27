@@ -24,9 +24,9 @@ describe('New reservation page', () => {
 
 		// First item should be active
 		expect(tabs[0].attributes.getNamedItem('data-state')?.value).toEqual('active');
-		expect(tabs[0].attributes.getNamedItem('data-value')?.value).toEqual('service');
+		expect(tabs[0].attributes.getNamedItem('data-value')?.value).toEqual('kind');
 	});
-	it('should display services', () => {
+	it('should display kinds', () => {
 		const { getAllByRole, getByLabelText } = render(Page, { props: { data: userProps } });
 		const radios = getAllByRole('radio');
 

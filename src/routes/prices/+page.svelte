@@ -7,7 +7,7 @@
 
 	const { data }: { data: PageData } = $props();
 
-	const { services } = data;
+	const { kinds } = data;
 </script>
 
 <meta
@@ -28,15 +28,15 @@
 			</Table.Row>
 		</Table.Header>
 		<Table.Body>
-			{#each services as service (service.id)}
+			{#each kinds as kind (kind.id)}
 				<Table.Row>
-					<Table.Cell>{service.name}</Table.Cell>
+					<Table.Cell>{kind.name}</Table.Cell>
 					<Table.Cell
-						>{service.duration}
+						>{kind.duration}
 						<span class="text-muted-foreground">min</span></Table.Cell
 					>
 					<Table.Cell
-						>{service.price}
+						>{kind.price}
 						<span class="text-muted-foreground">&euro;</span>
 					</Table.Cell>
 
@@ -49,7 +49,7 @@
 								<Info />
 							</Popover.Trigger>
 
-							<Popover.Content>{service.description}</Popover.Content>
+							<Popover.Content>{kind.description}</Popover.Content>
 						</Popover.Root>
 					</Table.Cell>
 				</Table.Row>

@@ -11,7 +11,7 @@ import { workingHours } from '$lib/working-hours';
 
 export const SlotDuration = new Time(0, 15);
 
-export const getSlots = (date: DateValue, reservations: ReservedSlot[], service?: Time) => {
+export const getSlots = (date: DateValue, reservations: ReservedSlot[], kind?: Time) => {
 	let slots = generateSlots(date);
 
 	// reserved slots
@@ -24,8 +24,8 @@ export const getSlots = (date: DateValue, reservations: ReservedSlot[], service?
 	}
 
 	// slots with not enough time
-	if (service) {
-		slots = invalid(slots, service);
+	if (kind) {
+		slots = invalid(slots, kind);
 	}
 
 	return sortSlots(slots);
