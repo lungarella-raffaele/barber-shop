@@ -6,7 +6,7 @@
 	import { Button } from '$lib/components/ui/button/index';
 	import { RangeCalendar } from '$lib/components/ui/range-calendar/index.js';
 	import { formatDateRange } from '$lib/utils';
-	import { CalendarDate } from '@internationalized/date';
+	import type { CalendarDate } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import { slide } from 'svelte/transition';

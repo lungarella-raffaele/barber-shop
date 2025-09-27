@@ -1,4 +1,4 @@
-import type { Slot } from '$lib/models/types';
+import type { Slot } from '@types';
 import { parseTime } from '@internationalized/date';
 
 // The following days have plain 15 minutes slots

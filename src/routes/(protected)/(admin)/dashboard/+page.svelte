@@ -8,13 +8,8 @@
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { cn, formatDate } from '$lib/utils.js';
-	import {
-		CalendarDate,
-		type DateValue,
-		getLocalTimeZone,
-		parseDate,
-		today
-	} from '@internationalized/date';
+	import type { DateValue, CalendarDate } from '@internationalized/date';
+	import { getLocalTimeZone, parseDate, today } from '@internationalized/date';
 	import CalendarIcon from 'lucide-svelte/icons/calendar';
 	import type { PageProps } from './$types';
 

@@ -1,4 +1,4 @@
-import type { BusinessHours } from '$lib/models/types';
+import type { BusinessHours } from '@types';
 import { Time } from '@internationalized/date';
 import { Day } from './enums/days';
 

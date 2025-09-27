@@ -9,7 +9,6 @@
 	};
 
 	// @ts-expect-error expected error
-	// eslint-disable-next-line no-undef
 	const { data, columns }: DataTableProps<TData, TValue> = $props();
 
 	const table = createSvelteTable({

@@ -1,7 +1,7 @@
 import { DateFormatter, getLocalTimeZone, parseDate, Time } from '@internationalized/date';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { Slot } from './models/types';
+import type { Slot } from '@types';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -129,6 +129,6 @@ export function printSlots(slots: Slot[]) {
 		const available = String(slot.available).padEnd(5, ' ');
 		const invalid = String(slot.invalid).padEnd(5, ' ');
 
-		console.log(`Hour: ${hour}:${minute}  |  Available: ${available}  |  Invalid: ${invalid}`);
+		console.info(`Hour: ${hour}:${minute}  |  Available: ${available}  |  Invalid: ${invalid}`);
 	});
 }

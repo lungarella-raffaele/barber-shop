@@ -15,7 +15,8 @@ const config = {
 		adapter: adapter(),
 		alias: {
 			'@service': 'src/lib/server/services/*',
-			'@schema': 'src/lib/modules/zod-schemas.ts'
+			'@schema': 'src/lib/modules/zod-schemas.ts',
+			'@types': 'src/lib/types/index.ts'
 		}
 	}
 };

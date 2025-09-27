@@ -28,7 +28,6 @@ export default class Timer {
 		// Check if the timer has finished
 		if (this.timeLeft <= 0) {
 			this.stop();
-			console.log("Time's up!");
 		}
 	};
 
