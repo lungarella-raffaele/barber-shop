@@ -23,7 +23,7 @@ export const actions: Actions = {
 
 		await db.update(table.banner).set({ message, visible }).where(eq(table.banner.id, 1));
 	},
-	updateService: async ({ request }) => {
+	updateKind: async ({ request }) => {
 		const data = await request.formData();
 
 		const id = getString(data, 'id');
@@ -35,7 +35,7 @@ export const actions: Actions = {
 
 		if (!id || !name || !description || !duration || !price) {
 			return {
-				isUpdatingService: true,
+				isUpdatingKind: true,
 				success: false
 			};
 		}
@@ -52,17 +52,17 @@ export const actions: Actions = {
 
 		if (response) {
 			return {
-				isUpdatingService: true,
+				isUpdatingKind: true,
 				success: true
 			};
 		} else {
 			return {
-				isUpdatingService: true,
+				isUpdatingKind: true,
 				success: false
 			};
 		}
 	},
-	addService: async ({ request }) => {
+	addKind: async ({ request }) => {
 		const data = await request.formData();
 
 		const name = getString(data, 'name');
@@ -72,9 +72,9 @@ export const actions: Actions = {
 		const active = getBoolean(data, 'active');
 
 		if (!name || !description || !duration || !price) {
-			logger.error('Data is not enough to add a service');
+			logger.error('Data is not enough to add a kind');
 			return {
-				isAddingService: true,
+				isAddingKind: true,
 				success: false
 			};
 		}
@@ -91,18 +91,18 @@ export const actions: Actions = {
 
 		if (response) {
 			return {
-				isAddingService: true,
+				isAddingKind: true,
 				success: true
 			};
 		} else {
 			logger.error('Could not add service');
 			return {
-				isAddingService: true,
+				isAddingKind: true,
 				success: false
 			};
 		}
 	},
-	deleteService: async ({ request }) => {
+	deleteKind: async ({ request }) => {
 		const data = await request.formData();
 
 		const id = getString(data, 'id');
@@ -110,7 +110,7 @@ export const actions: Actions = {
 		if (!id) {
 			logger.error('Id not sent');
 			return {
-				isDeletingService: true,
+				isDeletingKind: true,
 				success: false
 			};
 		}
@@ -119,15 +119,15 @@ export const actions: Actions = {
 		const response = await kinds.delete(id);
 
 		if (response) {
-			logger.info('Delete service' + `${response.name}`);
+			logger.info('Delete kind' + `${response.name}`);
 			return {
-				isDeletingService: true,
+				isDeletingKind: true,
 				success: true
 			};
 		} else {
-			logger.error('Could not add service');
+			logger.error('Could not add kind');
 			return {
-				isDeletingService: true,
+				isDeletingKind: true,
 				success: false
 			};
 		}

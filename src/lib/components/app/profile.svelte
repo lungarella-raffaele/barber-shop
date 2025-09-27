@@ -10,7 +10,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { emailSchema } from '@schema';
-	import { newPassword as newPasswordSchema } from '@schema';
+	import { newPasswordSchema } from '@schema';
 	import type { User } from '$lib/server/db/schema';
 	import { getString } from '$lib/utils';
 	import type { SubmitFunction } from '@sveltejs/kit';

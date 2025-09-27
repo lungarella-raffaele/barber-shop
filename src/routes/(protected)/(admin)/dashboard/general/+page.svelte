@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ServicesManagement from '$lib/components/app/servicesmanagement.svelte';
+	import KindsManager from '$lib/components/app/kindsmanager.svelte';
 	import { Save } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -20,11 +20,11 @@
 
 	$effect(() => {
 		if (form && !form.success) {
-			if (form.isUpdatingService) {
+			if (form.isUpdatingKind) {
 				toast.error('Nome obbligatorio', {
 					description: `L'informazione del nome è obbligatorio per il profilo`
 				});
-			} else if (form.isAddingService) {
+			} else if (form.isAddingKind) {
 				toast.error('Non è stato possibile aggiungere il servizio');
 			}
 		}
@@ -61,4 +61,4 @@
 
 <Separator class="my-8" />
 
-<ServicesManagement services={data.kinds} />
+<KindsManager kinds={data.kinds} />

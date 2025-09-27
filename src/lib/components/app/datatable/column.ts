@@ -10,9 +10,9 @@ type Reservation = {
 	hour: string;
 	name: string;
 	email: string;
-	serviceName: string;
-	serviceDuration: number;
-	servicePrice: number;
+	kindName: string;
+	kindDuration: number;
+	kindPrice: number;
 };
 
 export const columns: ColumnDef<Reservation>[] = [

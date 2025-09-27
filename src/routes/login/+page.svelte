@@ -9,7 +9,7 @@
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { login } from '@schema';
+	import { loginSchema } from '@schema';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import type { ActionData, PageData } from './$types';
@@ -17,7 +17,7 @@
 	let { form, data }: { form: ActionData; data: PageData } = $props();
 
 	const sForm = superForm(data.form, {
-		validators: zodClient(login)
+		validators: zodClient(loginSchema)
 	});
 
 	const { form: formData, enhance, delayed } = sForm;

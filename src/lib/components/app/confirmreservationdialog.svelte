@@ -13,7 +13,7 @@
 		email,
 		hour,
 		date,
-		service,
+		kind,
 		phone
 	}: {
 		isOpen: boolean;
@@ -22,7 +22,7 @@
 		email: string;
 		hour: string;
 		date: DateValue;
-		service: string;
+		kind: string;
 		phone?: string;
 	} = $props();
 
@@ -65,7 +65,7 @@
 
 			<Label class="mb-0 text-right text-muted-foreground">Servizio</Label>
 			<span class="col-span-3">
-				{service}
+				{kind}
 			</span>
 
 			<Label class="mb-0 text-right text-muted-foreground">Numero di telefono</Label>
