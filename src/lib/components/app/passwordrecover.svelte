@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
-	import { newPassword as newPasswordSchema } from '@schema';
+	import { newPasswordSchema } from '@schema';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import Button from '../ui/button/button.svelte';

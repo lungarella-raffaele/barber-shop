@@ -17,7 +17,7 @@ export class KindService {
 		try {
 			return ok(await db.insert(T.kind).values(kind).returning().get());
 		} catch (e) {
-			logger.error({ e, kind }, 'Error while adding service');
+			logger.error({ e, kind }, 'Error while adding kind');
 			return err('Could not insert kind');
 		}
 	}
@@ -25,8 +25,8 @@ export class KindService {
 	async update(kind: T.Kind) {
 		// Make sure we have an ID for the update
 		if (!kind.id) {
-			logger.error('Attempted to update service without ID');
-			throw new Error('Service ID is required for updates');
+			logger.error('Attempted to update kind without ID');
+			throw new Error('Kind ID is required for updates');
 		}
 
 		// eslint-disable-next-line
@@ -40,7 +40,7 @@ export class KindService {
 				.returning()
 				.get();
 		} catch (err) {
-			logger.error({ err, kindID: kind.id }, 'Error while updating service');
+			logger.error({ err, kindID: kind.id }, 'Error while updating kind');
 			throw err; // Re-throw to allow caller to handle or see the actual error
 		}
 	}

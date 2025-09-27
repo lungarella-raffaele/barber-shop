@@ -7,72 +7,66 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import type { Service } from '$lib/models/types';
+	import type { Kind } from '$lib/models/types';
 	import { slide } from 'svelte/transition';
 
-	let { services }: { services: Service[] } = $props();
+	let { kinds }: { kinds: Kind[] } = $props();
 
-	const serviceBackup = services;
+	const kindBackup = kinds;
 
 	let isEditing = $state(false);
 	let whoIsOpen = $state('');
 
 	const handleEditToggle = () => {
-		services = serviceBackup.map((s) => ({ ...s }));
+		kinds = kindBackup.map((s) => ({ ...s }));
 	};
 
-	let isAddingService = $state(false);
-	const toggleAddService = () => {
-		isAddingService = !isAddingService;
+	let isAddingKind = $state(false);
+	const toggleAddKind = () => {
+		isAddingKind = !isAddingKind;
 	};
 </script>
 
 <h2 class="my-4 text-2xl font-bold">Servizi</h2>
 <Accordion.Root type="single" bind:value={whoIsOpen} class="mb-8">
-	{#each services as service}
-		{@render serviceItem(service)}
+	{#each kinds as kind}
+		{@render KindItem(kind)}
 	{/each}
 </Accordion.Root>
 
-{#if !isAddingService}
-	<Button class="w-full" variant="secondary" onclick={toggleAddService}
+{#if !isAddingKind}
+	<Button class="w-full" variant="secondary" onclick={toggleAddKind}
 		><CirclePlus />Aggiungi servizio</Button
 	>
 {/if}
-{#if isAddingService}
+{#if isAddingKind}
 	<div transition:slide class="rounded-md border shadow">
 		<div class="flex flex-col p-4">
 			<h2 class="mb-4 p-2 text-lg font-bold">Aggiungi servizio</h2>
-			<form action="?/addService" id="adding-service-form" method="post">
-				<Label for="new-service-name">Nome</Label>
-				<Input
-					id="new-service-name"
-					type="text"
-					placeholder="Nome"
-					name="name"
-					class="mb-4"
-				/>
+			<form action="?/addKind" id="adding-kind-form" method="post">
+				<Label for="new-kind-name">Nome</Label>
+				<Input id="new-kind-name" type="text" placeholder="Nome" name="name" class="mb-4" />
 
-				<Label for="new-service-description">Descrizione</Label>
+				<Label for="new-kind-description">Descrizione</Label>
 				<Textarea
-					id="new-service-description"
+					id="new-kind-description"
 					placeholder="Descrizione del servizio"
 					name="description"
 					class="mb-4"
 				/>
 
-				<Label for="new-service-duration">Durata</Label>
+				<Label for="new-kind-duration">Durata</Label>
 				<Input
-					id="new-service-duration"
+					id="new-kind-duration"
 					placeholder="Durata del servizio"
 					name="duration"
 					class="mb-4"
 					type="number"
 				/>
 
-				<Label for="new-service-price">Prezzo</Label>
+				<Label for="new-kind-price">Prezzo</Label>
 				<Input
-					id="new-service-price"
+					id="new-kind-price"
 					placeholder="Prezzo del servizio"
 					type="number"
 					name="price"
@@ -80,8 +74,8 @@
 				/>
 
 				<div class="mt-4 flex items-center">
-					<Switch id="new-service-active" name="active" />
-					<Label class="mb-0" for="new-service-active">Disponibilità</Label>
+					<Switch id="new-kind-active" name="active" />
+					<Label class="mb-0" for="new-kind-active">Disponibilità</Label>
 				</div>
 
 				<div class="mt-8 flex w-full flex-row-reverse gap-2">
@@ -90,7 +84,7 @@
 						Salva
 					</Button>
 
-					<Button type="button" variant="secondary" onclick={toggleAddService}>
+					<Button type="button" variant="secondary" onclick={toggleAddKind}>
 						Annulla
 					</Button>
 				</div>
@@ -99,15 +93,15 @@
 	</div>
 {/if}
 
-{#snippet serviceItem(service: Service)}
-	<Accordion.Item value={service.id} disabled={isEditing}>
+{#snippet KindItem(kind: Kind)}
+	<Accordion.Item value={kind.id} disabled={isEditing}>
 		<Accordion.Trigger>
 			<h1 class="flex items-center">
 				<span class="mr-2">
-					{service.name}
+					{kind.name}
 				</span>
 
-				{#if service.active}
+				{#if kind.active}
 					<Check size={17} color="green" />
 				{:else}
 					<X color="red" size={17} />
@@ -115,44 +109,44 @@
 			</h1>
 		</Accordion.Trigger>
 		<Accordion.Content class="rounded-lg py-4">
-			<form action="?/updateService" id={service.id + '-form'} method="post">
-				<input type="hidden" value={service.id} name="id" />
-				<Label for={service.id + '-name'}>Nome</Label>
+			<form action="?/updateKind" id={kind.id + '-form'} method="post">
+				<input type="hidden" value={kind.id} name="id" />
+				<Label for={kind.id + '-name'}>Nome</Label>
 				<Input
 					disabled={!isEditing}
-					id={service.id + '-name'}
-					value={service.name}
+					id={kind.id + '-name'}
+					value={kind.name}
 					type="text"
 					placeholder="Nome"
 					name="name"
 					class="mb-4"
 				/>
 
-				<Label for={service.id + '-description'}>Descrizione</Label>
+				<Label for={kind.id + '-description'}>Descrizione</Label>
 				<Textarea
 					disabled={!isEditing}
-					id={service.id + '-description'}
-					value={service.description}
+					id={kind.id + '-description'}
+					value={kind.description}
 					placeholder="Descrizione del servizio"
 					name="description"
 					class="mb-4"
 				/>
 
-				<Label for={service.id + '-duration'}>Durata</Label>
+				<Label for={kind.id + '-duration'}>Durata</Label>
 				<Input
-					id={service.id + '-duration'}
+					id={kind.id + '-duration'}
 					disabled={!isEditing}
-					value={service.duration}
+					value={kind.duration}
 					placeholder="Durata del servizio"
 					name="duration"
 					class="mb-4"
 				/>
 
-				<Label for={service.id + '-price'}>Prezzo</Label>
+				<Label for={kind.id + '-price'}>Prezzo</Label>
 				<Input
 					disabled={!isEditing}
-					id={service.id + '-price'}
-					value={service.price}
+					id={kind.id + '-price'}
+					value={kind.price}
 					placeholder="Prezzo del servizio"
 					type="number"
 					name="price"
@@ -161,22 +155,18 @@
 
 				<div class="mt-4 flex items-center space-x-2">
 					<Switch
-						id={service.id + '-active'}
-						checked={service.active}
+						id={kind.id + '-active'}
+						checked={kind.active}
 						disabled={!isEditing}
 						name="active"
 					/>
 
-					<Label class="mb-0" for={service.id + '-active'}>Disponibilità</Label>
+					<Label class="mb-0" for={kind.id + '-active'}>Disponibilità</Label>
 				</div>
 
 				<div class="mt-8 flex justify-between">
 					<div class="flex gap-2">
-						<Button
-							variant="destructive"
-							type="submit"
-							form="{service.id}-delete-service"
-						>
+						<Button variant="destructive" type="submit" form="{kind.id}-delete-kind">
 							<Trash />
 						</Button>
 						<Button type="submit" class="mr-4" disabled={!isEditing}>
@@ -189,8 +179,8 @@
 				</div>
 			</form>
 
-			<form action="?/deleteService" method="post" id="{service.id}-delete-service">
-				<input type="hidden" name="id" value={service.id} />
+			<form action="?/deleteKind" method="post" id="{kind.id}-delete-kind">
+				<input type="hidden" name="id" value={kind.id} />
 			</form>
 		</Accordion.Content>
 	</Accordion.Item>

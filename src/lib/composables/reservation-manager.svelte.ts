@@ -1,4 +1,4 @@
-import { reservation } from '@schema';
+import { reservationSchema } from '$lib/modules/zod-schemas';
 import { type DateValue } from '@internationalized/date';
 import { getContext, hasContext, setContext } from 'svelte';
 import { toast } from 'svelte-sonner';
@@ -13,7 +13,7 @@ export default class ReservationManager {
 
 	date: DateValue | undefined = $state();
 	hour: string = $state('');
-	selectedService = $state('');
+	selectedKind = $state('');
 
 	name: string = $state('');
 	email: string = $state('');
@@ -45,10 +45,10 @@ export default class ReservationManager {
 	 * @returns true if the values are all inserted
 	 */
 	check(): boolean {
-		const schema = reservation.safeParse({
+		const schema = reservationSchema.safeParse({
 			name: this.name,
 			hour: this.hour,
-			service: this.selectedService,
+			kind: this.selectedKind,
 			email: this.email,
 			date: this.date?.toString()
 		});
@@ -67,9 +67,9 @@ export default class ReservationManager {
 			toast.warning('Devi scegliere un orario per poter proseguire');
 			this.goToTab('date');
 			return true;
-		} else if (path.includes('service')) {
+		} else if (path.includes('kind')) {
 			toast.warning('Devi scegliere un servizio per poter proseguire');
-			this.goToTab('service');
+			this.goToTab('kind');
 			return true;
 		} else if ((path.includes('email') || path.includes('name')) && !this.isLogged) {
 			toast.warning('Devi inserire un nome e una mail valida');
@@ -134,7 +134,7 @@ export default class ReservationManager {
 		// Info only present if the user is not logged
 		if (!this.isLogged) this.tabs.push('info');
 
-		this.tabs.push('service');
+		this.tabs.push('kind');
 		this.tabs.push('date');
 		this.currentTab = this.tabs[0];
 	}

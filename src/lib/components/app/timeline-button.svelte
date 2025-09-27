@@ -14,7 +14,7 @@
 		if (!ref) {
 			return;
 		}
-		const color = getColor(reservation.serviceDuration);
+		const color = getColor(reservation.kindDuration);
 		ref.style.top = `${top}px`;
 		ref.style.height = `${height}px`;
 		ref.style.backgroundColor = rgbaToString(changeOpacity(color, 0.4));
@@ -90,12 +90,12 @@
 			>
 				<div class="text-sm">
 					<b>{reservation.name}</b>
-					{reservation.serviceName}
+					{reservation.kindName}
 				</div>
 
-				{#if reservation.serviceDuration >= 30}
+				{#if reservation.kindDuration >= 30}
 					<div class="flex items-center text-xs text-secondary-foreground">
-						{formatTime(reservation.hour)} - {reservation.serviceDuration}min
+						{formatTime(reservation.hour)} - {reservation.kindDuration}min
 					</div>
 				{/if}
 
@@ -131,7 +131,7 @@
 	<Popover.Content class="w-60">
 		<div class="grid gap-2">
 			<b>{reservation.name}</b>
-			{reservation.serviceName}
+			{reservation.kindName}
 			<Button href="/{reservation.id}">Vedi dettaglio</Button>
 			<hr />
 			<Button variant="destructive" onclick={() => (isDialogOpen = true)}>Elimina</Button>

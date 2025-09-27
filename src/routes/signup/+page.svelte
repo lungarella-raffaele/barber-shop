@@ -7,7 +7,7 @@
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
-	import { signup } from '@schema';
+	import { signupSchema } from '@schema';
 	import { toast } from 'svelte-sonner';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
@@ -16,7 +16,7 @@
 	const { data }: PageProps = $props();
 
 	const sForm = superForm(data.form, {
-		validators: zodClient(signup),
+		validators: zodClient(signupSchema),
 		onUpdated({ form }) {
 			if (form.message) {
 				if (form.message.success) {

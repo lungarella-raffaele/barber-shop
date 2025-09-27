@@ -1,7 +1,7 @@
 import { BASE_URL } from '$env/static/private';
 import { recoverPassword } from '$lib/emails/recover-password';
-import { emailSchema } from '@schema';
-import { login } from '@schema';
+import { emailSchema } from '$lib/modules/zod-schemas';
+import { loginSchema } from '$lib/modules/zod-schemas';
 import * as auth from '$lib/server/auth';
 import { getString } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
@@ -17,14 +17,14 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	return {
-		form: await superValidate(zod(login)),
+		form: await superValidate(zod(loginSchema)),
 		title: 'Sign In | '
 	};
 };
 
 export const actions: Actions = {
 	login: async (event) => {
-		const form = await superValidate(event, zod(login));
+		const form = await superValidate(event, zod(loginSchema));
 		if (!form.valid) {
 			return fail(400, {
 				success: false,

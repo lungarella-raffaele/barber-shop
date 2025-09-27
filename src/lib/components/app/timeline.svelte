@@ -13,9 +13,9 @@
 			hour: string;
 			name: string;
 			email: string;
-			serviceName: string;
-			serviceDuration: number;
-			servicePrice: number;
+			kindName: string;
+			kindDuration: number;
+			kindPrice: number;
 			pending: boolean;
 			isAdmin: boolean | null;
 		}[];
@@ -61,7 +61,7 @@
 
 		{#each reservations as res (res.id)}
 			<TimelineButton
-				height={getSlotHeight(res.serviceDuration)}
+				height={getSlotHeight(res.kindDuration)}
 				top={getStartingPosition(res.hour)}
 				reservation={res}
 			/>

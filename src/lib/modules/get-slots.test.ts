@@ -131,7 +131,7 @@ describe('Get slots', () => {
 		});
 	});
 
-	it('should work for long duration services', () => {
+	it('should work for long duration kinds', () => {
 		const date = new CalendarDate(2022, 2, 3);
 		const currentReservations: ReservedSlot[] = [
 			{

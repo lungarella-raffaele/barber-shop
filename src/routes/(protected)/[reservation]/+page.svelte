@@ -15,9 +15,9 @@
 		hour: string;
 		name: string;
 		email: string;
-		serviceName: string;
-		serviceDuration: number;
-		servicePrice: number;
+		kindName: string;
+		kindDuration: number;
+		kindPrice: number;
 	};
 
 	const rows = [
@@ -25,9 +25,9 @@
 		{ accessor: 'hour', label: 'Ora' },
 		{ accessor: 'email', label: 'Email' },
 		{ accessor: 'name', label: 'Nome' },
-		{ accessor: 'serviceName', label: 'Servizio' },
-		{ accessor: 'serviceDuration', label: 'Durata' },
-		{ accessor: 'servicePrice', label: 'Prezzo' }
+		{ accessor: 'kindName', label: 'Servizio' },
+		{ accessor: 'kindDuration', label: 'Durata' },
+		{ accessor: 'kindPrice', label: 'Prezzo' }
 	];
 
 	const isValidKey = (key: string): key is keyof Reservation => {
@@ -44,13 +44,13 @@
 			case 'date': {
 				return formatDate(value.toString());
 			}
-			case 'serviceDuration': {
+			case 'kindDuration': {
 				return `${value} min`;
 			}
 			case 'hour': {
 				return formatTime(value.toString());
 			}
-			case 'servicePrice': {
+			case 'kindPrice': {
 				return formatCurrency(value.toString());
 			}
 		}

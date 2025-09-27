@@ -1,1 +1,1 @@
-export type Tab = 'date' | 'service' | 'info';
+export type Tab = 'date' | 'kind' | 'info';

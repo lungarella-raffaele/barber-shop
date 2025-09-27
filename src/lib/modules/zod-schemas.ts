@@ -4,7 +4,7 @@ export const emailSchema = z.object({
 	email: z.string().email({ message: 'Inserisci una mail valida' })
 });
 
-export const login = z.object({
+export const loginSchema = z.object({
 	email: z.string().email({ message: 'Inserisci una mail valida' }),
 	password: z.string().min(1, { message: 'La password non può essere vuota' })
 });
@@ -24,23 +24,23 @@ export const passwordSchema = z
 		message: 'Un carattere speciale'
 	});
 
-export const confirmPassword = z.string().refine((confirmPassword) => confirmPassword, {
+export const confirmPasswordSchema = z.string().refine((confirmPassword) => confirmPassword, {
 	message: 'Le password non coincidono'
 });
 
-export const newPassword = z.object({
+export const newPasswordSchema = z.object({
 	password: passwordSchema
 });
 
-export const reservation = z.object({
+export const reservationSchema = z.object({
 	name: z.string().min(2),
 	email: z.string().email(),
 	date: z.string().date(),
 	hour: z.string().nonempty(),
-	service: z.string().nonempty()
+	kind: z.string().nonempty()
 });
 
-export const signup = z
+export const signupSchema = z
 	.object({
 		email: z.string().email({ message: "Inserisci un'email valida" }),
 		password: passwordSchema,
@@ -53,8 +53,8 @@ export const signup = z
 		path: ['confirmPassword']
 	});
 
-export type ReservationSchema = typeof reservation;
-export type NewPasswordSchema = typeof newPassword;
-export type LoginSchema = typeof login;
+export type ReservationSchema = typeof reservationSchema;
+export type NewPasswordSchema = typeof newPasswordSchema;
+export type LoginSchema = typeof loginSchema;
 export type EmailSchema = typeof emailSchema;
-export type FormSchema = typeof signup;
+export type FormSchema = typeof signupSchema;
