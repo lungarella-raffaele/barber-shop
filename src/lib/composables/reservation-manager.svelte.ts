@@ -1,8 +1,8 @@
 import { reservationSchema } from '$lib/modules/zod-schemas';
-import { type DateValue } from '@internationalized/date';
+import type { DateValue } from '@internationalized/date';
 import { getContext, hasContext, setContext } from 'svelte';
 import { toast } from 'svelte-sonner';
-import { type Tab } from '../models/tabs';
+import type { Tab } from '../models/tabs';
 
 export default class ReservationManager {
 	static #contextID = 'reservation-manager';

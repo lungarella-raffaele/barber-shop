@@ -1,4 +1,4 @@
-import type { ReservedSlot, Slot } from '$lib/models/types';
+import type { ReservedSlot, Slot } from '@types';
 import { CalendarDate, parseDate, parseTime, Time } from '@internationalized/date';
 import { expect } from '@playwright/test';
 import { describe, it } from 'vitest';

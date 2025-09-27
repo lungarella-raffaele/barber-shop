@@ -26,6 +26,7 @@ export class Ok<T> {
 	}
 
 	mapErr<F>(_fn: (error: never) => F): Result<T, F> {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		return this as any;
 	}
 }
@@ -52,6 +53,7 @@ export class Err<E> {
 	}
 
 	map<U>(_fn: (value: never) => U): Result<U, E> {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		return this as any;
 	}
 

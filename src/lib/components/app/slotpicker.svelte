@@ -2,7 +2,7 @@
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
-	import type { Slot } from '$lib/models/types';
+	import type { Slot } from '@types';
 	import { formatDate, formatTime } from '$lib/utils';
 	import { fly } from 'svelte/transition';
 	import { CalendarX, ClockAlert } from '../icons';
