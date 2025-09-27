@@ -1,4 +1,4 @@
-import type { ReservedSlot, Slot } from '$lib/models/types';
+import type { ReservedSlot, Slot } from '@types';
 import {
 	getDayOfWeek,
 	getLocalTimeZone,

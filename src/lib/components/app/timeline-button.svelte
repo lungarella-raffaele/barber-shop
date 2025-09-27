@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import * as Dialog from '$lib/components/ui/dialog/index';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { formatTime } from '$lib/utils';
@@ -75,8 +74,6 @@
 
 	let isOpen = $state(false);
 	let isDialogOpen = $state(false);
-
-	const pagequery = page.url.search;
 </script>
 
 <Popover.Root bind:open={isOpen}>

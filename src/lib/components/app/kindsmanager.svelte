@@ -7,7 +7,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import type { Kind } from '$lib/models/types';
+	import type { Kind } from '@types';
 	import { slide } from 'svelte/transition';
 
 	let { kinds }: { kinds: Kind[] } = $props();

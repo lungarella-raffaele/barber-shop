@@ -1,6 +1,6 @@
 import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
-import { type RequestEvent } from '@sveltejs/kit';
+import type { RequestEvent } from '@sveltejs/kit';
 import { and, count, eq, lt } from 'drizzle-orm';
 import { logger } from '../logger';
 import { ReservationService } from '@service/reservation.service';
