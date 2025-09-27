@@ -7,7 +7,7 @@ import {
 	Time,
 	type DateValue
 } from '@internationalized/date';
-import { workingHours } from './working-hours';
+import { workingHours } from '$lib/working-hours';
 
 export const SlotDuration = new Time(0, 15);
 

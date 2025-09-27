@@ -4,7 +4,7 @@ import { logger } from '$lib/server/logger';
 import { getBoolean, getNumber, getString } from '$lib/utils';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
-import { KindService } from '@services/kind.service';
+import { KindService } from '@service';
 
 export const load: PageServerLoad = async () => {
 	const kinds = new KindService();

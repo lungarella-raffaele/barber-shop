@@ -1,13 +1,13 @@
 import { BASE_URL } from '$env/static/private';
 import { changeEmail } from '$lib/emails/change-email';
-import { emailSchema } from '$lib/schemas/email';
-import { newPassword as newPasswordSchema } from '$lib/schemas/password';
+import { emailSchema } from '@schema';
+import { newPassword as newPasswordSchema } from '@schema';
 import { logger } from '$lib/server/logger';
 import { getString } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import { hash, verify } from 'argon2';
 import type { Actions, PageServerLoad } from './$types';
-import { UserService } from '@services/user.service';
+import { UserService } from '@service';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const confirmID = url.searchParams.get('confirm-email-change');

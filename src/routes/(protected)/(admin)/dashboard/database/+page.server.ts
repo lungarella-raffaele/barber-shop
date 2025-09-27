@@ -1,7 +1,6 @@
-import { UserService } from '@services/user.service';
+import { UserService } from '@service';
 import type { Actions, PageServerLoad } from './$types';
-import { ReservationService } from '@services/reservation.service';
-import { deleteExpiredItems } from '@services/clean-up.service';
+import { ReservationService, CleanupService } from '@service';
 
 export const load: PageServerLoad = async () => {
 	const user = new UserService();
@@ -18,7 +17,7 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
 	default: async () => {
 		try {
-			await deleteExpiredItems();
+			await new CleanupService().deleteExpiredItems();
 		} catch {
 			return {
 				success: false

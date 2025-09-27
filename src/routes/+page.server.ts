@@ -5,8 +5,8 @@ import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { hash } from 'argon2';
 import type { PageServerLoad } from './$types';
 import { PageCase, getPageCase } from './page-cases';
-import { ReservationService } from '@services/reservation.service';
-import { UserService } from '@services/user.service';
+import { ReservationService } from '@service';
+import { UserService } from '@service';
 
 export const load: PageServerLoad = async (event) => {
 	const url = event.url;

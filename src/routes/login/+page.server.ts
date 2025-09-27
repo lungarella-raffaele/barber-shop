@@ -1,7 +1,7 @@
 import { BASE_URL } from '$env/static/private';
 import { recoverPassword } from '$lib/emails/recover-password';
-import { emailSchema } from '$lib/schemas/email';
-import { login } from '$lib/schemas/login';
+import { emailSchema } from '@schema';
+import { login } from '@schema';
 import * as auth from '$lib/server/auth';
 import { getString } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
@@ -9,7 +9,7 @@ import { verify } from 'argon2';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
-import { UserService } from '@services/user.service';
+import { UserService } from '@service';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
