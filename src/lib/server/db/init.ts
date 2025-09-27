@@ -3,7 +3,7 @@ import type { Kind } from './schema';
 
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { KindService } from '@services/kind.service';
+import { KindService } from '@service';
 
 export const init = async () => {
 	const kinds = new KindService();

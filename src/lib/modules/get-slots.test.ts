@@ -2,11 +2,11 @@ import type { ReservedSlot, Slot } from '$lib/models/types';
 import { CalendarDate, parseDate, parseTime, Time } from '@internationalized/date';
 import { expect } from '@playwright/test';
 import { describe, it } from 'vitest';
-import { Day } from './enums/days';
 import { getSlots } from './get-slots';
-import { monday, normalDay, saturday } from './mocks';
-import { isEqualTime } from './utils';
-import { workingHours } from './working-hours';
+import { monday, normalDay, saturday } from './get-slots.stub';
+import { isEqualTime } from '$lib/utils';
+import { workingHours } from '$lib/working-hours';
+import { Day } from '$lib/enums/days';
 
 describe('Get slots', () => {
 	describe('should disable occupied slots', () => {

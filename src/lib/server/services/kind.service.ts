@@ -2,7 +2,7 @@ import { db } from '$lib/server/db';
 import * as T from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '../logger';
-import { ok, err, type Result } from '$lib/result';
+import { ok, err, type Result } from '$lib/modules/result';
 
 export class KindService {
 	async getAll(onlyActive: boolean = true) {

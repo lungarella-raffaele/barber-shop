@@ -5,7 +5,7 @@ import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { DAY_IN_MS } from '$lib/constants';
-import { UserService } from '@services/user.service';
+import { UserService } from '@service';
 
 export const sessionCookieName = 'auth-session';
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { generateSlotsFromInterval, SlotDuration } from '$lib/get-slots';
+	import { generateSlotsFromInterval, SlotDuration } from '$lib/modules/get-slots';
 	import { extractHoursAndMinutes, formatTime, toDecimalHours } from '$lib/utils';
 	import { Time } from '@internationalized/date';
 	import TimelineButton from './timeline-button.svelte';

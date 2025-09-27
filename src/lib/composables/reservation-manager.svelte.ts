@@ -1,4 +1,4 @@
-import { reservation } from '$lib/schemas/reservation';
+import { reservation } from '@schema';
 import { type DateValue } from '@internationalized/date';
 import { getContext, hasContext, setContext } from 'svelte';
 import { toast } from 'svelte-sonner';

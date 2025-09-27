@@ -1,14 +1,12 @@
 import { BASE_URL } from '$env/static/private';
 import { LOCK_DURATION } from '$lib/constants.js';
 import { newReservationEmail } from '$lib/emails/new-reservation.email.js';
-import { reservation } from '$lib/schemas/reservation';
+import { reservation } from '@schema';
 import { logger } from '$lib/server/logger.js';
 import { formatDate, formatTime, getString } from '$lib/utils.js';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
-import { ReservationService } from '@services/reservation.service.js';
-import { KindService } from '@services/kind.service.js';
-import { ShutdownService } from '@services/shutdown.service.js';
+import { ReservationService, KindService, ShutdownService } from '@service';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {

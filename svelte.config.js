@@ -14,7 +14,8 @@ const config = {
 		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: adapter(),
 		alias: {
-			'@services': 'src/lib/server/services/*'
+			'@service': 'src/lib/server/services/*',
+			'@schema': 'src/lib/modules/schemas.ts'
 		}
 	}
 };
