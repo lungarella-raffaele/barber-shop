@@ -12,7 +12,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
-	import { getSlots } from '$lib/get-slots';
+	import { getSlots } from '$lib/modules/get-slots';
 	import { minutesToTime } from '$lib/utils';
 	import { parseDate, parseTime } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';

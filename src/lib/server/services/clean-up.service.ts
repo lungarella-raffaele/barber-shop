@@ -1,9 +1,11 @@
 import { UserService } from './user.service';
 
-export async function deleteExpiredItems() {
-	const user = new UserService();
-	await user.deleteAllExpiredReservations();
-	await user.deleteAllExpiredUsers();
-	await user.deleteEmailVerifications();
-	await user.deletePasswordRecover();
+export class CleanupService {
+	async deleteExpiredItems() {
+		const users = new UserService();
+		await users.deleteAllExpiredReservations();
+		await users.deleteAllExpiredUsers();
+		await users.deleteEmailVerifications();
+		await users.deletePasswordRecover();
+	}
 }

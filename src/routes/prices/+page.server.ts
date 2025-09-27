@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types.js';
-import { KindService } from '@services/kind.service.js';
+import { KindService } from '@service';
 
 export const load: PageServerLoad = async () => {
 	return {

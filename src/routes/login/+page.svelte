@@ -9,7 +9,7 @@
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { login } from '$lib/schemas/login';
+	import { login } from '@schema';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import type { ActionData, PageData } from './$types';
