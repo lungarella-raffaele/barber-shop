@@ -37,7 +37,8 @@ export const reservationSchema = z.object({
 	email: z.string().email(),
 	date: z.string().date(),
 	hour: z.string().nonempty(),
-	kind: z.string().nonempty()
+	kind: z.string().nonempty(),
+	staff: z.string().nonempty()
 });
 
 export const signupSchema = z

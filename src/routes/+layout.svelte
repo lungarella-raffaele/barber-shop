@@ -17,7 +17,7 @@
 	const { data, children } = $props();
 
 	const isLogged = $derived(data.user !== null);
-	const isAdmin = $derived(data.user?.isAdmin);
+	const isAdmin = $derived(data.user?.role === 'staff');
 
 	let logoutForm: HTMLFormElement | undefined = $state();
 </script>
@@ -40,7 +40,7 @@
 				{#if !data.user}
 					<Button aria-label="Go to login" href="/login" variant="ghost">Login</Button>
 				{:else}
-					{#if data.user.isAdmin}
+					{#if data.user.role === 'staff'}
 						<Button
 							href="/dashboard"
 							variant="ghost"

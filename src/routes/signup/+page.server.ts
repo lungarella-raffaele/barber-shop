@@ -30,7 +30,7 @@ export const actions: Actions = {
 
 		const { email, password, name, phoneNumber } = form.data;
 		const userService = new UserService();
-		const user = await userService.insert({ email, password, name, phoneNumber });
+		const user = await userService.insertUser({ email, password, name, phoneNumber });
 
 		if (user.isOk()) {
 			verifyEmail(name, email, `${BASE_URL}?user=${user.unwrap().id}`);

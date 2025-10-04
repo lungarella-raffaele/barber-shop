@@ -1,11 +1,12 @@
 import { db } from '$lib/server/db';
-import type { Reservation, User } from '$lib/server/db/schema';
+import type { DBReservation, DBUser } from '$lib/server/db/schema';
 import * as table from '$lib/server/db/schema';
 import { and, count, eq, gt, lt, sql } from 'drizzle-orm';
 import { logger } from '../logger';
 import { reservationSchema } from '$lib/modules/zod-schemas';
 import { err, ok, type Result } from '$lib/modules/result';
 import { LOCK_DURATION } from '$lib/constants';
+import type { Reservation } from '@types';
 
 type InsertError =
 	| 'no-date'
@@ -21,15 +22,17 @@ export class ReservationService {
 			hour: string;
 			date: string;
 			kind: string;
+			staff: string;
 		},
-		user: User
-	): Promise<Result<Reservation, InsertError>> {
+		user: DBUser
+	): Promise<Result<DBReservation, InsertError>> {
 		const schema = reservationSchema.safeParse({
 			name: user.name,
 			email: user.email,
 			hour: data.hour,
 			kind: data.kind,
-			date: data.date
+			date: data.date,
+			staff: data.staff
 		});
 
 		if (!schema.success) {
@@ -55,7 +58,7 @@ export class ReservationService {
 			return err('conflict');
 		}
 
-		const reservation: table.Reservation = {
+		const reservation: table.DBReservation = {
 			date: data.date,
 			hour: data.hour,
 			id: crypto.randomUUID(),
@@ -64,7 +67,8 @@ export class ReservationService {
 			phoneNumber: user.phoneNumber,
 			email: user.email,
 			pending: false,
-			expiresAt
+			expiresAt,
+			staffID: data.staff
 		};
 
 		const queryRes = await db.insert(table.reservation).values(reservation).returning();
@@ -84,13 +88,15 @@ export class ReservationService {
 		email: string;
 		date: string;
 		phoneNumber: string;
-	}) {
+		staff: string;
+	}): Promise<Result<DBReservation, InsertError>> {
 		const schema = reservationSchema.safeParse({
 			name: data.name,
 			hour: data.hour,
 			kind: data.kind,
 			email: data.email,
-			date: data.date
+			date: data.date,
+			staff: data.staff
 		});
 
 		if (!schema.success) {
@@ -112,7 +118,7 @@ export class ReservationService {
 			return err('conflict');
 		}
 
-		const reservation: table.Reservation = {
+		const reservation: table.DBReservation = {
 			date: data.date,
 			hour: data.hour,
 			id: crypto.randomUUID(),
@@ -121,7 +127,8 @@ export class ReservationService {
 			phoneNumber: data.phoneNumber,
 			email: data.email,
 			expiresAt: new Date(Date.now() + LOCK_DURATION),
-			pending: true
+			pending: true,
+			staffID: data.staff
 		};
 
 		const queryRes = await db.insert(table.reservation).values(reservation).returning();
@@ -141,38 +148,41 @@ export class ReservationService {
 	/**
 	 * @returns All the non-expired reservations
 	 */
-	async get() {
-		return await db
-			.select({
-				date: table.reservation.date,
-				startingTime: table.reservation.hour,
-				duration: table.kind.duration
-			})
-			.from(table.reservation)
-			.where(gt(table.reservation.expiresAt, new Date()))
-			.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id));
-	}
-
-	async getAll() {
-		return await db
-			.select({
-				id: table.reservation.id,
-				date: table.reservation.date,
-				hour: table.reservation.hour,
-				name: table.reservation.name,
-				email: table.reservation.email,
-				kindName: table.kind.name,
-				kindDuration: table.kind.duration,
-				kindPrice: table.kind.price
-			})
-			.from(table.reservation)
-			.where(eq(table.reservation.pending, false))
-			.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id));
-	}
-
-	async getToday(date: string) {
+	async getAll(): Promise<Reservation[] | null> {
 		try {
-			const reservations = await db
+			const result = await db
+				.select({
+					id: table.reservation.id,
+					date: table.reservation.date,
+					hour: table.reservation.hour,
+					name: table.reservation.name,
+					email: table.reservation.email,
+					staff: table.staff.userID,
+					kind: {
+						duration: table.kind.duration,
+						name: table.kind.name,
+						price: table.kind.price
+					}
+				})
+				.from(table.reservation)
+				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
+				.leftJoin(table.user, eq(table.reservation.email, table.user.email))
+				.leftJoin(table.staff, eq(table.user.id, table.staff.userID))
+				.where(gt(table.reservation.expiresAt, new Date()));
+
+			return result.map((entry) => ({
+				...entry,
+				fromAdmin: !!entry.staff
+			}));
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
+	}
+
+	async getTodayReservations(date: string): Promise<Reservation[] | null> {
+		try {
+			const result = await db
 				.select({
 					id: table.reservation.id,
 					date: table.reservation.date,
@@ -180,17 +190,20 @@ export class ReservationService {
 					name: table.reservation.name,
 					pending: table.reservation.pending,
 					email: table.reservation.email,
-					kindName: table.kind.name,
-					kindDuration: table.kind.duration,
-					kindPrice: table.kind.price,
-					isAdmin: table.user.isAdmin
+					staff: table.staff.userID,
+					kind: {
+						name: table.kind.name,
+						duration: table.kind.duration,
+						price: table.kind.price
+					}
 				})
 				.from(table.reservation)
 				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
 				.leftJoin(table.user, eq(table.reservation.email, table.user.email))
+				.leftJoin(table.staff, eq(table.staff.userID, table.user.id))
 				.where(and(eq(table.reservation.date, date), eq(table.reservation.pending, false)));
 
-			return reservations;
+			return result.map((entry) => ({ ...entry, fromAdmin: !!entry.staff }));
 		} catch (err) {
 			console.error(err);
 			return null;

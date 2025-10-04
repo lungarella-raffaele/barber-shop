@@ -1,8 +1,49 @@
 import type { DateValue, Time } from '@internationalized/date';
-import type { Banner, Shutdown, Reservation, Kind, Session, User } from '../server/db/schema';
-export type { Banner, Shutdown as Closure, Reservation, Kind, Session, User };
-export type UserWithoutPassword = Omit<User, 'passwordHash'>;
-export type KindSummary = Pick<Kind, 'id' | 'name' | 'price' | 'duration'>;
+import type {
+	DBBanner,
+	DBShutdown,
+	DBReservation,
+	DBKind,
+	DBSession,
+	DBUser
+} from '../server/db/schema';
+
+export type { DBBanner, DBShutdown, DBReservation, DBKind, DBSession, DBUser };
+
+export type Reservation = {
+	id: string;
+	date: string;
+	hour: string;
+	name: string;
+	email: string;
+	fromAdmin: boolean;
+	kind: {
+		duration: number;
+		name: string;
+		price: number;
+	};
+};
+
+export type User =
+	| {
+			role: 'user';
+			data: DBUser;
+	  }
+	| {
+			role: 'staff';
+			data: DBUser & { avatar: string };
+	  };
+export type Staff = {
+	name: string;
+	id: string;
+	avatar: string;
+};
+
+export type UserSession = { user: User; session: DBSession };
+
+// You can also add client-specific utility types here
+export type UserWithoutPassword = Omit<DBUser, 'passwordHash'>;
+export type KindSummary = Pick<DBKind, 'id' | 'name' | 'price' | 'duration'>;
 export type BusinessHours = {
 	start: Time;
 	end: Time;
@@ -18,5 +59,5 @@ export type Slot = {
 	invalid: boolean;
 	past: boolean;
 };
+
 export type Tab = 'date' | 'kind' | 'info';
-export type Input = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;

@@ -7,7 +7,9 @@ export const load: PageServerLoad = async ({ url }) => {
 	const date = url.searchParams.get('date');
 
 	const resService = new ReservationService();
-	const reservations = await resService.getToday(date ?? today(getLocalTimeZone()).toString());
+	const reservations = await resService.getTodayReservations(
+		date ?? today(getLocalTimeZone()).toString()
+	);
 	return {
 		reservations,
 		date,

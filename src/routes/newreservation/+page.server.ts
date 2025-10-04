@@ -1,7 +1,7 @@
 import { getString } from '$lib/utils.js';
-import { fail } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
-import { ReservationService, KindService, ShutdownService } from '@service';
+import { ReservationService, KindService, ShutdownService, UserService } from '@service';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -15,20 +15,36 @@ export const actions: Actions = {
 		const kind = getString(data, 'kind');
 		const date = getString(data, 'date');
 		const hour = getString(data, 'hour');
+		const staff = getString(data, 'staff');
 
+		let result;
 		if (user) {
-			return reservationService.insertByUser({ hour, date, kind }, user);
+			result = await reservationService.insertByUser({ hour, date, kind, staff }, user.data);
 		} else if (name && email) {
-			return reservationService.insertByUnkown({
+			result = await reservationService.insertByUnkown({
 				date,
 				hour,
 				kind,
 				name,
 				email,
-				phoneNumber
+				phoneNumber,
+				staff
 			});
 		} else {
-			return fail(500);
+			return fail(404);
+		}
+
+		if (result.isOk()) {
+			return result.value;
+		} else {
+			switch (result.error) {
+				case 'conflict': {
+					return fail(409);
+				}
+				default: {
+					return fail(404);
+				}
+			}
 		}
 	}
 };
@@ -39,14 +55,19 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const shutdowns = new ShutdownService();
 
 	const kinds = await kind.getAll();
-	const currentReservations = await reservationService.get();
-
+	const currentReservations = await reservationService.getAll();
 	const closures = await shutdowns.getAll();
+	const staff = await new UserService().getAllStaff();
+
+	if (!kinds || !currentReservations || !closures || !staff) {
+		return error(500); //TODO
+	}
 
 	return {
 		currentReservations,
 		closures,
 		kinds,
+		staff,
 		user: locals.user,
 		title: 'Nuova prenotazione | '
 	};

@@ -49,21 +49,25 @@ const userProps: PageData = {
 			description: 'Nice haircut',
 			duration: 30,
 			price: 22,
-			active: false
+			active: false,
+			staffID: '123'
 		}
 	],
 	user: {
-		id: 'user-id',
-		name: 'John Doe',
-		phoneNumber: '333',
-		email: 'johndoes@test.com',
-		passwordHash: 'axsdqeow',
-		isAdmin: null,
-		verifiedEmail: false,
-		expiresAt: new Date()
+		data: {
+			id: 'user-id',
+			name: 'John Doe',
+			phoneNumber: '333',
+			email: 'johndoes@test.com',
+			passwordHash: 'axsdqeow',
+			verifiedEmail: false,
+			expiresAt: new Date()
+		},
+		role: 'user'
 	},
 	title: '',
-	closures: []
+	closures: [],
+	staff: []
 };
 
 const noUserProps: PageData = {
@@ -73,6 +77,7 @@ const noUserProps: PageData = {
 		{
 			id: '1',
 			name: 'Haircut',
+			staffID: '123',
 			description: 'Nice haircut',
 			duration: 30,
 			price: 22,
@@ -81,5 +86,6 @@ const noUserProps: PageData = {
 	],
 	user: null,
 	title: '',
-	closures: []
+	closures: [],
+	staff: [{ name: 'emiliano', id: '123', avatar: 'avatar.png' }]
 };
