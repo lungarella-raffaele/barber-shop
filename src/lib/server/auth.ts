@@ -6,6 +6,7 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { DAY_IN_MS } from '$lib/constants';
 import { UserService } from '@service';
+import type { UserSession } from '@types';
 
 export const sessionCookieName = 'auth-session';
 
@@ -17,7 +18,7 @@ export function generateSessionToken() {
 
 export async function createSession(token: string, userID: string) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	const session: table.Session = {
+	const session: table.DBSession = {
 		id: sessionId,
 		userID,
 		expiresAt: new Date(Date.now() + DAY_IN_MS * 30)
@@ -26,21 +27,17 @@ export async function createSession(token: string, userID: string) {
 	return session;
 }
 
-export async function validateSessionToken(token: string) {
-	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	const [result] = await db
-		.select({
-			user: table.user,
-			session: table.session
-		})
-		.from(table.session)
-		.innerJoin(table.user, eq(table.session.userID, table.user.id))
-		.where(eq(table.session.id, sessionId));
+export async function validateSessionToken(
+	token: string
+): Promise<UserSession | { session: null; user: null }> {
+	const sessionID = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+	const result = await new UserService().getUserSession(sessionID);
 
 	if (!result) {
 		return { session: null, user: null };
 	}
-	const { session, user } = result;
+
+	const { session } = result;
 
 	const sessionExpired = Date.now() >= session.expiresAt.getTime();
 	if (sessionExpired) {
@@ -57,7 +54,7 @@ export async function validateSessionToken(token: string) {
 			.where(eq(table.session.id, session.id));
 	}
 
-	return { session, user };
+	return result;
 }
 
 export type SessionValidationResult = Awaited<ReturnType<typeof validateSessionToken>>;

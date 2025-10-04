@@ -11,18 +11,18 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { emailSchema } from '@schema';
 	import { newPasswordSchema } from '@schema';
-	import type { User } from '$lib/server/db/schema';
 	import { getString } from '$lib/utils';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import { KeyRound, Mail, Save } from '../icons';
 	import Passwordinput from './passwordinput.svelte';
+	import type { User } from '@types';
 
 	let { user }: { user: User } = $props();
 
 	const infoBackup = {
-		name: user.name,
-		phoneNumber: user.phoneNumber
+		name: user.data.name,
+		phoneNumber: user.data.phoneNumber
 	};
 
 	let isOpen = $state(false);
@@ -125,7 +125,7 @@
 			<Input
 				class="mb-4"
 				name="name"
-				value={user.name}
+				value={user.data.name}
 				placeholder="Il tuo nome"
 				disabled={!isEditingInfo}
 			/>
@@ -134,7 +134,7 @@
 			<Input
 				class="mb-4"
 				name="phone"
-				value={user.phoneNumber}
+				value={user.data.phoneNumber}
 				placeholder="Il tuo numero di cellulare"
 				disabled={!isEditingInfo}
 			/>
@@ -144,7 +144,7 @@
 		</form>
 
 		<Label for="name">Email</Label>
-		<Input class="mr-4" id="name" value={user.email} placeholder="La tua email" disabled />
+		<Input class="mr-4" id="name" value={user.data.email} placeholder="La tua email" disabled />
 
 		<div class="mt-4 flex flex-col gap-4">
 			<Button type="button" onclick={() => (changeEmailDialog = !changeEmailDialog)}>

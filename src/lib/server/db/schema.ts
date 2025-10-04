@@ -6,9 +6,15 @@ export const user = sqliteTable('user', {
 	phoneNumber: text('phone_number'),
 	email: text('email').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
-	isAdmin: integer({ mode: 'boolean' }),
 	verifiedEmail: integer('verified_email', { mode: 'boolean' }),
 	expiresAt: integer('expires_at', { mode: 'timestamp' })
+});
+
+export const staff = sqliteTable('staff', {
+	userID: text('user_id')
+		.notNull()
+		.references(() => user.id),
+	avatar: text('string').notNull()
 });
 
 export const session = sqliteTable('session', {
@@ -30,11 +36,17 @@ export const reservation = sqliteTable('reservation', {
 	name: text('name').notNull(),
 	email: text('email').notNull(),
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
-	pending: integer({ mode: 'boolean' }).notNull()
+	pending: integer({ mode: 'boolean' }).notNull(),
+	staffID: text('staff_id')
+		.notNull()
+		.references(() => staff.userID)
 });
 
 export const kind = sqliteTable('kind', {
 	id: text('id').primaryKey(),
+	staffID: text('staff_id')
+		.notNull()
+		.references(() => staff.userID),
 	name: text('name').notNull().unique(),
 	duration: integer('duration').notNull(),
 	price: integer('price').notNull(),
@@ -71,11 +83,12 @@ export const passwordRecover = sqliteTable('password_recover', {
 	expiresAt: integer('expires_at', { mode: 'timestamp' })
 });
 
-export type Session = typeof session.$inferSelect;
-export type User = typeof user.$inferSelect;
-export type Reservation = typeof reservation.$inferSelect;
-export type Kind = typeof kind.$inferSelect;
-export type Banner = typeof banner.$inferSelect;
-export type Shutdown = typeof shutdowns.$inferSelect;
-export type EmailVerificationToken = typeof emailVerification.$inferSelect;
-export type PasswordRecover = typeof passwordRecover.$inferSelect;
+export type DBSession = typeof session.$inferSelect;
+export type DBUser = typeof user.$inferSelect;
+export type DBStaff = typeof staff.$inferSelect;
+export type DBReservation = typeof reservation.$inferSelect;
+export type DBKind = typeof kind.$inferSelect;
+export type DBBanner = typeof banner.$inferSelect;
+export type DBShutdown = typeof shutdowns.$inferSelect;
+export type DBEmailVerificationToken = typeof emailVerification.$inferSelect;
+export type DBPasswordRecover = typeof passwordRecover.$inferSelect;

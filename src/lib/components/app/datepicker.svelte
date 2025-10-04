@@ -14,7 +14,7 @@
 		closures
 	}: { value: DateValue | undefined; closures: { start: string; end: string; id: string }[] } =
 		$props();
-	const reservationManager = ReservationManager.get();
+	const rm = ReservationManager.get();
 	function isDateDisabled(date: DateValue) {
 		// Only future reservations and sundays are disabled
 		return today(getLocalTimeZone()).compare(date) > 0 || getDayOfWeek(date, 'it-IT') === 6;
@@ -37,7 +37,7 @@
 <Calendar
 	{isDateDisabled}
 	{isDateUnavailable}
-	onValueChange={() => (reservationManager.hour = '')}
+	onValueChange={() => (rm.data.hour = '')}
 	type="single"
 	bind:value
 	class="rounded-md border"

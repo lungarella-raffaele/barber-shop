@@ -3,22 +3,12 @@
 	import { extractHoursAndMinutes, formatTime, toDecimalHours } from '$lib/utils';
 	import { Time } from '@internationalized/date';
 	import TimelineButton from './timeline-button.svelte';
+	import type { Reservation } from '@types';
 
 	const {
 		reservations
 	}: {
-		reservations: {
-			id: string;
-			date: string;
-			hour: string;
-			name: string;
-			email: string;
-			kindName: string;
-			kindDuration: number;
-			kindPrice: number;
-			pending: boolean;
-			isAdmin: boolean | null;
-		}[];
+		reservations: Reservation[];
 	} = $props();
 
 	const day = {
@@ -61,7 +51,7 @@
 
 		{#each reservations as res (res.id)}
 			<TimelineButton
-				height={getSlotHeight(res.kindDuration)}
+				height={getSlotHeight(res.kind.duration)}
 				top={getStartingPosition(res.hour)}
 				reservation={res}
 			/>

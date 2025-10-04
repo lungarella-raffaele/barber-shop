@@ -52,12 +52,12 @@ export const actions: Actions = {
 			return fail(400, { success: false });
 		}
 
-		if (locals.user.phoneNumber !== phone) {
-			await userService.updatePhoneNumber(locals.user.id, phone);
+		if (locals.user.data.phoneNumber !== phone) {
+			await userService.updatePhoneNumber(locals.user.data.id, phone);
 		}
 
-		if (name && locals.user.name !== name) {
-			await userService.updateName(locals.user.id, name);
+		if (name && locals.user.data.name !== name) {
+			await userService.updateName(locals.user.data.id, name);
 		}
 
 		throw redirect(302, url.pathname);
@@ -79,17 +79,20 @@ export const actions: Actions = {
 		const userService = new UserService();
 		const existingUser = await userService.get(email);
 
-		if (existingUser && existingUser.verifiedEmail) {
+		if (existingUser && existingUser.data.verifiedEmail) {
 			return fail(400, {
 				message: 'Esiste già un utente con la mail inserita',
 				success: false
 			});
 		}
 
-		const emailVerification = await userService.insertEmailVerification(email, locals.user.id);
+		const emailVerification = await userService.insertEmailVerification(
+			email,
+			locals.user.data.id
+		);
 
 		const { error } = await changeEmail(
-			locals.user.name,
+			locals.user.data.name,
 			email,
 			`${BASE_URL}/profile?confirm-email-change=${emailVerification.id}`
 		);
@@ -118,8 +121,8 @@ export const actions: Actions = {
 
 		const userService = new UserService();
 
-		logger.warn('Deleting account of user: ' + user.email);
-		const res = await userService.deleteAccount(user);
+		logger.warn('Deleting account of user: ' + user.data.email);
+		const res = await userService.deleteAccount(user.data);
 
 		if (res) {
 			logger.info('Successfully deleted account of user: ' + res.email);
@@ -127,7 +130,7 @@ export const actions: Actions = {
 
 			return redirect(302, '/');
 		} else {
-			logger.error('Error while deleting account of user: ' + user.email);
+			logger.error('Error while deleting account of user: ' + user.data.email);
 			return fail(500);
 		}
 	},
@@ -150,7 +153,7 @@ export const actions: Actions = {
 			return fail(404, { message: 'La password inserita non è sicura' });
 		}
 
-		const validPassword = await verify(user.passwordHash, oldPassword, {});
+		const validPassword = await verify(user.data.passwordHash, oldPassword, {});
 
 		if (!validPassword) {
 			return fail(404, {
@@ -170,7 +173,7 @@ export const actions: Actions = {
 			parallelism: 1
 		});
 
-		const response = await userService.patchPassword(passwordHash, user.id);
+		const response = await userService.patchPassword(passwordHash, user.data.id);
 		if (!response) {
 			return fail(404, {
 				message: 'Non è stato possibile aggiornare la password'

@@ -1,5 +1,5 @@
-import { untrack } from 'svelte';
 type Getter<T> = () => T;
+import { untrack } from 'svelte';
 
 function runEffect(flush: 'post' | 'pre', effect: () => void | VoidFunction): void {
 	switch (flush) {

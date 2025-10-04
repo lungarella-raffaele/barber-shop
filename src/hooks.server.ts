@@ -36,7 +36,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		if (!event.locals.user) {
 			redirect(303, '/login');
 		}
-		if (!event.locals.user.isAdmin) {
+		if (event.locals.user.role !== 'staff') {
 			redirect(303, '/');
 		}
 	}

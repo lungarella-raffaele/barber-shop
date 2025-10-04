@@ -1,29 +1,33 @@
-import { reservationSchema } from '$lib/modules/zod-schemas';
+import { reservationSchema as schema } from '$lib/modules/zod-schemas';
 import type { DateValue } from '@internationalized/date';
 import { getContext, hasContext, setContext } from 'svelte';
+import type { Tab } from '@types';
+
 import { toast } from 'svelte-sonner';
-import type { Tab } from '../models/tabs';
+
+export type Data = {
+	hour: string;
+	date: DateValue | undefined;
+	kind: string;
+	staff: string;
+	name: string;
+	email: string;
+	phone: string;
+};
 
 export default class ReservationManager {
-	static #contextID = 'reservation-manager';
-
 	tabs: Tab[] = [];
-	#index: number = $derived(this.tabs.findIndex((el) => el === this.currentTab) ?? 0);
 	currentTab: Tab | undefined = $state();
+	data: Data = $state({} as Data);
 
-	date: DateValue | undefined = $state();
-	hour: string = $state('');
-	selectedKind = $state('');
+	isLogged: boolean;
 
-	name: string = $state('');
-	email: string = $state('');
-	phone: string = $state('');
+	errorIDs: string[] = $state([]);
 
-	isLogged: boolean = $state(false);
+	static #contextID = 'reservation-manager';
+	#index: number = $derived(this.tabs.findIndex((el) => el === this.currentTab) ?? 0);
 
-	/**
-	 * Creates a singleton
-	 */
+	/** Creates a singleton */
 	static instance(isLogged: boolean): ReservationManager {
 		if (hasContext(this.#contextID)) {
 			console.warn('ReservationManager already created');
@@ -33,51 +37,40 @@ export default class ReservationManager {
 		}
 	}
 
-	/**
-	 * @returns An instance of a ReservationManager singleton
-	 */
+	/** @returns An instance of a ReservationManager singleton */
 	static get() {
 		return getContext<ReservationManager>(this.#contextID);
 	}
 
 	/**
-	 * Checks wheter all the info has been filled, moves the view to invalid tabs and pops up an error toaster
-	 * @returns true if the values are all inserted
+	 * Checks wheter all the info has been filled, moves the view to invalid tabs
+	 * and pops up an error toaster @returns true if the values are all inserted
 	 */
-	check(): boolean {
-		const schema = reservationSchema.safeParse({
-			name: this.name,
-			hour: this.hour,
-			kind: this.selectedKind,
-			email: this.email,
-			date: this.date?.toString()
-		});
+	check() {
+		const data = {
+			...this.data,
+			date: this.data.date?.toString()
+		};
+		const parse = schema.safeParse(data);
 
-		if (schema.success) {
-			return false;
+		if (parse.success) {
+			return true;
 		}
 
-		const { path } = schema.error.issues[0];
+		const { path } = parse.error.issues[0];
 
-		if (path.includes('date')) {
-			toast.warning('Devi scegliere una data per poter proseguire');
+		if (path.includes('date') || path.includes('hour')) {
+			toast.warning('Devi scegliere una data o un orario per poter proseguire');
 			this.goToTab('date');
-			return true;
-		} else if (path.includes('hour')) {
-			toast.warning('Devi scegliere un orario per poter proseguire');
-			this.goToTab('date');
-			return true;
 		} else if (path.includes('kind')) {
 			toast.warning('Devi scegliere un servizio per poter proseguire');
 			this.goToTab('kind');
-			return true;
 		} else if ((path.includes('email') || path.includes('name')) && !this.isLogged) {
 			toast.warning('Devi inserire un nome e una mail valida');
 			this.goToTab('info');
-			return true;
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 
 	/**
@@ -125,11 +118,17 @@ export default class ReservationManager {
 	}
 
 	private constructor(isLogged: boolean) {
-		this.date = undefined;
-		this.hour = '';
-		this.name = '';
-		this.email = '';
 		this.isLogged = isLogged;
+
+		this.data = {
+			hour: '',
+			date: undefined,
+			kind: '',
+			staff: '',
+			name: '',
+			email: '',
+			phone: ''
+		};
 
 		// Info only present if the user is not logged
 		if (!this.isLogged) this.tabs.push('info');
