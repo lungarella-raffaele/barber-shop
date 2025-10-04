@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		redirect(303, '/login');
 	}
 
-	const reservations = await new ReservationService().getByUser(locals.user.email);
+	const reservations = await new ReservationService().getByUser(locals.user.data.email);
 
 	logger.info(`Retrieved ${reservations.length} reservations`);
 

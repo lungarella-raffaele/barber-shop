@@ -79,7 +79,7 @@ export const load: PageServerLoad = async (event) => {
 			}
 
 			const user = await userService.getByID(id);
-			if (user?.verifiedEmail || !user) {
+			if (user?.data.verifiedEmail || !user) {
 				return {
 					pageCase,
 					success: false,
@@ -88,7 +88,7 @@ export const load: PageServerLoad = async (event) => {
 				};
 			}
 
-			const response = await userService.patchPending(user.id);
+			const response = await userService.patchPending(user.data.id);
 			if (!response) {
 				return {
 					pageCase,
@@ -246,10 +246,10 @@ export const actions: Actions = {
 		}
 
 		const sessionToken = auth.generateSessionToken();
-		const session = await auth.createSession(sessionToken, user.id);
+		const session = await auth.createSession(sessionToken, user.data.id);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		if (user.isAdmin) {
+		if (user.role === 'staff') {
 			return redirect(302, '/dashboard');
 		}
 		return redirect(302, '/');

@@ -5,12 +5,16 @@ import { getBoolean, getNumber, getString } from '$lib/utils';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 import { KindService } from '@service';
+import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async () => {
-	const kinds = new KindService();
+	const kinds = await new KindService().getAll(false);
+	if (!kinds) {
+		return error(500);
+	}
 	return {
 		banner: await db.select().from(table.banner).where(eq(table.banner.id, 1)).get(),
-		kinds: await kinds.getAll(false)
+		kinds
 	};
 };
 
@@ -32,6 +36,7 @@ export const actions: Actions = {
 		const duration = getNumber(data, 'duration');
 		const price = getNumber(data, 'price');
 		const active = getBoolean(data, 'active');
+		const staffID = getString(data, 'staff');
 
 		if (!id || !name || !description || !duration || !price) {
 			return {
@@ -47,7 +52,8 @@ export const actions: Actions = {
 			description,
 			duration,
 			price,
-			active
+			active,
+			staffID
 		});
 
 		if (response) {
@@ -70,6 +76,7 @@ export const actions: Actions = {
 		const duration = getNumber(data, 'duration');
 		const price = getNumber(data, 'price');
 		const active = getBoolean(data, 'active');
+		const staffID = getString(data, 'staff');
 
 		if (!name || !description || !duration || !price) {
 			logger.error('Data is not enough to add a kind');
@@ -86,7 +93,8 @@ export const actions: Actions = {
 			description,
 			duration,
 			price,
-			active
+			active,
+			staffID
 		});
 
 		if (response) {

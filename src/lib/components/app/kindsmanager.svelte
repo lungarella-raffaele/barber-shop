@@ -7,10 +7,10 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import type { Kind } from '@types';
+	import type { DBKind } from '@types';
 	import { slide } from 'svelte/transition';
 
-	let { kinds }: { kinds: Kind[] } = $props();
+	let { kinds }: { kinds: DBKind[] } = $props();
 
 	const kindBackup = kinds;
 
@@ -93,7 +93,7 @@
 	</div>
 {/if}
 
-{#snippet KindItem(kind: Kind)}
+{#snippet KindItem(kind: DBKind)}
 	<Accordion.Item value={kind.id} disabled={isEditing}>
 		<Accordion.Trigger>
 			<h1 class="flex items-center">

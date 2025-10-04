@@ -35,7 +35,7 @@ export const actions: Actions = {
 
 		const existingUser = await new UserService().get(form.data.email);
 
-		if (!existingUser || !existingUser.verifiedEmail) {
+		if (!existingUser || !existingUser.data.verifiedEmail) {
 			return fail(400, {
 				success: false,
 				message: 'Email o password errati',
@@ -43,7 +43,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const validPassword = await verify(existingUser.passwordHash, form.data.password, {});
+		const validPassword = await verify(existingUser.data.passwordHash, form.data.password, {});
 
 		if (!validPassword) {
 			return fail(400, {
@@ -54,10 +54,10 @@ export const actions: Actions = {
 		}
 
 		const sessionToken = auth.generateSessionToken();
-		const session = await auth.createSession(sessionToken, existingUser.id);
+		const session = await auth.createSession(sessionToken, existingUser.data.id);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		if (existingUser.isAdmin) {
+		if (existingUser.role === 'staff') {
 			return redirect(302, '/dashboard');
 		}
 		return redirect(302, '/');
@@ -86,10 +86,10 @@ export const actions: Actions = {
 			};
 		}
 
-		const recover = await userService.insertPasswordRecover(user.id);
+		const recover = await userService.insertPasswordRecover(user.data.id);
 
 		const { error } = await recoverPassword(
-			user.name,
+			user.data.name,
 			email,
 			`${BASE_URL}?recover=${recover.id}`
 		);
