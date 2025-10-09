@@ -5,8 +5,8 @@ import { ReservationService, CleanupService } from '@service';
 export const load: PageServerLoad = async () => {
 	const user = new UserService();
 	const reservationS = new ReservationService();
-	const usersCount = await user.getAllUnverifiedExpiredUsers();
-	const reservationsCounts = await reservationS.getAllExpired();
+	const usersCount = await user.countExpired();
+	const reservationsCounts = await reservationS.countExpired();
 
 	return {
 		usersCount,

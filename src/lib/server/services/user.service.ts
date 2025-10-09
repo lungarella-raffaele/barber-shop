@@ -79,66 +79,86 @@ export class UserService {
 	}
 
 	async get(email: string): Promise<User | null> {
-		const lowercaseEmail = email.toLowerCase();
-		const user = await db
-			.select()
-			.from(table.user)
-			.where(eq(table.user.email, lowercaseEmail))
-			.get();
+		try {
+			const lowercaseEmail = email.toLowerCase();
+			const user = await db
+				.select()
+				.from(table.user)
+				.where(eq(table.user.email, lowercaseEmail))
+				.get();
 
-		if (!user) {
-			logger.warn('User not found');
+			if (!user) {
+				logger.warn('User not found');
+				return null;
+			}
+
+			const staff = await db
+				.select()
+				.from(table.staff)
+				.where(eq(table.staff.userID, user.id))
+				.get();
+
+			if (!staff) {
+				return {
+					role: 'user',
+					data: user
+				};
+			} else {
+				return {
+					role: 'staff',
+					data: { ...user, avatar: staff.avatar }
+				};
+			}
+		} catch (e) {
+			logger.error(e);
 			return null;
-		}
-
-		const staff = await db
-			.select()
-			.from(table.staff)
-			.where(eq(table.staff.userID, user.id))
-			.get();
-
-		if (!staff) {
-			return {
-				role: 'user',
-				data: user
-			};
-		} else {
-			return {
-				role: 'staff',
-				data: { ...user, avatar: staff.avatar }
-			};
 		}
 	}
 
 	async patchPending(id: string) {
-		return await db
-			.update(table.user)
-			.set({
-				verifiedEmail: true
-			})
-			.where(eq(table.user.id, id))
-			.returning()
-			.get();
+		try {
+			return await db
+				.update(table.user)
+				.set({
+					verifiedEmail: true
+				})
+				.where(eq(table.user.id, id))
+				.returning()
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async patchPassword(passwordHash: string, id: string) {
-		return await db
-			.update(table.user)
-			.set({ passwordHash })
-			.where(eq(table.user.id, id))
-			.returning()
-			.get();
+		try {
+			return await db
+				.update(table.user)
+				.set({ passwordHash })
+				.where(eq(table.user.id, id))
+				.returning()
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async patchEmail(id: string, email: string) {
-		return await db
-			.update(table.user)
-			.set({
-				email
-			})
-			.where(eq(table.user.id, id))
-			.returning()
-			.get();
+		try {
+			return await db
+				.update(table.user)
+				.set({
+					email
+				})
+				.where(eq(table.user.id, id))
+				.returning()
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async getByID(id: string): Promise<User | null> {
@@ -173,14 +193,24 @@ export class UserService {
 	}
 
 	async insertSession(session: table.DBSession) {
-		return await db.insert(table.session).values(session);
+		try {
+			return await db.insert(table.session).values(session);
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async deleteAccount(user: table.DBUser) {
-		await this.deleteAllSessionOfUser(user.id);
-		await new ReservationService().deleteAll(user.email);
-		await this.deleteTokens(user.id);
-		return await db.delete(table.user).where(eq(table.user.id, user.id)).returning().get();
+		try {
+			await this.deleteAllSessionOfUser(user.id);
+			await new ReservationService().deleteAll(user.email);
+			await this.deleteTokens(user.id);
+			return await db.delete(table.user).where(eq(table.user.id, user.id)).returning().get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async logout(id: string, event: RequestEvent) {
@@ -189,110 +219,177 @@ export class UserService {
 	}
 
 	async deleteTokens(id: string) {
-		return await db.delete(table.session).where(eq(table.emailVerification.userID, id));
+		try {
+			return await db.delete(table.session).where(eq(table.emailVerification.userID, id));
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async deleteAllSessionOfUser(id: string) {
-		return await db.delete(table.session).where(eq(table.session.userID, id));
+		try {
+			return await db.delete(table.session).where(eq(table.session.userID, id));
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
-	async getAllUnverifiedExpiredUsers() {
-		const entries = await db
-			.select({ count: count() })
-			.from(table.user)
-			.where(and(eq(table.user.verifiedEmail, false), lt(table.user.expiresAt, new Date())))
-			.get();
+	async countExpired() {
+		try {
+			const entries = await db
+				.select({ count: count() })
+				.from(table.user)
+				.where(
+					and(eq(table.user.verifiedEmail, false), lt(table.user.expiresAt, new Date()))
+				)
+				.get();
 
-		return entries?.count;
+			return entries?.count;
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async updatePhoneNumber(id: string, phoneNumber: string) {
-		return await db
-			.update(table.user)
-			.set({ phoneNumber: phoneNumber.trim() })
-			.where(eq(table.user.id, id));
+		try {
+			return await db
+				.update(table.user)
+				.set({ phoneNumber: phoneNumber.trim() })
+				.where(eq(table.user.id, id));
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async updateName(id: string, name: string) {
-		return await db.update(table.user).set({ name: name.trim() }).where(eq(table.user.id, id));
+		try {
+			return await db
+				.update(table.user)
+				.set({ name: name.trim() })
+				.where(eq(table.user.id, id));
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async updateUserInfo(id: string, name?: string, phoneNumber?: string) {
-		const updateData: Record<string, string> = {};
+		try {
+			const updateData: Record<string, string> = {};
 
-		if (name?.trim()) {
-			updateData.name = name;
-		}
+			if (name?.trim()) {
+				updateData.name = name;
+			}
 
-		if (phoneNumber?.trim()) {
-			updateData.phoneNumber = phoneNumber;
-		}
+			if (phoneNumber?.trim()) {
+				updateData.phoneNumber = phoneNumber;
+			}
 
-		if (Object.keys(updateData).length === 0) {
-			// Nothing to update
-			return;
+			if (Object.keys(updateData).length === 0) {
+				// Nothing to update
+				return;
+			}
+			return await db.update(table.user).set(updateData).where(eq(table.user.id, id));
+		} catch (e) {
+			logger.error(e);
+			return null;
 		}
-		return await db.update(table.user).set(updateData).where(eq(table.user.id, id));
 	}
 
 	async insertEmailVerification(newEmail: string, userID: string) {
-		const expiresAt = new Date();
-		expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
+		try {
+			const expiresAt = new Date();
+			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
 
-		return await db
-			.insert(table.emailVerification)
-			.values({
-				id: crypto.randomUUID(),
-				userID,
-				expiresAt,
-				email: newEmail
-			})
-			.returning()
-			.get();
+			return await db
+				.insert(table.emailVerification)
+				.values({
+					id: crypto.randomUUID(),
+					userID,
+					expiresAt,
+					email: newEmail
+				})
+				.returning()
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async deleteEmailVerification(id: string) {
-		return await db.delete(table.emailVerification).where(eq(table.emailVerification.id, id));
+		try {
+			return await db
+				.delete(table.emailVerification)
+				.where(eq(table.emailVerification.id, id));
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async getEmailVerification(id: string) {
-		const _ = await db
-			.select()
-			.from(table.emailVerification)
-			.where(eq(table.emailVerification.id, id));
-		return _[0];
+		try {
+			return await db
+				.select()
+				.from(table.emailVerification)
+				.where(eq(table.emailVerification.id, id))
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
-	async insertPasswordRecover(userID: string) {
-		const expiresAt = new Date();
-		expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
+	async insertPassRecover(userID: string) {
+		try {
+			const expiresAt = new Date();
+			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
 
-		return await db
-			.insert(table.passwordRecover)
-			.values({
-				id: crypto.randomUUID(),
-				userID,
-				expiresAt
-			})
-			.returning()
-			.get();
+			return await db
+				.insert(table.passwordRecover)
+				.values({
+					id: crypto.randomUUID(),
+					userID,
+					expiresAt
+				})
+				.returning()
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async getPasswordRecover(id: string) {
-		const _ = await db
-			.select()
-			.from(table.passwordRecover)
-			.where(eq(table.passwordRecover.id, id));
-		return _[0];
+		try {
+			return await db
+				.select()
+				.from(table.passwordRecover)
+				.where(eq(table.passwordRecover.id, id))
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async expirePasswordRecover(id: string) {
-		return await db
-			.update(table.passwordRecover)
-			.set({ expiresAt: null })
-			.where(eq(table.passwordRecover.id, id))
-			.returning()
-			.get();
+		try {
+			return await db
+				.update(table.passwordRecover)
+				.set({ expiresAt: null })
+				.where(eq(table.passwordRecover.id, id))
+				.returning()
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async deletePasswordRecover() {

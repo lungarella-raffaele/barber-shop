@@ -228,63 +228,91 @@ export class ReservationService {
 	}
 
 	async getByUser(email: string) {
-		return await db
-			.select({
-				id: table.reservation.id,
-				date: table.reservation.date,
-				hour: table.reservation.hour,
-				name: table.reservation.name,
-				email: table.reservation.email,
-				kindName: table.kind.name,
-				kindDuration: table.kind.duration,
-				kindPrice: table.kind.price
-			})
-			.from(table.reservation)
-			.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-			.where(eq(table.reservation.email, email));
+		try {
+			return await db
+				.select({
+					id: table.reservation.id,
+					date: table.reservation.date,
+					hour: table.reservation.hour,
+					name: table.reservation.name,
+					email: table.reservation.email,
+					kindName: table.kind.name,
+					kindDuration: table.kind.duration,
+					kindPrice: table.kind.price
+				})
+				.from(table.reservation)
+				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
+				.where(eq(table.reservation.email, email));
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async getByID(id: string) {
-		return await db
-			.select({
-				id: table.reservation.id,
-				date: table.reservation.date,
-				hour: table.reservation.hour,
-				name: table.reservation.name,
-				email: table.reservation.email,
-				pending: table.reservation.pending,
-				expiresAt: table.reservation.expiresAt,
-				kindName: table.kind.name,
-				kindDuration: table.kind.duration,
-				kindPrice: table.kind.price
-			})
-			.from(table.reservation)
-			.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-			.where(eq(table.reservation.id, id))
-			.get();
+		try {
+			return await db
+				.select({
+					id: table.reservation.id,
+					date: table.reservation.date,
+					hour: table.reservation.hour,
+					name: table.reservation.name,
+					email: table.reservation.email,
+					pending: table.reservation.pending,
+					expiresAt: table.reservation.expiresAt,
+					kindName: table.kind.name,
+					kindDuration: table.kind.duration,
+					kindPrice: table.kind.price
+				})
+				.from(table.reservation)
+				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
+				.where(eq(table.reservation.id, id))
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async delete(id: string) {
-		return await db.delete(table.reservation).where(eq(table.reservation.id, id)).returning();
+		try {
+			return await db
+				.delete(table.reservation)
+				.where(eq(table.reservation.id, id))
+				.returning();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	async deleteAll(email: string) {
-		return await db.delete(table.reservation).where(eq(table.reservation.email, email));
+		try {
+			return await db.delete(table.reservation).where(eq(table.reservation.email, email));
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	/**
 	 * Updates the reservation to expire after the day of the reservation
 	 */
 	async updateExpiration(id: string) {
-		return await db
-			.update(table.reservation)
-			.set({
-				pending: false,
-				expiresAt: sql`strftime('%s', datetime(${table.reservation.date}, '+1 day'))`
-			})
-			.where(eq(table.reservation.id, id))
-			.returning()
-			.get();
+		try {
+			return await db
+				.update(table.reservation)
+				.set({
+					pending: false,
+					expiresAt: sql`strftime('%s', datetime(${table.reservation.date}, '+1 day'))`
+				})
+				.where(eq(table.reservation.id, id))
+				.returning()
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 
 	/**
@@ -316,13 +344,18 @@ export class ReservationService {
 		}
 	}
 
-	async getAllExpired() {
-		const entries = await db
-			.select({ count: count() })
-			.from(table.reservation)
-			.where(lt(table.reservation.expiresAt, new Date()))
-			.get();
+	async countExpired() {
+		try {
+			const entries = await db
+				.select({ count: count() })
+				.from(table.reservation)
+				.where(lt(table.reservation.expiresAt, new Date()))
+				.get();
 
-		return entries?.count;
+			return entries?.count;
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 }
