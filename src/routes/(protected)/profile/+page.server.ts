@@ -1,7 +1,7 @@
 import { BASE_URL } from '$env/static/private';
 import { changeEmail } from '$lib/emails/change-email';
 import { emailSchema } from '$lib/modules/zod-schemas';
-import { newPasswordSchema } from '$lib/modules/zod-schemas';
+import { passwordSchema } from '$lib/modules/zod-schemas';
 import { logger } from '$lib/server/logger';
 import { getString } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
@@ -70,7 +70,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const email = getString(formData, 'email');
 
-		const correctEmail = emailSchema.safeParse({ email });
+		const correctEmail = emailSchema.safeParse(email);
 
 		if (!correctEmail.success) {
 			return fail(400, { message: 'Inserisci una mail valida', success: false });
@@ -147,7 +147,7 @@ export const actions: Actions = {
 		const newPassword = getString(formData, 'new-pass');
 		const oldPassword = getString(formData, 'old-pass');
 
-		const isPasswordSafe = newPasswordSchema.safeParse({ password: newPassword });
+		const isPasswordSafe = passwordSchema.safeParse(newPassword);
 
 		if (!isPasswordSafe.success) {
 			return fail(404, { message: 'La password inserita non è sicura' });

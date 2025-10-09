@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
-	import AppSidebar from '$lib/components/app/appsidebar.svelte';
-	import Banner from '$lib/components/app/banner.svelte';
-	import CookieBanner from '$lib/components/app/cookiebanner.svelte';
-	import Footer from '$lib/components/app/footer.svelte';
-	import Modeswitcher from '$lib/components/app/modeswitcher.svelte';
+	import AppSidebar from './AppSidebar.svelte';
+	import Banner from './Banner.svelte';
+	import CookieBanner from './CookieBanner.svelte';
+	import Footer from './Footer.svelte';
+	import Modeswitcher from './ModeSwitcher.svelte';
 	import { CircleUser, Citrus } from '$lib/components/icons/index';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index';

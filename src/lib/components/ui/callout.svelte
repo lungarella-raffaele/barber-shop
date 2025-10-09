@@ -6,7 +6,6 @@
 
 	export const calloutVariants = tv({
 		base: 'flex flex-col items-center justify-center rounded border-l-4 border-muted-foreground bg-gray-50 p-8',
-		// base: '[&>svg]:text-foreground bg-card relative w-full rounded-lg border px-4 py-3 text-sm [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg~*]:pl-7',
 		variants: {
 			variant: {
 				default: 'text-foreground',

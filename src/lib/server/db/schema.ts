@@ -12,6 +12,7 @@ export const user = sqliteTable('user', {
 
 export const staff = sqliteTable('staff', {
 	userID: text('user_id')
+		.primaryKey()
 		.notNull()
 		.references(() => user.id),
 	avatar: text('string').notNull()

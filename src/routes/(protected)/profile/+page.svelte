@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Profile from '$lib/components/app/profile.svelte';
+	import Profile from './Profile.svelte';
 	import { toast } from 'svelte-sonner';
 	import type { PageProps } from './$types';
 

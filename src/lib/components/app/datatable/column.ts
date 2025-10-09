@@ -2,7 +2,7 @@ import { renderComponent, renderSnippet } from '$lib/components/ui/data-table';
 import { formatDate, formatTime } from '$lib/utils';
 import type { ColumnDef } from '@tanstack/table-core';
 import { createRawSnippet } from 'svelte';
-import DatatableActions from './datatableactions.svelte';
+import DatatableActions from './DataTableActions.svelte';
 
 type Reservation = {
 	id: string;

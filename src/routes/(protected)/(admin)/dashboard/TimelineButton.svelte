@@ -3,8 +3,8 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { formatTime } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import { Check, Shield, X } from '../icons';
-	import { Button } from '../ui/button';
+	import { Check, Shield, X } from '$lib/components/icons';
+	import { Button } from '$lib/components/ui/button';
 
 	const { height, top, reservation } = $props();
 

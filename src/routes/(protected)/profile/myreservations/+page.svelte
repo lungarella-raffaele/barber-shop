@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DataTable from '$lib/components/app/datatable/datatable.svelte';
+	import DataTable from '$lib/components/app/datatable/DataTable.svelte';
 	import { columns } from '$lib/components/app/datatable/column';
 	import type { PageData } from './$types';
 

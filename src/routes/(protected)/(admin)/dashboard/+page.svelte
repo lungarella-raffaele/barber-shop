@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { columns } from '$lib/components/app/datatable/column';
-	import DataTable from '$lib/components/app/datatable/datatable.svelte';
-	import Timeline from '$lib/components/app/timeline.svelte';
+	import DataTable from '$lib/components/app/datatable/DataTable.svelte';
+	import Timeline from './Timeline.svelte';
 	import { ChartGantt, Rows3 } from '$lib/components/icons';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Calendar } from '$lib/components/ui/calendar/index.js';

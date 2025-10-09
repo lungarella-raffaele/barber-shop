@@ -17,6 +17,7 @@ export type Reservation = {
 	name: string;
 	email: string;
 	fromAdmin: boolean;
+	staffID: string;
 	kind: {
 		duration: number;
 		name: string;
@@ -33,10 +34,41 @@ export type User =
 			role: 'staff';
 			data: DBUser & { avatar: string };
 	  };
+
 export type Staff = {
 	name: string;
 	id: string;
 	avatar: string;
+};
+
+export type Data = AnonymousData | UsualData | StaffData;
+export type AnonymousData = {
+	who: 'anonymous';
+	name: string;
+	email: string;
+	date: string;
+	hour: string;
+	kind: string;
+	staff: string;
+	phone?: string;
+};
+
+export type UsualData = {
+	who: 'usual';
+	date: string;
+	hour: string;
+	kind: string;
+	staff: string;
+};
+
+export type StaffData = {
+	who: 'staff';
+	name?: string;
+	phone?: string;
+	date: string;
+	hour: string;
+	kind: string;
+	staff: string;
 };
 
 export type UserSession = { user: User; session: DBSession };
