@@ -8,21 +8,33 @@ import { fail, redirect } from '@sveltejs/kit';
 import { hash, verify } from 'argon2';
 import type { Actions, PageServerLoad } from './$types';
 import { UserService } from '@service';
+import { err, ok, type Result } from '$lib/modules/result';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	const confirmID = url.searchParams.get('confirm-email-change');
+	const confirmID = url.searchParams.get('confirm-email-change'); // Coming from an email
 	const userService = new UserService();
 
+	let updatedEmail: Result<undefined, undefined> | null = null;
 	if (confirmID) {
 		const verified = await userService.getEmailVerification(confirmID);
-		await userService.patchEmail(verified.userID, verified.email);
 
-		throw redirect(302, url.pathname);
+		if (verified) {
+			if (await userService.patchEmail(verified.userID, verified.email)) {
+				updatedEmail = ok(undefined);
+			}
+		}
+
+		updatedEmail = err(undefined);
+	}
+
+	if (!locals.user) {
+		redirect(301, '/login');
 	}
 
 	return {
 		user: locals.user,
-		title: 'Profilo | '
+		title: 'Profilo | ',
+		updatedEmail
 	};
 };
 
@@ -90,6 +102,13 @@ export const actions: Actions = {
 			email,
 			locals.user.data.id
 		);
+
+		if (!emailVerification) {
+			return fail(400, {
+				message: 'Non è stato possibile cambiare la mail. Riprova in seguito.',
+				success: false
+			});
+		}
 
 		const { error } = await changeEmail(
 			locals.user.data.name,

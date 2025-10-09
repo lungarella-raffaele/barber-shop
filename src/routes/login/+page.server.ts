@@ -86,7 +86,14 @@ export const actions: Actions = {
 			};
 		}
 
-		const recover = await userService.insertPasswordRecover(user.data.id);
+		const recover = await userService.insertPassRecover(user.data.id);
+
+		if (!recover) {
+			return fail(500, {
+				success: false,
+				message: 'Non è stato possibile inviare la richiesta'
+			});
+		}
 
 		const { error } = await recoverPassword(
 			user.data.name,
