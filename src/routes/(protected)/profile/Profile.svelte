@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
-	import EditButton from '$lib/components/app/editbutton.svelte';
+	import EditButton from '$lib/components/app/EditButton.svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -10,13 +10,13 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { emailSchema } from '@schema';
-	import { newPasswordSchema } from '@schema';
+	import { passwordSchema } from '@schema';
 	import { getString } from '$lib/utils';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
-	import { KeyRound, Mail, Save } from '../icons';
-	import Passwordinput from './passwordinput.svelte';
+	import { KeyRound, Mail, Save } from '$lib/components/icons';
 	import type { User } from '@types';
+	import Passwordinput from '$lib/components/app/PasswordInput.svelte';
 
 	let { user }: { user: User } = $props();
 
@@ -42,7 +42,7 @@
 
 	const changeEmail: SubmitFunction = ({ cancel, formData }) => {
 		const email = getString(formData, 'email');
-		const correctEmail = emailSchema.safeParse({ email });
+		const correctEmail = emailSchema.safeParse(email);
 
 		if (!correctEmail.success) {
 			toast.error('Non è stato possibile cambiare la mail', {
@@ -79,7 +79,7 @@
 			return cancel();
 		}
 
-		const isPasswordSafe = newPasswordSchema.safeParse({ password: newPass });
+		const isPasswordSafe = passwordSchema.safeParse(newPass);
 
 		if (!isPasswordSafe.success) {
 			toast.error('La password inserita è troppo semplice', {

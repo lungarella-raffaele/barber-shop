@@ -2,7 +2,7 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import Button from '$lib/components/ui/button/button.svelte';
 
-	import Passwordinput from '$lib/components/app/passwordinput.svelte';
+	import Passwordinput from '$lib/components/app/PasswordInput.svelte';
 	import { CircleAlert, CircleCheckBig, LoaderCircle } from '$lib/components/icons/index';
 	import * as Card from '$lib/components/ui/card';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';

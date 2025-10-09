@@ -12,8 +12,7 @@
 	let {
 		value = $bindable(),
 		closures
-	}: { value: DateValue | undefined; closures: { start: string; end: string; id: string }[] } =
-		$props();
+	}: { value: string; closures: { start: string; end: string; id: string }[] } = $props();
 	const rm = ReservationManager.get();
 	function isDateDisabled(date: DateValue) {
 		// Only future reservations and sundays are disabled
@@ -38,7 +37,16 @@
 	{isDateDisabled}
 	{isDateUnavailable}
 	onValueChange={() => (rm.data.hour = '')}
+	bind:value={
+		() => {
+			try {
+				return parseDate(rm.data.date);
+			} catch {
+				return undefined;
+			}
+		},
+		(v) => (rm.data.date = v?.toString() ?? '')
+	}
 	type="single"
-	bind:value
-	class="rounded-md border"
+	class="mb-6 rounded-md border"
 />

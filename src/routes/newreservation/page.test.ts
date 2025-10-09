@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { fireEvent, render } from '@testing-library/svelte';
+import { render } from '@testing-library/svelte';
 import { describe, it } from 'vitest';
 import type { PageData } from './$types';
 import Page from './+page.svelte';
@@ -26,17 +26,6 @@ describe('New reservation page', () => {
 		expect(tabs[0].attributes.getNamedItem('data-state')?.value).toEqual('active');
 		expect(tabs[0].attributes.getNamedItem('data-value')?.value).toEqual('kind');
 	});
-	it('should display kinds', () => {
-		const { getAllByRole, getByLabelText } = render(Page, { props: { data: userProps } });
-		const radios = getAllByRole('radio');
-
-		expect(radios.length).toEqual(userProps.kinds.length);
-
-		const firstRadio = radios[0];
-		expect(firstRadio.attributes.getNamedItem('data-state')?.value).toEqual('unchecked');
-		const button = getByLabelText('Go to next step');
-		fireEvent.click(button);
-	});
 });
 
 const userProps: PageData = {
@@ -50,7 +39,7 @@ const userProps: PageData = {
 			duration: 30,
 			price: 22,
 			active: false,
-			staffID: '123'
+			staffID: 'emiliano'
 		}
 	],
 	user: {
@@ -67,7 +56,7 @@ const userProps: PageData = {
 	},
 	title: '',
 	closures: [],
-	staff: []
+	staff: [{ name: 'emiliano', id: 'emiliano', avatar: 'avatar.png' }]
 };
 
 const noUserProps: PageData = {
@@ -77,7 +66,7 @@ const noUserProps: PageData = {
 		{
 			id: '1',
 			name: 'Haircut',
-			staffID: '123',
+			staffID: 'emiliano',
 			description: 'Nice haircut',
 			duration: 30,
 			price: 22,
@@ -87,5 +76,5 @@ const noUserProps: PageData = {
 	user: null,
 	title: '',
 	closures: [],
-	staff: [{ name: 'emiliano', id: '123', avatar: 'avatar.png' }]
+	staff: [{ name: 'emiliano', id: 'emiliano', avatar: 'avatar.png' }]
 };

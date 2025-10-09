@@ -4,15 +4,14 @@
 	import type { Slot } from '@types';
 	import { formatDate, formatTime } from '$lib/utils';
 	import { fly } from 'svelte/transition';
-	import { CalendarX, ClockAlert } from '../icons';
-	import Label from '../ui/label/label.svelte';
-	import type { DateValue } from '@internationalized/date';
+	import { CalendarX, ClockAlert } from '$lib/components/icons';
+	import Label from '$lib/components/ui/label/label.svelte';
 
 	let {
 		availableSlots,
 		date,
 		value = $bindable()
-	}: { availableSlots: Slot[]; date: DateValue | undefined; value: string } = $props();
+	}: { availableSlots: Slot[]; date: string; value: string } = $props();
 </script>
 
 {#if date}

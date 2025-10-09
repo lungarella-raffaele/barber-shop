@@ -1,10 +1,24 @@
-import { DateFormatter, getLocalTimeZone, parseDate, Time } from '@internationalized/date';
+import {
+	type CalendarDate,
+	DateFormatter,
+	getLocalTimeZone,
+	parseDate,
+	Time
+} from '@internationalized/date';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { Slot } from '@types';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
+}
+
+export function safeParseDate(date: string): CalendarDate | null {
+	try {
+		return parseDate(date);
+	} catch {
+		return null;
+	}
 }
 
 export function formatTime(time: Time | string) {

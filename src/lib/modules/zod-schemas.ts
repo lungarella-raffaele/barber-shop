@@ -1,8 +1,6 @@
 import { z } from 'zod';
 
-export const emailSchema = z.object({
-	email: z.string().email({ message: 'Inserisci una mail valida' })
-});
+export const emailSchema = z.string().email({ message: 'Inserisci una mail valida' });
 
 export const loginSchema = z.object({
 	email: z.string().email({ message: 'Inserisci una mail valida' }),
@@ -28,19 +26,6 @@ export const confirmPasswordSchema = z.string().refine((confirmPassword) => conf
 	message: 'Le password non coincidono'
 });
 
-export const newPasswordSchema = z.object({
-	password: passwordSchema
-});
-
-export const reservationSchema = z.object({
-	name: z.string().min(2),
-	email: z.string().email(),
-	date: z.string().date(),
-	hour: z.string().nonempty(),
-	kind: z.string().nonempty(),
-	staff: z.string().nonempty()
-});
-
 export const signupSchema = z
 	.object({
 		email: z.string().email({ message: "Inserisci un'email valida" }),
@@ -54,8 +39,32 @@ export const signupSchema = z
 		path: ['confirmPassword']
 	});
 
-export type ReservationSchema = typeof reservationSchema;
-export type NewPasswordSchema = typeof newPasswordSchema;
-export type LoginSchema = typeof loginSchema;
-export type EmailSchema = typeof emailSchema;
-export type FormSchema = typeof signupSchema;
+// Shared field schemas
+const nameSchema = z.string().min(1);
+const dateSchema = z.string().date();
+const hourSchema = z.string();
+const kindSchema = z.string().min(1);
+const staffSchema = z.string().min(1);
+const phoneSchema = z.string().optional();
+
+// Base schema with common fields
+const baseUserSchema = z.object({
+	date: dateSchema,
+	hour: hourSchema,
+	kind: kindSchema,
+	staff: staffSchema
+});
+
+// Schema for each user type
+export const anonymousUserSchema = baseUserSchema.extend({
+	name: nameSchema,
+	email: emailSchema,
+	phone: phoneSchema
+});
+
+export const usualUserSchema = baseUserSchema;
+
+export const staffUserSchema = baseUserSchema.extend({
+	name: z.string(),
+	phone: phoneSchema
+});

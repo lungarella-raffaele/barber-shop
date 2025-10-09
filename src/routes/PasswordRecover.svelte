@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
-	import { newPasswordSchema } from '@schema';
+	import { passwordSchema } from '@schema';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
-	import Button from '../ui/button/button.svelte';
-	import Label from '../ui/label/label.svelte';
-	import Passwordinput from './passwordinput.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import Label from '$lib/components/ui/label/label.svelte';
+	import Passwordinput from '$lib/components/app/PasswordInput.svelte';
 
 	const { id, error, success } = $props();
 
@@ -24,7 +24,7 @@
 			return cancel();
 		}
 
-		const isPasswordSafe = newPasswordSchema.safeParse({ password: newPass });
+		const isPasswordSafe = passwordSchema.safeParse(newPass);
 
 		if (!isPasswordSafe.success) {
 			toast.error('La password inserita è troppo semplice', {

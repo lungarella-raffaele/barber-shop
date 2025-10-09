@@ -7,7 +7,21 @@ import { ok, err, type Result } from '$lib/modules/result';
 export class KindService {
 	async getAll(onlyActive: boolean = true) {
 		try {
-			return await db.select().from(table.kind).where(eq(table.kind.active, onlyActive));
+			const query = db.select().from(table.kind);
+
+			if (onlyActive) {
+				return await query.where(eq(table.kind.active, true));
+			}
+
+			return await query;
+		} catch {
+			return null;
+		}
+	}
+
+	async getByStaff(staffID: string) {
+		try {
+			return await db.select().from(table.kind).where(eq(table.kind.staffID, staffID));
 		} catch {
 			return null;
 		}
@@ -17,7 +31,7 @@ export class KindService {
 		try {
 			return ok(await db.insert(table.kind).values(kind).returning().get());
 		} catch (e) {
-			logger.error({ e, kind }, 'Error while adding kind');
+			logger.error(e, 'Error while adding kind');
 			return err('Could not insert kind');
 		}
 	}

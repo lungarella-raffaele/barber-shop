@@ -3,10 +3,9 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import type { Data } from '$lib/composables/reservation-manager.svelte';
-	import { formatTime } from '$lib/utils';
+	import { formatTime, safeParseDate } from '$lib/utils';
 	import { DateFormatter, getLocalTimeZone } from '@internationalized/date';
-	import type { DBKind, Staff } from '@types';
+	import type { Data, DBKind, Staff } from '@types';
 
 	let {
 		data,
@@ -22,13 +21,16 @@
 		loading: boolean;
 	} = $props();
 
+	function formatDate(date: string) {
+		const parsedDate = safeParseDate(date);
+		return parsedDate ? df.format(parsedDate.toDate(getLocalTimeZone())) : '';
+	}
 	const df = new DateFormatter('it-IT', {
 		dateStyle: 'long'
 	});
 
-	const { name, email, date, hour, kind, staff, phone } = $derived(data);
-	const selectedKind = $derived(kinds.find((entry) => entry.id === kind));
-	const selectedStaff = $derived(staffs.find((entry) => entry.id === staff));
+	const selectedKind = $derived(kinds.find((entry) => entry.id === data.kind));
+	const selectedStaff = $derived(staffs.find((entry) => entry.id === data.staff));
 </script>
 
 <Dialog.Root bind:open={isOpen}>
@@ -47,20 +49,31 @@
 			</Dialog.Description>
 		</Dialog.Header>
 		<div class="grid grid-cols-4 grid-rows-4 items-center gap-4 py-6">
-			<Label class="mb-0 text-right text-xs text-muted-foreground">Nome</Label>
-			<span class="col-span-3">
-				{name}
-			</span>
+			{#if data.who === 'anonymous'}
+				<Label class="mb-0 text-right text-xs text-muted-foreground">Nome</Label>
+				<span class="col-span-3">
+					{data.name}
+				</span>
 
-			<Label class="mb-0 text-right text-xs text-muted-foreground">Email</Label>
-			<span class="col-span-3">
-				{email}
-			</span>
+				<Label class="mb-0 text-right text-xs text-muted-foreground">Email</Label>
+				<span class="col-span-3">
+					{data.email}
+				</span>
+
+				<Label class="mb-0 text-right text-xs text-muted-foreground">N. di telefono</Label>
+				<span class="col-span-3">
+					{#if data.phone}
+						{data.phone}
+					{:else}
+						Non specificato
+					{/if}
+				</span>
+			{/if}
 
 			<Label class="mb-0 text-right text-xs text-muted-foreground">Data</Label>
 			<span class="col-span-3">
-				{date ? df.format(date.toDate(getLocalTimeZone())) : ''} alle
-				{formatTime(hour)}
+				{formatDate(data.date)}
+				{formatTime(data.hour)}
 			</span>
 
 			<Label class="mb-0 text-right text-xs text-muted-foreground">Servizio</Label>
@@ -71,15 +84,6 @@
 			<Label class="mb-0 text-right text-xs text-muted-foreground">Staff</Label>
 			<span class="col-span-3">
 				{selectedStaff?.name ?? 'Non selezionato'}
-			</span>
-
-			<Label class="mb-0 text-right text-xs text-muted-foreground">N. di telefono</Label>
-			<span class="col-span-3">
-				{#if phone}
-					{phone}
-				{:else}
-					Non specificato
-				{/if}
 			</span>
 		</div>
 		<Dialog.Footer>

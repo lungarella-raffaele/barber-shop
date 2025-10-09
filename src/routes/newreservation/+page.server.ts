@@ -1,36 +1,49 @@
-import { getString } from '$lib/utils.js';
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
 import { ReservationService, KindService, ShutdownService, UserService } from '@service';
+import type { Data } from '@types';
+import { logger } from '$lib/server/logger.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
-		const reservationService = new ReservationService();
 		const user = locals.user;
-		const data = await request.formData();
+		const formData = await request.formData();
 
-		const email = getString(data, 'email');
-		const name = getString(data, 'name');
-		const phoneNumber = getString(data, 'phone');
-		const kind = getString(data, 'kind');
-		const date = getString(data, 'date');
-		const hour = getString(data, 'hour');
-		const staff = getString(data, 'staff');
+		let data: Data | undefined;
+		try {
+			data = JSON.parse(formData.get('data') as unknown as string);
+		} catch (e) {
+			logger.warn(e);
+			return fail(404);
+		}
 
+		if (!data) {
+			return fail(404);
+		}
+
+		const reservationService = new ReservationService();
 		let result;
-		if (user) {
-			result = await reservationService.insertByUser({ hour, date, kind, staff }, user.data);
-		} else if (name && email) {
-			result = await reservationService.insertByUnkown({
-				date,
-				hour,
-				kind,
-				name,
-				email,
-				phoneNumber,
-				staff
-			});
+		if (data.who === 'usual') {
+			if (!user) {
+				logger.error(
+					'Tried to insert a reservation by an usual user while not being logged in'
+				);
+				redirect(308, '/login');
+			}
+			result = await reservationService.insertByUser(data, user.data);
+		} else if (data.who === 'anonymous') {
+			result = await reservationService.insertByAnonymous(data);
+		} else if (data.who === 'staff') {
+			if (!user) {
+				logger.error(
+					'Tried to insert a reservation by an usual user while not being logged in'
+				);
+				redirect(308, '/login');
+			}
+			const alternativeName = formData.get('alternativeName') as string;
+			result = await reservationService.insertByStaff(data, user.data, alternativeName);
 		} else {
+			logger.error('Did not specify the kind of user');
 			return fail(404);
 		}
 
@@ -54,10 +67,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const reservationService = new ReservationService();
 	const shutdowns = new ShutdownService();
 
-	const kinds = await kind.getAll();
-	const currentReservations = await reservationService.getAll();
-	const closures = await shutdowns.getAll();
-	const staff = await new UserService().getAllStaff();
+	const [kinds, currentReservations, closures, staff] = await Promise.all([
+		kind.getAll(),
+		reservationService.getAll(),
+		shutdowns.getAll(),
+		new UserService().getAllStaff()
+	]);
 
 	if (!kinds || !currentReservations || !closures || !staff) {
 		return error(500); //TODO

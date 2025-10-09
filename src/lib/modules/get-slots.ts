@@ -1,5 +1,6 @@
 import type { ReservedSlot, Slot } from '@types';
 import {
+	type CalendarDate,
 	getDayOfWeek,
 	getLocalTimeZone,
 	isToday,
@@ -11,7 +12,7 @@ import { workingHours } from '$lib/working-hours';
 
 export const SlotDuration = new Time(0, 15);
 
-export const getSlots = (date: DateValue, reservations: ReservedSlot[], kind?: Time) => {
+export const getSlots = (date: CalendarDate, reservations: ReservedSlot[], kind?: Time) => {
 	let slots = generateSlots(date);
 
 	// reserved slots
