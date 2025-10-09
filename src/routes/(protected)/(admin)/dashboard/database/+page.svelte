@@ -10,8 +10,8 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-{@render ExpiredEntries('Utenti', data.usersCount)}
-{@render ExpiredEntries('Prenotazioni', data.reservationsCounts)}
+{@render ExpiredEntries('Utenti', data.usersCount ?? 0)}
+{@render ExpiredEntries('Prenotazioni', data.reservationsCounts ?? 0)}
 
 <form method="post">
 	<Button class="mt-4" type="submit">Pulisci <Leaf /></Button>
