@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import Logo from '$lib/components/app/logo.svelte';
-	import PasswordRecover from '$lib/components/app/passwordrecover.svelte';
-	import Pendingreservation from '$lib/components/app/pendingreservation.svelte';
-	import ReservationConfirmed from '$lib/components/app/reservationconfirmed.svelte';
-	import UserConfirmed from '$lib/components/app/userconfirmed.svelte';
+	import Logo from './Logo.svelte';
+	import PasswordRecover from './PasswordRecover.svelte';
+	import Pendingreservation from './PendingReservation.svelte';
+	import ReservationConfirmed from './ReservationConfirmed.svelte';
+	import UserConfirmed from './UserConfirmed.svelte';
 	import { ArrowUpRight, ChevronRight } from '$lib/components/icons';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';

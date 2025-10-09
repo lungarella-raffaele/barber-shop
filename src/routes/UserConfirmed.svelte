@@ -1,7 +1,7 @@
 <script>
 	import { BadgeCheck, BadgeX, Calendar, CircleUser, House } from '$lib/components/icons';
 	import { Button } from '$lib/components/ui/button';
-	import Callout from './callout.svelte';
+	import Callout from '$lib/components/ui/callout.svelte';
 	const { success, error } = $props();
 </script>
 

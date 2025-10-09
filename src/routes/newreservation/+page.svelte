@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import ConfirmReservationDialog from '$lib/components/app/confirmreservationdialog.svelte';
-	import DatePicker from '$lib/components/app/datepicker.svelte';
-	import KindPicker from '$lib/components/app/KindPicker.svelte';
-	import SlotPicker from '$lib/components/app/SlotPicker.svelte';
+	import ConfirmDialog from './components/ConfirmDialog.svelte';
+	import DatePicker from './components/DatePicker.svelte';
+	import KindPicker from './components/KindPicker.svelte';
+	import SlotPicker from './components/SlotPicker.svelte';
 	import { ChevronLeft, ChevronRight } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button/index';
 	import * as Card from '$lib/components/ui/card';
@@ -22,45 +22,12 @@
 	import type { DBReservation } from '@types';
 
 	const { data }: { data: PageData } = $props();
-	const rm = ReservationManager.instance(!!data.user);
+	const rm = ReservationManager.instance(data.user?.role);
 	const kinds = $derived(data.kinds.filter((el) => el.staffID === rm.data.staff));
 
-	const confirmReservation = () => {
-		if (rm.check()) {
-			const { user } = data;
-			if (user && user.role !== 'staff') {
-				rm.data.name = user.data.name;
-				rm.data.email = user.data.email;
-				rm.data.phone = user.data.phoneNumber ?? '';
-			}
-			isDialogOpen = true;
-		}
-	};
-
-	const submitReservation: SubmitFunction = ({ formData, cancel }) => {
+	const submitReservation: SubmitFunction = ({ formData }) => {
 		loading = true;
-
-		const issues = rm.check();
-		if (!issues) {
-			return cancel();
-		}
-
-		if (!rm.data.date) {
-			console.warn('Date not specified');
-			return cancel();
-		}
-		if (!rm.data.kind) {
-			console.warn('Kind not specified');
-			return cancel();
-		}
-
-		formData.append('date', rm.data.date.toString());
-		formData.append('hour', rm.data.hour);
-		formData.append('kind', rm.data.kind);
-		formData.append('name', rm.data.name);
-		formData.append('email', rm.data.email);
-		formData.append('phone', rm.data.phone);
-		formData.append('staff', rm.data.staff);
+		formData.append('data', JSON.stringify(rm.data));
 
 		return async ({ result }) => {
 			if (result.type === 'success' && result.data) {
@@ -74,7 +41,7 @@
 					goto('/');
 				}
 			} else if (result.type === 'failure') {
-				if (result.status === 404 && result.data) {
+				if (result.status === 404) {
 					// const step = result.data.step;
 					toast.warning('Controlla i dati inseriti');
 					// reservationManager.goToTab(step);
@@ -98,30 +65,32 @@
 	let loading = $state(false);
 
 	const kind = $derived(data.kinds.find((el) => el.id === rm.data.kind));
+
 	const availableSlots = $derived.by(() => {
-		if (!rm.data.date) {
+		if (!rm.data.date || !rm.data.staff) {
 			return [];
 		}
 		return getSlots(
-			rm.data.date,
+			parseDate(rm.data.date),
 			data.currentReservations
+				.filter((entry) => entry.staffID === rm.data.staff) // Specific staff member
 				.map((entry) => ({
-					date: entry.date,
-					startingTime: entry.hour,
-					duration: entry.kind.duration
-				}))
-				.filter((el) => el.date === rm.data.date?.toString())
-				.map((el) => ({
-					date: parseDate(el.date),
-					start: parseTime(el.startingTime),
-					duration: minutesToTime(el.duration)
+					date: parseDate(entry.date),
+					start: parseTime(entry.hour),
+					duration: minutesToTime(entry.kind.duration)
 				})),
 			kind?.duration ? minutesToTime(kind.duration) : undefined
 		);
 	});
-</script>
 
-<button onclick={() => rm.check()}>Controlla</button>
+	const book = () => {
+		const correctData = rm.check();
+
+		if (correctData) {
+			isDialogOpen = true;
+		}
+	};
+</script>
 
 <svelte:head>
 	<meta
@@ -133,7 +102,7 @@
 <h1 class="title">Prenotazione</h1>
 
 <form method="POST" use:enhance={submitReservation} id="reservationForm">
-	<ConfirmReservationDialog
+	<ConfirmDialog
 		bind:isOpen={isDialogOpen}
 		{loading}
 		staffs={data.staff}
@@ -159,49 +128,48 @@
 					<Card.Description>Inserisci le tue informazioni personali</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<div class="mb-4">
-						<Label>Nome</Label>
+					{#if rm.data.who === 'anonymous'}
+						<div class="mb-4">
+							<Label>Nome</Label>
+							<Input
+								name="name"
+								bind:value={rm.data.name}
+								placeholder="Inserisci il tuo nome"
+								autocomplete="name"
+							/>
+						</div>
+
+						<Label>Email</Label>
 						<Input
-							name="name"
-							bind:value={rm.data.name}
-							placeholder="Inserisci il tuo nome"
-							autocomplete="name"
+							name="email"
+							bind:value={rm.data.email}
+							placeholder="Inserisci la tua email"
+							autocomplete="email"
 						/>
-					</div>
+						<p class="mb-4 ml-2 mt-2 text-sm text-muted-foreground">
+							Ti verrà inviata una mail per confermare la prenotazione all'indirizzo
+							email indicato indicato.
+						</p>
 
-					<Label>Email</Label>
-					<Input
-						name="email"
-						bind:value={rm.data.email}
-						placeholder="Inserisci la tua email"
-						autocomplete="email"
-					/>
-					<p class="mb-4 ml-2 mt-2 text-sm text-muted-foreground">
-						Ti verrà inviata una mail per confermare la prenotazione all'indirizzo email
-						indicato indicato.
-					</p>
-
-					<Label>Numero di telefono</Label>
-					<Input
-						name="phone"
-						bind:value={rm.data.phone}
-						placeholder="Inserisci il tuo numero di cellulare"
-						autocomplete="mobile tel"
-					/>
-					<p class="mb-4 ml-2 mt-2 text-sm text-muted-foreground">
-						Il numero di cellulare è opzionale e verrà utilizzato solo nel momento in
-						cui ci saranno comunicazioni urgenti.
-					</p>
+						<Label>Numero di telefono</Label>
+						<Input
+							name="phone"
+							bind:value={rm.data.phone}
+							placeholder="Inserisci il tuo numero di cellulare"
+							autocomplete="mobile tel"
+						/>
+						<p class="mb-4 ml-2 mt-2 text-sm text-muted-foreground">
+							Il numero di cellulare è opzionale e verrà utilizzato solo nel momento
+							in cui ci saranno comunicazioni urgenti.
+						</p>
+					{/if}
 				</Card.Content>
-				<Card.Footer class="mt-8 items-center justify-between">
+				<Card.Footer class="mt-8 items-center justify-end">
 					<Button
-						aria-label="Go to previous step"
-						variant="ghost"
-						class="pr-6"
-						disabled={rm.isFirst()}
-						onclick={() => rm.back()}><ChevronLeft class="w-4" />Indietro</Button
+						aria-label="Go to next step"
+						class="pl-6"
+						onclick={() => (rm.currentTab = 'kind')}
 					>
-					<Button aria-label="Go to next step" class="pl-6" onclick={() => rm.next()}>
 						Avanti <ChevronRight class="w-4" />
 					</Button>
 				</Card.Footer>
@@ -211,15 +179,16 @@
 	<Tabs.Content value="kind">
 		<Card.Root>
 			<Card.Header>
-				{#if data.user?.role === 'staff'}
-					<Card.Title class="mb-4">Informazioni</Card.Title>
-					<Label>Nome</Label>
-					<Input
-						type="text"
-						name="name"
-						bind:value={rm.data.name}
-						placeholder="Inserisci il nome di chi sta prenotando"
-					/>
+				{#if rm.data.who === 'staff'}
+					<div class="mb-4">
+						<Card.Title class="mb-4">Informazioni</Card.Title>
+						<Input
+							type="text"
+							name="alternativeName"
+							bind:value={rm.data.name}
+							placeholder="Inserisci il nome di chi sta prenotando"
+						/>
+					</div>
 				{/if}
 			</Card.Header>
 			<Card.Header class="pt-0">
@@ -239,14 +208,16 @@
 					aria-label="Go to previous step"
 					variant="ghost"
 					class="pr-6"
-					disabled={rm.isFirst()}
-					onclick={() => rm.back()}><ChevronLeft class="w-4" />Indietro</Button
+					disabled={rm.data.who !== 'anonymous'}
+					onclick={() => (rm.currentTab = 'info')}
+					><ChevronLeft class="w-4" />Indietro</Button
 				>
 				<Button
 					aria-label="Go to next step"
 					disabled={!rm.data.kind}
 					class="pl-6"
-					onclick={() => rm.next()}>Avanti <ChevronRight class="w-4" /></Button
+					onclick={() => (rm.currentTab = 'date')}
+					>Avanti <ChevronRight class="w-4" /></Button
 				>
 			</Card.Footer>
 		</Card.Root>
@@ -267,12 +238,10 @@
 					aria-label="Go to previous step"
 					variant="ghost"
 					class="pr-6"
-					disabled={rm.isFirst()}
-					onclick={() => rm.back()}><ChevronLeft class="w-4" />Indietro</Button
+					onclick={() => (rm.currentTab = 'kind')}
+					><ChevronLeft class="w-4" />Indietro</Button
 				>
-				<Button type="button" onclick={confirmReservation} aria-label="Submit"
-					>Prenota</Button
-				>
+				<Button type="button" onclick={book} aria-label="Submit">Prenota</Button>
 			</Card.Footer>
 		</Card.Root>
 	</Tabs.Content>

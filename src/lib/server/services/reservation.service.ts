@@ -3,151 +3,163 @@ import type { DBReservation, DBUser } from '$lib/server/db/schema';
 import * as table from '$lib/server/db/schema';
 import { and, count, eq, gt, lt, sql } from 'drizzle-orm';
 import { logger } from '../logger';
-import { reservationSchema } from '$lib/modules/zod-schemas';
 import { err, ok, type Result } from '$lib/modules/result';
 import { LOCK_DURATION } from '$lib/constants';
-import type { Reservation } from '@types';
+import type { AnonymousData, Reservation, StaffData, UsualData } from '@types';
+import { anonymousUserSchema, staffUserSchema, usualUserSchema } from '@schema';
 
-type InsertError =
-	| 'no-date'
-	| 'no-kind'
-	| 'conflict'
-	| 'invalid-email'
-	| 'invalid-data'
-	| 'db-error';
+type InsertError = 'conflict' | 'invalid-data' | 'server-err';
 
 export class ReservationService {
-	async insertByUser(
-		data: {
-			hour: string;
-			date: string;
-			kind: string;
-			staff: string;
-		},
-		user: DBUser
-	): Promise<Result<DBReservation, InsertError>> {
-		const schema = reservationSchema.safeParse({
-			name: user.name,
-			email: user.email,
-			hour: data.hour,
-			kind: data.kind,
-			date: data.date,
-			staff: data.staff
-		});
+	async insertByUser(data: UsualData, user: DBUser): Promise<Result<DBReservation, InsertError>> {
+		try {
+			const schema = usualUserSchema.safeParse({ ...data, date: data.date?.toString() });
 
-		if (!schema.success) {
-			const { path } = schema.error.issues[0];
-			logger.warn({ reason: path }, 'Could not create reservation');
-
-			if (path.includes('date') || path.includes('hour')) {
-				return err('no-date');
-			} else if (path.includes('kind')) {
-				return err('no-kind');
-			} else if ((path.includes('email') || path.includes('name')) && !user) {
-				return err('invalid-email');
-			} else {
+			if (!schema.success) {
+				logger.error(schema.error.issues);
 				return err('invalid-data');
 			}
+
+			const { date, hour, kind, staff } = schema.data;
+
+			const expiresAt = new Date(date);
+			expiresAt.setDate(expiresAt.getDate() + 1);
+			expiresAt.setHours(23, 59, 59, 999);
+
+			if (!this.checkAvailability(date, hour)) {
+				logger.error('Reservation already present');
+				return err('conflict');
+			}
+
+			const reservation: table.DBReservation = {
+				date,
+				hour,
+				id: crypto.randomUUID(),
+				kindID: kind,
+				name: user.name,
+				phoneNumber: user.phoneNumber,
+				email: user.email,
+				pending: false,
+				expiresAt,
+				staffID: staff
+			};
+
+			const queryRes = await db
+				.insert(table.reservation)
+				.values(reservation)
+				.returning()
+				.get();
+
+			if (!queryRes) {
+				logger.error('Could not insert reservation');
+				return err('server-err');
+			}
+
+			return ok(queryRes);
+		} catch (e) {
+			logger.error('Error while adding usual user', e);
+			return err('server-err');
 		}
-
-		const expiresAt = new Date(data.date);
-		expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
-		expiresAt.setHours(23, 59, 59, 999); // Set to end of the day
-
-		if (!this.checkAvailability(data.date, data.hour)) {
-			return err('conflict');
-		}
-
-		const reservation: table.DBReservation = {
-			date: data.date,
-			hour: data.hour,
-			id: crypto.randomUUID(),
-			kindID: data.kind,
-			name: user.name,
-			phoneNumber: user.phoneNumber,
-			email: user.email,
-			pending: false,
-			expiresAt,
-			staffID: data.staff
-		};
-
-		const queryRes = await db.insert(table.reservation).values(reservation).returning();
-
-		const res = queryRes[0];
-		if (!res) {
-			return err('db-error');
-		}
-
-		return ok(res);
 	}
 
-	async insertByUnkown(data: {
-		name: string;
-		hour: string;
-		kind: string;
-		email: string;
-		date: string;
-		phoneNumber: string;
-		staff: string;
-	}): Promise<Result<DBReservation, InsertError>> {
-		const schema = reservationSchema.safeParse({
-			name: data.name,
-			hour: data.hour,
-			kind: data.kind,
-			email: data.email,
-			date: data.date,
-			staff: data.staff
-		});
+	async insertByAnonymous(data: AnonymousData): Promise<Result<DBReservation, InsertError>> {
+		try {
+			const schema = anonymousUserSchema.safeParse({
+				name: data.name,
+				email: data.email,
+				date: data.date?.toString(),
+				hour: data.hour,
+				kind: data.kind,
+				staff: data.staff
+			});
 
-		if (!schema.success) {
-			const { path } = schema.error.issues[0];
-			logger.warn({ reason: path }, 'Could not create reservation');
-
-			if (path.includes('date') || path.includes('hour')) {
-				return err('no-date');
-			} else if (path.includes('kind')) {
-				return err('no-kind');
-			} else if (path.includes('email') || path.includes('name')) {
-				return err('invalid-email');
-			} else {
+			if (!schema.success) {
+				const { path } = schema.error.issues[0];
+				logger.warn({ reason: path }, 'Could not create reservation');
 				return err('invalid-data');
 			}
+
+			if (!this.checkAvailability(schema.data.date, data.hour)) {
+				return err('conflict');
+			}
+
+			const reservation: table.DBReservation = {
+				date: schema.data.date,
+				hour: schema.data.hour,
+				id: crypto.randomUUID(),
+				kindID: schema.data.kind,
+				name: schema.data.name,
+				phoneNumber: schema.data.phone ?? null,
+				email: schema.data.email,
+				expiresAt: new Date(Date.now() + LOCK_DURATION),
+				pending: true,
+				staffID: schema.data.staff
+			};
+
+			const queryRes = await db.insert(table.reservation).values(reservation).returning();
+
+			const res = queryRes[0];
+			if (!res) {
+				return err('server-err');
+			}
+
+			return ok(res);
+		} catch (e) {
+			logger.error(e);
+			return err('server-err');
 		}
-
-		if (!this.checkAvailability(data.date, data.hour)) {
-			return err('conflict');
-		}
-
-		const reservation: table.DBReservation = {
-			date: data.date,
-			hour: data.hour,
-			id: crypto.randomUUID(),
-			kindID: data.kind,
-			name: data.name,
-			phoneNumber: data.phoneNumber,
-			email: data.email,
-			expiresAt: new Date(Date.now() + LOCK_DURATION),
-			pending: true,
-			staffID: data.staff
-		};
-
-		const queryRes = await db.insert(table.reservation).values(reservation).returning();
-
-		const res = queryRes[0];
-		if (!res) {
-			return err('db-error');
-		}
-
-		return ok(res);
 	}
 
-	async delete(id: string) {
-		return await db.delete(table.reservation).where(eq(table.reservation.id, id)).returning();
+	async insertByStaff(data: StaffData, user: DBUser, alternativeName: string) {
+		try {
+			const schema = staffUserSchema.safeParse({
+				name: alternativeName ?? 'Inserito da staff',
+				...data,
+				date: data.date?.toString()
+			});
+
+			if (!schema.success) {
+				logger.error(schema.error.issues);
+				return err('invalid-data');
+			}
+
+			const { date, hour, kind, staff, name } = schema.data;
+
+			const expiresAt = new Date(date);
+			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
+			expiresAt.setHours(23, 59, 59, 999); // Set to end of the day
+
+			if (!this.checkAvailability(date, hour)) {
+				return err('conflict');
+			}
+
+			const reservation: table.DBReservation = {
+				date,
+				hour,
+				id: crypto.randomUUID(),
+				kindID: kind,
+				name,
+				email: user.email,
+				pending: false,
+				expiresAt,
+				staffID: staff,
+				phoneNumber: null
+			};
+
+			const queryRes = await db.insert(table.reservation).values(reservation).returning();
+
+			const res = queryRes[0];
+			if (!res) {
+				return err('server-err');
+			}
+
+			return ok(res);
+		} catch (e) {
+			logger.error('Error while adding usual user', e);
+			return err('server-err');
+		}
 	}
 
-	/**
-	 * @returns All the non-expired reservations
-	 */
 	async getAll(): Promise<Reservation[] | null> {
 		try {
 			const result = await db
@@ -166,13 +178,14 @@ export class ReservationService {
 				})
 				.from(table.reservation)
 				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
+				.innerJoin(table.staff, eq(table.user.id, table.staff.userID))
 				.leftJoin(table.user, eq(table.reservation.email, table.user.email))
-				.leftJoin(table.staff, eq(table.user.id, table.staff.userID))
 				.where(gt(table.reservation.expiresAt, new Date()));
 
 			return result.map((entry) => ({
 				...entry,
-				fromAdmin: !!entry.staff
+				fromAdmin: !!entry.staff,
+				staffID: entry.staff
 			}));
 		} catch (e) {
 			logger.error(e);
@@ -199,11 +212,15 @@ export class ReservationService {
 				})
 				.from(table.reservation)
 				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
+				.innerJoin(table.staff, eq(table.staff.userID, table.user.id))
 				.leftJoin(table.user, eq(table.reservation.email, table.user.email))
-				.leftJoin(table.staff, eq(table.staff.userID, table.user.id))
 				.where(and(eq(table.reservation.date, date), eq(table.reservation.pending, false)));
 
-			return result.map((entry) => ({ ...entry, fromAdmin: !!entry.staff }));
+			return result.map((entry) => ({
+				...entry,
+				fromAdmin: !!entry.staff,
+				staffID: entry.staff
+			}));
 		} catch (err) {
 			console.error(err);
 			return null;
@@ -245,6 +262,10 @@ export class ReservationService {
 			.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
 			.where(eq(table.reservation.id, id))
 			.get();
+	}
+
+	async delete(id: string) {
+		return await db.delete(table.reservation).where(eq(table.reservation.id, id)).returning();
 	}
 
 	async deleteAll(email: string) {

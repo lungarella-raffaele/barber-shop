@@ -8,7 +8,7 @@
 	}: { staff: { id: string; avatar: string; name: string }[]; value: string } = $props();
 
 	if (!value) {
-		value = staff[0].id;
+		value = staff?.[0]?.id ?? '';
 	}
 </script>
 

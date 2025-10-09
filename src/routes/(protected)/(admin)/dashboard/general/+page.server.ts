@@ -7,8 +7,12 @@ import type { Actions, PageServerLoad } from './$types';
 import { KindService } from '@service';
 import { error } from '@sveltejs/kit';
 
-export const load: PageServerLoad = async () => {
-	const kinds = await new KindService().getAll(false);
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.user) {
+		return error(500);
+	}
+
+	const kinds = await new KindService().getByStaff(locals.user.data.id);
 	if (!kinds) {
 		return error(500);
 	}
@@ -27,7 +31,7 @@ export const actions: Actions = {
 
 		await db.update(table.banner).set({ message, visible }).where(eq(table.banner.id, 1));
 	},
-	updateKind: async ({ request }) => {
+	updateKind: async ({ request, locals }) => {
 		const data = await request.formData();
 
 		const id = getString(data, 'id');
@@ -36,7 +40,6 @@ export const actions: Actions = {
 		const duration = getNumber(data, 'duration');
 		const price = getNumber(data, 'price');
 		const active = getBoolean(data, 'active');
-		const staffID = getString(data, 'staff');
 
 		if (!id || !name || !description || !duration || !price) {
 			return {
@@ -46,6 +49,13 @@ export const actions: Actions = {
 		}
 
 		const kinds = new KindService();
+		if (!locals.user) {
+			return {
+				success: false
+			};
+		}
+
+		const staffID = locals.user.data.id;
 		const response = await kinds.update({
 			id,
 			name,
@@ -68,7 +78,7 @@ export const actions: Actions = {
 			};
 		}
 	},
-	addKind: async ({ request }) => {
+	addKind: async ({ request, locals }) => {
 		const data = await request.formData();
 
 		const name = getString(data, 'name');
@@ -76,7 +86,14 @@ export const actions: Actions = {
 		const duration = getNumber(data, 'duration');
 		const price = getNumber(data, 'price');
 		const active = getBoolean(data, 'active');
-		const staffID = getString(data, 'staff');
+
+		if (!locals.user) {
+			return {
+				success: false
+			};
+		}
+
+		const staffID = locals.user.data.id;
 
 		if (!name || !description || !duration || !price) {
 			logger.error('Data is not enough to add a kind');

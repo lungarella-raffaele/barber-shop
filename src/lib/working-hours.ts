@@ -10,6 +10,16 @@ import { Day } from './enums/days';
  * Friday 9 AM – 1 PM / 2 PM – 6:30 PM
  * Saturday 10 AM – 3 PM
  */
+
+// {
+//   "0": [{"start": "14:00", "end": "19:00"}],
+//   "1": [{"start": "09:00", "end": "13:00"}, {"start": "14:00", "end": "18:30"}],
+//   "2": [{"start": "09:00", "end": "13:00"}, {"start": "14:00", "end": "18:30"}],
+//   "3": [{"start": "09:00", "end": "13:00"}, {"start": "14:00", "end": "18:30"}],
+//   "4": [{"start": "09:00", "end": "13:00"}, {"start": "14:00", "end": "18:30"}],
+//   "5": [{"start": "10:00", "end": "15:00"}]
+// }
+
 export const workingHours = new Map<Day, BusinessHours[]>([
 	[
 		Day.MONDAY,

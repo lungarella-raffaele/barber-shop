@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@libsql/client':
-        specifier: ^0.15.1
+        specifier: ^0.15.4
         version: 0.15.4
       '@lucide/lab':
         specifier: ^0.1.2
@@ -27,19 +27,19 @@ importers:
         specifier: ^0.5.10
         version: 0.5.10(tailwindcss@3.4.17)
       '@tanstack/table-core':
-        specifier: ^8.21.2
+        specifier: ^8.21.3
         version: 8.21.3
       argon2:
         specifier: ^0.41.1
         version: 0.41.1
       dotenv:
-        specifier: ^16.4.7
+        specifier: ^16.5.0
         version: 16.5.0
       drizzle-kit:
-        specifier: ^0.30.5
+        specifier: ^0.30.6
         version: 0.30.6
       drizzle-orm:
-        specifier: ^0.40.0
+        specifier: ^0.40.1
         version: 0.40.1(@libsql/client@0.15.4)(gel@2.1.0)
       pino:
         specifier: ^9.6.0
@@ -48,26 +48,26 @@ importers:
         specifier: ^13.0.0
         version: 13.0.0
       resend:
-        specifier: ^4.2.0
+        specifier: ^4.5.1
         version: 4.5.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
     devDependencies:
       '@eslint/compat':
-        specifier: ^1.2.7
+        specifier: ^1.2.9
         version: 1.2.9(eslint@9.26.0(jiti@1.21.7))
       '@eslint/js':
-        specifier: ^9.21.0
+        specifier: ^9.26.0
         version: 9.26.0
       '@internationalized/date':
-        specifier: ^3.7.0
+        specifier: ^3.8.0
         version: 3.8.0
       '@playwright/test':
-        specifier: ^1.51.0
+        specifier: ^1.52.0
         version: 1.52.0
       '@sveltejs/adapter-vercel':
-        specifier: ^5.5.2
+        specifier: ^5.7.2
         version: 5.7.2(@sveltejs/kit@2.20.8(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.29.0)(vite@6.3.5(@types/node@22.15.15)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.7.1)))(svelte@5.29.0)(vite@6.3.5(@types/node@22.15.15)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.7.1)))(rollup@4.40.2)
       '@sveltejs/kit':
-        specifier: ^2.18.0
+        specifier: ^2.20.8
         version: 2.20.8(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.29.0)(vite@6.3.5(@types/node@22.15.15)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.7.1)))(svelte@5.29.0)(vite@6.3.5(@types/node@22.15.15)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.7.1))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^5.0.3
@@ -82,10 +82,10 @@ importers:
         specifier: ^14.6.1
         version: 14.6.1(@testing-library/dom@10.4.0)
       '@types/node':
-        specifier: ^22.13.9
+        specifier: ^22.15.15
         version: 22.15.15
       autoprefixer:
-        specifier: ^10.4.20
+        specifier: ^10.4.21
         version: 10.4.21(postcss@8.5.3)
       bits-ui:
         specifier: 1.3.6
@@ -94,13 +94,13 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       embla-carousel-svelte:
-        specifier: ^8.5.2
+        specifier: ^8.6.0
         version: 8.6.0(svelte@5.29.0)
       eslint:
-        specifier: ^9.21.0
+        specifier: ^9.26.0
         version: 9.26.0(jiti@1.21.7)
       eslint-config-prettier:
-        specifier: ^10.0.2
+        specifier: ^10.1.3
         version: 10.1.3(eslint@9.26.0(jiti@1.21.7))
       eslint-plugin-svelte:
         specifier: 3.10.0
@@ -109,10 +109,10 @@ importers:
         specifier: 2.0.0
         version: 2.0.0(svelte@5.29.0)(sveltekit-superforms@2.25.0(@sveltejs/kit@2.20.8(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.29.0)(vite@6.3.5(@types/node@22.15.15)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.7.1)))(svelte@5.29.0)(vite@6.3.5(@types/node@22.15.15)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.7.1)))(@types/json-schema@7.0.15)(svelte@5.29.0)(typescript@5.8.3))
       globals:
-        specifier: ^16.0.0
+        specifier: ^16.1.0
         version: 16.1.0
       jsdom:
-        specifier: ^26.0.0
+        specifier: ^26.1.0
         version: 26.1.0
       lucide-svelte:
         specifier: ^0.477.0
@@ -133,16 +133,16 @@ importers:
         specifier: 5.29.0
         version: 5.29.0
       svelte-check:
-        specifier: ^4.1.5
+        specifier: ^4.1.7
         version: 4.1.7(picomatch@4.0.2)(svelte@5.29.0)(typescript@5.8.3)
       svelte-sonner:
         specifier: ^0.3.28
         version: 0.3.28(svelte@5.29.0)
       sveltekit-superforms:
-        specifier: ^2.23.1
+        specifier: ^2.25.0
         version: 2.25.0(@sveltejs/kit@2.20.8(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.29.0)(vite@6.3.5(@types/node@22.15.15)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.7.1)))(svelte@5.29.0)(vite@6.3.5(@types/node@22.15.15)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.7.1)))(@types/json-schema@7.0.15)(svelte@5.29.0)(typescript@5.8.3)
       tailwind-merge:
-        specifier: ^3.0.2
+        specifier: ^3.2.0
         version: 3.2.0
       tailwind-variants:
         specifier: ^0.3.1
@@ -154,25 +154,25 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17)
       tsx:
-        specifier: ^4.19.3
+        specifier: ^4.19.4
         version: 4.19.4
       typescript:
-        specifier: ^5.8.2
+        specifier: ^5.8.3
         version: 5.8.3
       typescript-eslint:
-        specifier: ^8.26.0
+        specifier: ^8.32.0
         version: 8.32.0(eslint@9.26.0(jiti@1.21.7))(typescript@5.8.3)
       vaul-svelte:
         specifier: 1.0.0-next.6
         version: 1.0.0-next.6(svelte@5.29.0)
       vite:
-        specifier: ^6.2.0
+        specifier: ^6.3.5
         version: 6.3.5(@types/node@22.15.15)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.7.1)
       vitest:
-        specifier: ^3.0.8
+        specifier: ^3.1.3
         version: 3.1.3(@types/node@22.15.15)(jiti@1.21.7)(jsdom@26.1.0)(tsx@4.19.4)(yaml@2.7.1)
       zod:
-        specifier: ^3.24.2
+        specifier: ^3.24.4
         version: 3.24.4
 
 packages:
@@ -1400,8 +1400,8 @@ packages:
     resolution: {integrity: sha512-8WB3Jcas3swSvjIeA2yvCJ+Miyz5l1ZmB6HFb9R1317dt9LCQoswg/BGrmAmkWVEszSrrg4RwmO46qIm2OEnSA==}
     engines: {node: '>=16'}
 
-  caniuse-lite@1.0.30001717:
-    resolution: {integrity: sha512-auPpttCq6BDEG8ZAuHJIplGw6GODhjw+/11e7IjpnYCxZcW/ONgPs0KVBJ0d1bY3e2+7PRe5RCLyP+PfwVgkYw==}
+  caniuse-lite@1.0.30001749:
+    resolution: {integrity: sha512-0rw2fJOmLfnzCRbkm8EyHL8SvI2Apu5UbnQuTsJ0ClgrH8hcwFooJ1s5R0EP8o8aVrFu8++ae29Kt9/gZAZp/Q==}
 
   chai@5.2.0:
     resolution: {integrity: sha512-mCuXncKXk5iCLhfhwTc0izo0gtEmpz5CtG2y8GiOINBlMVS6v8TMRc5TaLWKS6692m9+dVVfzgeVxR5UxWHTYw==}
@@ -4347,7 +4347,7 @@ snapshots:
   autoprefixer@10.4.21(postcss@8.5.3):
     dependencies:
       browserslist: 4.24.5
-      caniuse-lite: 1.0.30001717
+      caniuse-lite: 1.0.30001749
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
@@ -4404,7 +4404,7 @@ snapshots:
 
   browserslist@4.24.5:
     dependencies:
-      caniuse-lite: 1.0.30001717
+      caniuse-lite: 1.0.30001749
       electron-to-chromium: 1.5.150
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.24.5)
@@ -4432,7 +4432,7 @@ snapshots:
   camelcase@8.0.0:
     optional: true
 
-  caniuse-lite@1.0.30001717: {}
+  caniuse-lite@1.0.30001749: {}
 
   chai@5.2.0:
     dependencies:

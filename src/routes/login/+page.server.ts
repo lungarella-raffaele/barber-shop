@@ -71,7 +71,7 @@ export const actions: Actions = {
 			return fail(404, { success: false, message: 'Nessuna mail inserita.' });
 		}
 
-		const correctEmail = emailSchema.safeParse({ email });
+		const correctEmail = emailSchema.safeParse(email);
 		if (!correctEmail.success) {
 			return fail(404, { success: false, message: 'Inserisci una mail valida' });
 		}
