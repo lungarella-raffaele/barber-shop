@@ -40,8 +40,8 @@
 					<BadgeX size={60} />
 					<h2>C'è stato un problema nella verifica della mail</h2>
 					<p>
-						Ci scusiamo per il disagio, non è stato possibile verificare la tua mail. Se
-						il problema persiste non esitare a contattarci.
+						Ci scusiamo per il disagio, impossibile verificare la tua mail. Se il
+						problema persiste non esitare a contattarci.
 					</p>
 				</Callout>
 			{/if}

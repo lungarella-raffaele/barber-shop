@@ -4,23 +4,31 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { formatCurrency, formatDate, formatTime } from '$lib/utils';
+	import type { Reservation } from '@types';
 
 	const { data }: { data: PageData } = $props();
 
-	const reservation = data.reservation;
-
-	type Reservation = {
-		id: string;
+	const reservation: {
 		date: string;
 		hour: string;
-		name: string;
 		email: string;
+		name: string;
 		kindName: string;
 		kindDuration: number;
 		kindPrice: number;
+	} = {
+		date: data.reservation.date,
+		hour: data.reservation.hour,
+		email: data.reservation.email,
+		name: data.reservation.name,
+		kindName: data.reservation.kind.name,
+		kindDuration: data.reservation.kind.duration,
+		kindPrice: data.reservation.kind.price
 	};
 
-	const rows = [
+	type Accessor = keyof typeof reservation;
+
+	const rows: { accessor: Accessor; label: string }[] = [
 		{ accessor: 'date', label: 'Giorno' },
 		{ accessor: 'hour', label: 'Ora' },
 		{ accessor: 'email', label: 'Email' },
@@ -34,7 +42,7 @@
 		return key in reservation;
 	};
 
-	const getValue = (accessor: string) => {
+	const getValue = (accessor: Accessor) => {
 		const value = isValidKey(accessor) ? reservation[accessor] : '';
 		if (!value) {
 			return '';

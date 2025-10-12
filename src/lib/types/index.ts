@@ -16,8 +16,12 @@ export type Reservation = {
 	hour: string;
 	name: string;
 	email: string;
-	fromAdmin: boolean;
-	staffID: string;
+	pending: boolean;
+	expiresAt: Date;
+	staff: {
+		id: string;
+		name: string;
+	};
 	kind: {
 		duration: number;
 		name: string;

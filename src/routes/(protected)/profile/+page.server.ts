@@ -1,5 +1,4 @@
 import { BASE_URL } from '$env/static/private';
-import { changeEmail } from '$lib/emails/change-email';
 import { emailSchema } from '$lib/modules/zod-schemas';
 import { passwordSchema } from '$lib/modules/zod-schemas';
 import { logger } from '$lib/server/logger';
@@ -9,6 +8,7 @@ import { hash, verify } from 'argon2';
 import type { Actions, PageServerLoad } from './$types';
 import { UserService } from '@service';
 import { err, ok, type Result } from '$lib/modules/result';
+import { EmailService } from '$lib/server/mailer';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const confirmID = url.searchParams.get('confirm-email-change'); // Coming from an email
@@ -72,7 +72,7 @@ export const actions: Actions = {
 			await userService.updateName(locals.user.data.id, name);
 		}
 
-		throw redirect(302, url.pathname);
+		redirect(302, url.pathname);
 	},
 	changeEmail: async ({ locals, request }) => {
 		if (!locals.session || !locals.user) {
@@ -105,22 +105,22 @@ export const actions: Actions = {
 
 		if (!emailVerification) {
 			return fail(400, {
-				message: 'Non è stato possibile cambiare la mail. Riprova in seguito.',
+				message: 'Impossibile cambiare la mail. Riprova più tardi.',
 				success: false
 			});
 		}
 
-		const { error } = await changeEmail(
-			locals.user.data.name,
-			email,
-			`${BASE_URL}/profile?confirm-email-change=${emailVerification.id}`
-		);
+		const sent = await new EmailService().changeEmail({
+			name: locals.user.data.name,
+			to: email,
+			link: `${BASE_URL}/profile?confirm-email-change=${emailVerification.id}`
+		});
 
-		if (error) {
-			logger.error('Email bounced');
+		if (sent.isErr()) {
 			await userService.deleteEmailVerification(emailVerification.id);
+
 			return fail(500, {
-				message: 'Riprova più tardi',
+				message: 'Impossibile cambiare email. Riprova più tardi',
 				success: false
 			});
 		}
@@ -195,7 +195,7 @@ export const actions: Actions = {
 		const response = await userService.patchPassword(passwordHash, user.data.id);
 		if (!response) {
 			return fail(404, {
-				message: 'Non è stato possibile aggiornare la password'
+				message: 'Impossibile aggiornare la password. Riprova più tardi.'
 			});
 		}
 	}

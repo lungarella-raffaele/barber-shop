@@ -3,6 +3,9 @@ import type { Actions, PageServerLoad } from './$types.js';
 import { ReservationService, KindService, ShutdownService, UserService } from '@service';
 import type { Data } from '@types';
 import { logger } from '$lib/server/logger.js';
+import { EmailService } from '$lib/server/mailer.js';
+import { formatDate, formatTime } from '$lib/utils.js';
+import { BASE_URL } from '$env/static/private';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -22,7 +25,8 @@ export const actions: Actions = {
 		}
 
 		const reservationService = new ReservationService();
-		let result;
+		let result: Awaited<ReturnType<typeof reservationService.insertByUser>> | undefined =
+			undefined;
 		if (data.who === 'usual') {
 			if (!user) {
 				logger.error(
@@ -48,8 +52,26 @@ export const actions: Actions = {
 		}
 
 		if (result.isOk()) {
+			if (data.who === 'anonymous') {
+				const sent = await new EmailService().newReservation({
+					name: data.name,
+					link: `${BASE_URL}?reservation=${result.value.id}`,
+					staffName: result.value.staffID,
+					serviceName: result.value.kindID,
+					date: formatDate(result.value.date),
+					hour: formatTime(result.value.hour),
+					to: data.email
+				});
+
+				if (sent.isErr()) {
+					logger.error('Could not send email');
+					return fail(404); // TODO: Better error handling
+				}
+			}
+
 			return result.value;
 		} else {
+			logger.error(result.error);
 			switch (result.error) {
 				case 'conflict': {
 					return fail(409);
