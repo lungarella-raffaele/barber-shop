@@ -1,5 +1,4 @@
 import { BASE_URL } from '$env/static/private';
-import { recoverPassword } from '$lib/emails/recover-password';
 import { emailSchema } from '$lib/modules/zod-schemas';
 import { loginSchema } from '$lib/modules/zod-schemas';
 import * as auth from '$lib/server/auth';
@@ -10,6 +9,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { UserService } from '@service';
+import { EmailService } from '$lib/server/mailer';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -81,8 +81,7 @@ export const actions: Actions = {
 		if (!user) {
 			return {
 				success: true,
-				message:
-					'Se la mail inserita è giusta ti arriverà una mail per aggiornare la password del tuo account'
+				message: 'Ti arriverà una mail per aggiornare la password.'
 			};
 		}
 
@@ -91,20 +90,20 @@ export const actions: Actions = {
 		if (!recover) {
 			return fail(500, {
 				success: false,
-				message: 'Non è stato possibile inviare la richiesta'
+				message: "Impossibile inviare l'email. Riprova più tardi."
 			});
 		}
 
-		const { error } = await recoverPassword(
-			user.data.name,
-			email,
-			`${BASE_URL}?recover=${recover.id}`
-		);
+		const sent = await new EmailService().recoverPassword({
+			name: user.data.name,
+			to: email,
+			link: `${BASE_URL}?recover=${recover.id}`
+		});
 
-		if (error) {
+		if (!sent.isOk()) {
 			return fail(500, {
 				success: false,
-				message: `C'è stato un problema. Riprova più tardi.`
+				message: "Impossibile inviare l'email. Riprova più tardi."
 			});
 		}
 

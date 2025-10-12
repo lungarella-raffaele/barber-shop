@@ -4,8 +4,8 @@ import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { UserService } from '@service';
-import { verifyEmail } from '$lib/emails/verify-email';
 import { BASE_URL } from '$env/static/private';
+import { EmailService } from '$lib/server/mailer';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -32,15 +32,27 @@ export const actions: Actions = {
 		const userService = new UserService();
 		const user = await userService.insertUser({ email, password, name, phoneNumber });
 
-		if (user.isOk()) {
-			verifyEmail(name, email, `${BASE_URL}?user=${user.unwrap().id}`);
+		if (!user.isOk()) {
+			return message(form, {
+				text: 'Al momento il servizio non risponde. Riprova in seguito.',
+				success: false
+			});
+		}
+
+		const sent = await new EmailService().verifyEmail({
+			name,
+			to: email,
+			link: `${BASE_URL}?user=${user.value.id}`
+		});
+
+		if (sent.isOk()) {
 			return message(form, {
 				text: `Abbiamo inviato una mail di verifica a ${email}`,
 				success: true
 			});
 		} else {
 			return message(form, {
-				text: 'Al momento il servizio non risponde. Riprova in seguito.',
+				text: `Impossibile inviare la mail a ${email}. Riprova più tardi.`,
 				success: false
 			});
 		}

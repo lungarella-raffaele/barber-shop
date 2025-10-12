@@ -38,7 +38,7 @@
 			if (result.type === 'success') {
 				toast.success('Password aggiornata con successo!');
 			} else if (result.type === 'failure' && result.data) {
-				toast.error('Non è stato possibile aggiornare la password', {
+				toast.error('Impossibile aggiornare la password.', {
 					description: result.data.message ? result.data.message : ''
 				});
 			}

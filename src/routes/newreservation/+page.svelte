@@ -46,7 +46,7 @@
 					toast.warning('Controlla i dati inseriti');
 					// reservationManager.goToTab(step);
 				} else if (result.status === 500) {
-					toast.error('Non è stato possibile effettuare la prenotazione!', {
+					toast.error('Impossibile effettuare la prenotazione.', {
 						description: 'Riprova più tardi',
 						duration: 4000
 					});
@@ -73,7 +73,8 @@
 		return getSlots(
 			parseDate(rm.data.date),
 			data.currentReservations
-				.filter((entry) => entry.staffID === rm.data.staff) // Specific staff member
+				.filter((entry) => entry.staff.id === rm.data.staff) // Chosen staff member
+				.filter((el) => el.date === rm.data.date) // Chosen date
 				.map((entry) => ({
 					date: parseDate(entry.date),
 					start: parseTime(entry.hour),

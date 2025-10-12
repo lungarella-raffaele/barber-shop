@@ -37,16 +37,15 @@ export class KindService {
 	}
 
 	async update(kind: table.DBKind) {
-		// Make sure we have an ID for the update
-		if (!kind.id) {
-			logger.error('Attempted to update kind without ID');
-			throw new Error('Kind ID is required for updates');
-		}
-
-		// eslint-disable-next-line
-		const { id, ...kindWID } = kind;
-
 		try {
+			// Make sure we have an ID for the update
+			if (!kind.id) {
+				logger.error('Attempted to update kind without ID');
+				return null;
+			}
+
+			const { id: _, ...kindWID } = kind;
+
 			return await db
 				.update(table.kind)
 				.set(kindWID)
@@ -55,11 +54,16 @@ export class KindService {
 				.get();
 		} catch (err) {
 			logger.error({ err, kindID: kind.id }, 'Error while updating kind');
-			throw err; // Re-throw to allow caller to handle or see the actual error
+			return null;
 		}
 	}
 
 	async delete(id: string) {
-		return await db.delete(table.kind).where(eq(table.kind.id, id)).returning().get();
+		try {
+			return await db.delete(table.kind).where(eq(table.kind.id, id)).returning().get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 }

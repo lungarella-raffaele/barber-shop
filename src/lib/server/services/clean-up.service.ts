@@ -1,11 +1,19 @@
+import { logger } from '../logger';
 import { UserService } from './user.service';
 
 export class CleanupService {
 	async deleteExpiredItems() {
-		const users = new UserService();
-		await users.deleteAllExpiredReservations();
-		await users.deleteAllExpiredUsers();
-		await users.deleteEmailVerifications();
-		await users.deletePasswordRecover();
+		try {
+			const users = new UserService();
+			await Promise.all([
+				users.deleteAllExpiredReservations(),
+				users.deleteAllExpiredUsers(),
+				users.deleteEmailVerifications(),
+				users.deletePasswordRecover()
+			]);
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
 	}
 }
