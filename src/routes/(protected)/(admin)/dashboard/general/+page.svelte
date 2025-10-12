@@ -25,7 +25,7 @@
 					description: `L'informazione del nome è obbligatorio per il profilo`
 				});
 			} else if (form.isAddingKind) {
-				toast.error('Non è stato possibile aggiungere il servizio');
+				toast.error('Impossibile aggiungere il servizio. Riprova più tardi.');
 			}
 		}
 	});

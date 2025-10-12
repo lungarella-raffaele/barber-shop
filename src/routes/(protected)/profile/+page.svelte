@@ -24,7 +24,7 @@
 		if (data.updatedEmail.isOk()) {
 			toast.success('Email aggiornata con successo!');
 		} else {
-			toast.error('Non è stato possibile aggiornare la tua email. Riprova più tardi.');
+			toast.error('Impossibile aggiornare la tua email. Riprova più tardi.');
 		}
 	}
 
@@ -50,7 +50,7 @@
 				await invalidateAll();
 				goto('/');
 			} else {
-				toast.error(`Non è stato possibile eliminare l'account riprova più tardi`);
+				toast.error(`Impossibile eliminare l'account. Riprova più tardi.`);
 			}
 			isOpen = false;
 		};
@@ -61,8 +61,8 @@
 		const correctEmail = emailSchema.safeParse(email);
 
 		if (!correctEmail.success) {
-			toast.error('Non è stato possibile cambiare la mail', {
-				description: 'Inserisci una mail valida'
+			toast.error('Impossibile cambiare la mail.', {
+				description: 'Inserisci una mail valida.'
 			});
 			return cancel();
 		}
@@ -72,7 +72,7 @@
 					description: `Controlla la tua casella di posta: ${email}`
 				});
 			} else if (result.type === 'failure' && result.data) {
-				toast.error('Non è stato possibile cambiare la mail', {
+				toast.error('Impossibile cambiare la mail.', {
 					description: result.data.message ? result.data.message : ''
 				});
 			}
@@ -110,7 +110,7 @@
 				toast.success('Password aggiornata con successo!');
 				changePasswordDialog = false;
 			} else if (result.type === 'failure' && result.data) {
-				toast.error('Non è stato possibile aggiornare la password', {
+				toast.error('Impossibile aggiornare la password.', {
 					description: result.data.message ? result.data.message : ''
 				});
 			}

@@ -30,7 +30,7 @@
 				toast.success('Periodo di chiusura confermato!');
 				invalidateAll();
 			} else if (result.type === 'failure') {
-				toast.error('Non è stato possibile aggiungere un servizio di chiusura');
+				toast.error('Impossibile aggiungere il periodo di chiusura.');
 			}
 			isAddingPeriod = false;
 		};

@@ -7,10 +7,41 @@ import { err, ok, type Result } from '$lib/modules/result';
 import { LOCK_DURATION } from '$lib/constants';
 import type { AnonymousData, Reservation, StaffData, UsualData } from '@types';
 import { anonymousUserSchema, staffUserSchema, usualUserSchema } from '@schema';
+import { alias } from 'drizzle-orm/sqlite-core/alias';
 
 type InsertError = 'conflict' | 'invalid-data' | 'server-err';
 
 export class ReservationService {
+	private getReservations() {
+		const staffUser = alias(table.user, 'staffUser');
+		const customerUser = alias(table.user, 'customerUser');
+
+		return db
+			.select({
+				id: table.reservation.id,
+				date: table.reservation.date,
+				hour: table.reservation.hour,
+				name: table.reservation.name,
+				email: table.reservation.email,
+				pending: table.reservation.pending,
+				expiresAt: table.reservation.expiresAt,
+				staff: {
+					id: staffUser.id,
+					name: staffUser.name
+				},
+				kind: {
+					duration: table.kind.duration,
+					name: table.kind.name,
+					price: table.kind.price
+				}
+			})
+			.from(table.reservation)
+			.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
+			.innerJoin(table.staff, eq(table.reservation.staffID, table.staff.userID))
+			.innerJoin(staffUser, eq(table.staff.userID, staffUser.id))
+			.leftJoin(customerUser, eq(table.reservation.email, customerUser.email));
+	}
+
 	async insertByUser(data: UsualData, user: DBUser): Promise<Result<DBReservation, InsertError>> {
 		try {
 			const schema = usualUserSchema.safeParse({ ...data, date: data.date?.toString() });
@@ -110,11 +141,15 @@ export class ReservationService {
 		}
 	}
 
-	async insertByStaff(data: StaffData, user: DBUser, alternativeName: string) {
+	async insertByStaff(
+		data: StaffData,
+		user: DBUser,
+		alternativeName: string
+	): Promise<Result<DBReservation, InsertError>> {
 		try {
 			const schema = staffUserSchema.safeParse({
-				name: alternativeName ?? 'Inserito da staff',
 				...data,
+				name: alternativeName ?? 'Inserito da staff',
 				date: data.date?.toString()
 			});
 
@@ -162,31 +197,30 @@ export class ReservationService {
 
 	async getAll(): Promise<Reservation[] | null> {
 		try {
-			const result = await db
-				.select({
-					id: table.reservation.id,
-					date: table.reservation.date,
-					hour: table.reservation.hour,
-					name: table.reservation.name,
-					email: table.reservation.email,
-					staff: table.staff.userID,
-					kind: {
-						duration: table.kind.duration,
-						name: table.kind.name,
-						price: table.kind.price
-					}
-				})
-				.from(table.reservation)
-				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-				.innerJoin(table.staff, eq(table.user.id, table.staff.userID))
-				.leftJoin(table.user, eq(table.reservation.email, table.user.email))
-				.where(gt(table.reservation.expiresAt, new Date()));
-
-			return result.map((entry) => ({
-				...entry,
-				fromAdmin: !!entry.staff,
-				staffID: entry.staff
-			}));
+			return await this.getReservations().where(gt(table.reservation.expiresAt, new Date()));
+			// return await db
+			// 	.select({
+			// 		id: table.reservation.id,
+			// 		date: table.reservation.date,
+			// 		hour: table.reservation.hour,
+			// 		name: table.reservation.name,
+			// 		email: table.reservation.email,
+			// 		staff: {
+			// 			id: staffUser.id,
+			// 			name: staffUser.name
+			// 		},
+			// 		kind: {
+			// 			duration: table.kind.duration,
+			// 			name: table.kind.name,
+			// 			price: table.kind.price
+			// 		}
+			// 	})
+			// 	.from(table.reservation)
+			// 	.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
+			// 	.innerJoin(table.staff, eq(table.reservation.staffID, table.staff.userID))
+			// 	.innerJoin(staffUser, eq(table.staff.userID, staffUser.id))
+			// 	.leftJoin(customerUser, eq(table.reservation.email, customerUser.email))
+			// 	.where(gt(table.reservation.expiresAt, new Date()));
 		} catch (e) {
 			logger.error(e);
 			return null;
@@ -195,32 +229,36 @@ export class ReservationService {
 
 	async getTodayReservations(date: string): Promise<Reservation[] | null> {
 		try {
-			const result = await db
-				.select({
-					id: table.reservation.id,
-					date: table.reservation.date,
-					hour: table.reservation.hour,
-					name: table.reservation.name,
-					pending: table.reservation.pending,
-					email: table.reservation.email,
-					staff: table.staff.userID,
-					kind: {
-						name: table.kind.name,
-						duration: table.kind.duration,
-						price: table.kind.price
-					}
-				})
-				.from(table.reservation)
-				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-				.innerJoin(table.staff, eq(table.staff.userID, table.user.id))
-				.leftJoin(table.user, eq(table.reservation.email, table.user.email))
-				.where(and(eq(table.reservation.date, date), eq(table.reservation.pending, false)));
+			return await this.getReservations().where(
+				and(eq(table.reservation.date, date), eq(table.reservation.pending, false))
+			);
 
-			return result.map((entry) => ({
-				...entry,
-				fromAdmin: !!entry.staff,
-				staffID: entry.staff
-			}));
+			// const result = await db
+			// 	.select({
+			// 		id: table.reservation.id,
+			// 		date: table.reservation.date,
+			// 		hour: table.reservation.hour,
+			// 		name: table.reservation.name,
+			// 		pending: table.reservation.pending,
+			// 		email: table.reservation.email,
+			// 		staff: table.staff.userID,
+			// 		kind: {
+			// 			name: table.kind.name,
+			// 			duration: table.kind.duration,
+			// 			price: table.kind.price
+			// 		}
+			// 	})
+			// 	.from(table.reservation)
+			// 	.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
+			// 	.innerJoin(table.staff, eq(table.staff.userID, table.user.id))
+			// 	.leftJoin(table.user, eq(table.reservation.email, table.user.email))
+			// 	.where(and(eq(table.reservation.date, date), eq(table.reservation.pending, false)));
+
+			// return result.map((entry) => ({
+			// 	...entry,
+			// 	fromAdmin: !!entry.staff,
+			// 	staffID: entry.staff
+			// }));
 		} catch (err) {
 			console.error(err);
 			return null;
@@ -229,45 +267,30 @@ export class ReservationService {
 
 	async getByUser(email: string) {
 		try {
-			return await db
-				.select({
-					id: table.reservation.id,
-					date: table.reservation.date,
-					hour: table.reservation.hour,
-					name: table.reservation.name,
-					email: table.reservation.email,
-					kindName: table.kind.name,
-					kindDuration: table.kind.duration,
-					kindPrice: table.kind.price
-				})
-				.from(table.reservation)
-				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-				.where(eq(table.reservation.email, email));
+			return await this.getReservations().where(eq(table.reservation.email, email));
+			// return await db
+			// 	.select({
+			// 		id: table.reservation.id,
+			// 		date: table.reservation.date,
+			// 		hour: table.reservation.hour,
+			// 		name: table.reservation.name,
+			// 		email: table.reservation.email,
+			// 		kindName: table.kind.name,
+			// 		kindDuration: table.kind.duration,
+			// 		kindPrice: table.kind.price
+			// 	})
+			// 	.from(table.reservation)
+			// 	.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
+			// 	.where(eq(table.reservation.email, email));
 		} catch (e) {
 			logger.error(e);
 			return null;
 		}
 	}
 
-	async getByID(id: string) {
+	async getByID(id: string): Promise<Reservation | null> {
 		try {
-			return await db
-				.select({
-					id: table.reservation.id,
-					date: table.reservation.date,
-					hour: table.reservation.hour,
-					name: table.reservation.name,
-					email: table.reservation.email,
-					pending: table.reservation.pending,
-					expiresAt: table.reservation.expiresAt,
-					kindName: table.kind.name,
-					kindDuration: table.kind.duration,
-					kindPrice: table.kind.price
-				})
-				.from(table.reservation)
-				.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-				.where(eq(table.reservation.id, id))
-				.get();
+			return (await this.getReservations().where(eq(table.reservation.id, id)).get()) ?? null;
 		} catch (e) {
 			logger.error(e);
 			return null;

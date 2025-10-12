@@ -234,7 +234,7 @@ export const actions: Actions = {
 				`${event.url}: Could not update password because the password patch was not successfull`
 			);
 			return fail(404, {
-				message: 'Non è stato possibile aggiornare la password'
+				message: 'Impossibile aggiornare la password.'
 			});
 		}
 
