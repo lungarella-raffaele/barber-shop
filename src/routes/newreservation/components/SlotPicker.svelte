@@ -51,7 +51,7 @@
 
 {#snippet SlotEntry(s: Slot)}
 	<ToggleGroup.Item
-		class="flex w-full justify-between border align-middle transition-all duration-200 ease-in-out data-[disabled]:border-destructive data-[state=on]:border-primary data-[state=on]:bg-primary-foreground"
+		class="flex w-full justify-between border bg-background align-middle transition-all duration-200 ease-in-out data-[disabled]:border-destructive data-[state=on]:border-primary data-[state=on]:bg-primary-foreground"
 		value={s.start.toString()}
 		disabled={!s.available || s.invalid || s.past}
 	>

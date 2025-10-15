@@ -10,6 +10,18 @@ export const user = sqliteTable('user', {
 	expiresAt: integer('expires_at', { mode: 'timestamp' })
 });
 
+export const schedule = sqliteTable('schedule', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	staffID: text('staffID')
+		.notNull()
+		.references(() => staff.userID),
+	day: integer('day').notNull(),
+	startHour: integer('start_hour').notNull(),
+	startMinute: integer('start_minute').notNull().default(0),
+	endHour: integer('end_hour').notNull(),
+	endMinute: integer('end_minute').notNull().default(0)
+});
+
 export const staff = sqliteTable('staff', {
 	userID: text('user_id')
 		.primaryKey()
@@ -93,3 +105,4 @@ export type DBBanner = typeof banner.$inferSelect;
 export type DBShutdown = typeof shutdowns.$inferSelect;
 export type DBEmailVerificationToken = typeof emailVerification.$inferSelect;
 export type DBPasswordRecover = typeof passwordRecover.$inferSelect;
+export type DBSchedule = Omit<typeof schedule.$inferSelect, 'id'>;

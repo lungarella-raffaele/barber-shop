@@ -1,4 +1,4 @@
-import { ReservationService } from '@service';
+import { ReservationService } from '@service/reservation.service';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 

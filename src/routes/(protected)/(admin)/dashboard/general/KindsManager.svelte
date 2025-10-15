@@ -27,7 +27,7 @@
 	};
 </script>
 
-<h2 class="my-4 text-2xl font-bold">Servizi</h2>
+<h2 class="mb-2 text-lg font-bold">Servizi</h2>
 <Accordion.Root type="single" bind:value={whoIsOpen} class="mb-8">
 	{#each kinds as kind}
 		{@render KindItem(kind)}

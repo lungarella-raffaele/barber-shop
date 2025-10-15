@@ -1,18 +1,19 @@
 import type { Actions } from './$types';
-import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
 import { fail } from 'sveltekit-superforms';
 import type { PageServerLoad } from './$types';
-import { eq } from 'drizzle-orm';
+import { ShutdownService } from '@service/shutdown.service';
+import { ScheduleService } from '@service/schedule.service';
+import type { DBSchedule } from '$lib/server/db/schema';
 
 export const load: PageServerLoad = async () => {
 	return {
-		periods: await db.select().from(table.shutdowns)
+		periods: new ShutdownService().getAll(),
+		schedule: new ScheduleService().getAll()
 	};
 };
 
 export const actions: Actions = {
-	create: async ({ request }) => {
+	insertShutdown: async ({ request }) => {
 		const data = await request.formData();
 		const start = data.get('start') as string;
 		const end = data.get('end') as string;
@@ -20,17 +21,35 @@ export const actions: Actions = {
 		if (!start || !end) {
 			return fail(404);
 		}
-
-		return {
-			result: await db
-				.insert(table.shutdowns)
-				.values({ id: crypto.randomUUID(), start, end })
-				.returning({ id: table.shutdowns.id })
-		};
+		return await new ShutdownService().insert(start, end);
 	},
-	delete: async ({ request }) => {
+	deleteShutdown: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id') as string;
-		await db.delete(table.shutdowns).where(eq(table.shutdowns.id, id));
+		return await new ShutdownService().delete(id);
+	},
+	addSchedule: async ({ request, locals }) => {
+		const data = await request.formData();
+
+		let dbschedule = JSON.parse(data.get('data') as string) as DBSchedule[];
+
+		if (!locals.user) {
+			return fail(401, { message: 'Unauthorized' });
+		}
+
+		const staffID = locals.user.data.id;
+
+		dbschedule = dbschedule.map((schedule) => {
+			return {
+				staffID,
+				day: schedule.day,
+				startHour: schedule.startHour,
+				startMinute: schedule.startMinute,
+				endHour: schedule.endHour,
+				endMinute: schedule.endMinute
+			};
+		});
+
+		return { success: await new ScheduleService().insert(dbschedule) };
 	}
 };

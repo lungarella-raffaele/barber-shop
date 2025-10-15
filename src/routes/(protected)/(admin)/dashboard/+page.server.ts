@@ -1,13 +1,12 @@
 import { getLocalTimeZone, today } from '@internationalized/date';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { ReservationService } from '@service';
+import { ReservationService } from '@service/reservation.service';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const date = url.searchParams.get('date');
 
-	const resService = new ReservationService();
-	const reservations = await resService.getTodayReservations(
+	const reservations = new ReservationService().getTodayReservations(
 		date ?? today(getLocalTimeZone()).toString()
 	);
 	return {

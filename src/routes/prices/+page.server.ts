@@ -1,15 +1,11 @@
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
-import { KindService } from '@service';
+import { KindService } from '@service/kind.service.js';
+import { UserService } from '@service/user.service.js';
 
 export const load: PageServerLoad = async () => {
-	const kinds = await new KindService().getAll();
-
-	if (!kinds) {
-		return error(500);
-	}
 	return {
-		kinds,
+		kinds: new KindService().getAll(),
+		staff: new UserService().getAllStaff(),
 		title: 'Listino Prezzi | ',
 		header: 'Listino Prezzi'
 	};

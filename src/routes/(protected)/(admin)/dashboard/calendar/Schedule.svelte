@@ -1,0 +1,277 @@
+<script lang="ts">
+	import { mapToUI } from '$lib/utils';
+	import type { ScheduleRange } from '@types';
+	import { Day, getWeekDay } from '$lib/enums/days';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import * as Card from '$lib/components/ui/card';
+	import { Button } from '$lib/components/ui/button';
+	import { Time } from '@internationalized/date';
+	import { onMount } from 'svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { formatTime } from '$lib/utils';
+	import type { DBSchedule } from '$lib/server/db/schema';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import { enhance } from '$app/forms';
+	import { Save } from '$lib/components/icons/index';
+	import { Trash } from '$lib/components/icons/index';
+	import { Skeleton } from '$lib/components/ui/skeleton';
+
+	const { schedule, staffID }: { schedule: Promise<DBSchedule[] | null>; staffID: string } =
+		$props();
+
+	console.log(schedule);
+	function mapToDB(scheduleMap: Map<Day, ScheduleRange[]>): DBSchedule[] {
+		const arr = Array.from(scheduleMap.entries()).map(([day, ranges]) => ({
+			day,
+			schedules: ranges.map(({ start, end }) => ({
+				startHour: start.hour,
+				startMinute: start.minute,
+				endHour: end.hour,
+				endMinute: end.minute
+			}))
+		}));
+
+		const dbarr: DBSchedule[] = [];
+		arr.forEach((el) => {
+			el.schedules.forEach((schedule) => {
+				dbarr.push({
+					day: el.day,
+					startHour: schedule.startHour,
+					startMinute: schedule.startMinute,
+					endHour: schedule.endHour,
+					endMinute: schedule.endMinute,
+					staffID: 'staff123'
+				});
+			});
+		});
+
+		return dbarr;
+	}
+
+	type Action = 'add' | 'edit';
+	let action: Action = $state('add');
+	let editingIndex: number | undefined = $state();
+
+	const tabs = Object.keys(Day).filter((el) => !isNaN(Number(el)));
+	let activeTab = $state(tabs[0] ?? '0');
+
+	let scheduleMap: Map<Day, ScheduleRange[]> = $state(initializeEmptyMap());
+	function initializeEmptyMap(): Map<Day, ScheduleRange[]> {
+		const m = new Map<Day, ScheduleRange[]>();
+		for (let i = Number(Day.MONDAY); i <= Number(Day.SUNDAY); i++) {
+			m.set(i as Day, []);
+		}
+		return m;
+	}
+
+	onMount(async () => {
+		scheduleMap = mapToUI((await schedule) ?? [], staffID);
+	});
+
+	let isDialogOpen = $state(false);
+	let rangeStart = $state('09:00');
+	let rangeEnd = $state('17:00');
+
+	let error = $state('');
+
+	function parseTimeString(s: string) {
+		const parts = s.split(':');
+		if (parts.length !== 2) return null;
+
+		const hour = Number(parts[0]);
+		const minute = Number(parts[1]);
+		if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
+		return { hour, minute };
+	}
+
+	function toMinutes(hm: { hour: number; minute: number }) {
+		return hm.hour * 60 + (hm.minute ?? 0);
+	}
+	function convertTimeFormat(time: Time) {
+		// Split the time string by ':'
+		const parts = time.toString().split(':');
+
+		// Return only hours and minutes
+		return `${parts[0]}:${parts[1]}`;
+	}
+
+	function confirmRange(existingIndex?: number) {
+		error = '';
+		const start = parseTimeString(rangeStart);
+		const end = parseTimeString(rangeEnd);
+		if (!start || !end) {
+			error = 'Formato ora non valido';
+			return;
+		}
+		if (toMinutes(end) <= toMinutes(start)) {
+			error = "L'orario di fine deve essere successivo all'orario di inizio";
+			return;
+		}
+
+		const targetDay = Number(activeTab) as Day;
+		const newRange: ScheduleRange = {
+			start: new Time(start.hour, start.minute),
+			end: new Time(end.hour, end.minute)
+		};
+
+		if (existingIndex !== undefined) {
+			const arr = scheduleMap.get(targetDay) ?? [];
+			arr[existingIndex] = newRange;
+			scheduleMap.set(targetDay, arr);
+		} else {
+			const arr = scheduleMap.get(targetDay) ?? [];
+			const merged = [...arr, newRange].sort((a, b) => {
+				const aMinutes = (a.start.hour ?? 0) * 60 + (a.start.minute ?? 0);
+				const bMinutes = (b.start.hour ?? 0) * 60 + (b.start.minute ?? 0);
+				return aMinutes - bMinutes;
+			});
+			scheduleMap.set(targetDay, merged);
+		}
+
+		scheduleMap = new Map(scheduleMap);
+
+		isDialogOpen = false;
+		rangeStart = '09:00';
+		rangeEnd = '17:00';
+	}
+
+	const submitFunction: SubmitFunction = ({ formData }) => {
+		formData.append('data', JSON.stringify(mapToDB(scheduleMap)));
+
+		return ({ result }) => {
+			if (result.type === 'success') {
+				console.log('aaa');
+			} else {
+				console.log('bbb');
+			}
+		};
+	};
+</script>
+
+<Tabs.Root bind:value={activeTab} class="mb-5">
+	<Tabs.List>
+		{#each tabs as t}
+			<Tabs.Trigger value={t}>{getWeekDay(Number(t))}</Tabs.Trigger>
+		{/each}
+	</Tabs.List>
+
+	{#each tabs as t}
+		<Tabs.Content value={t}>
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>{getWeekDay(Number(t))}</Card.Title>
+				</Card.Header>
+
+				<Card.Content class="grid gap-4">
+					{#await schedule}
+						<Skeleton class="h-[55px]" />
+						<Skeleton class="h-[55px]" />
+					{:then _}
+						{#if scheduleMap}
+							{#each scheduleMap.get(Number(t) as Day) ?? [] as s, idx}
+								<div
+									role="listitem"
+									class="flex h-[55px] items-center justify-between gap-4 rounded-md border px-4 py-2 shadow-sm"
+								>
+									<div class="flex items-center gap-3">
+										<div class="flex flex-col">
+											<span class="text-sm text-muted-foreground">
+												{formatTime(s.start)} — {formatTime(s.end)}
+											</span>
+										</div>
+									</div>
+									<div class="flex gap-2">
+										<div class="flex flex-row gap-2 align-middle">
+											<Button
+												size="sm"
+												variant="secondary"
+												onclick={() => {
+													action = 'edit';
+													isDialogOpen = true;
+													rangeStart = convertTimeFormat(s.start);
+													rangeEnd = convertTimeFormat(s.end);
+													editingIndex = idx;
+												}}>Edit</Button
+											>
+											<Button size="sm" variant="destructive">
+												<Trash />
+											</Button>
+										</div>
+									</div>
+								</div>
+							{/each}
+
+							{#if (scheduleMap.get(Number(t) as Day) ?? []).length === 0}
+								<div class="text-sm text-muted-foreground">
+									Nessun orario impostato per questo giorno.
+								</div>
+							{/if}
+						{:else}
+							<!-- While scheduleMap is undefined (before onMount runs) we can show a placeholder -->
+							<div class="text-sm text-muted-foreground">Caricamento...</div>
+						{/if}
+					{/await}
+				</Card.Content>
+
+				<Card.Footer>
+					<Button
+						onclick={() => {
+							action = 'add';
+							isDialogOpen = true;
+						}}>Aggiungi orario</Button
+					>
+				</Card.Footer>
+			</Card.Root>
+		</Tabs.Content>
+	{/each}
+</Tabs.Root>
+<form action="?/addSchedule" method="POST" use:enhance={submitFunction}>
+	<Button type="submit" class="w-full">
+		<Save />
+		Salva Orario</Button
+	>
+</form>
+
+<Dialog.Root bind:open={isDialogOpen}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>
+				{#if action === 'add'}
+					Aggiungi range per {getWeekDay(Number(activeTab)).toLowerCase()}
+				{:else}
+					Cambia range per {getWeekDay(Number(activeTab)).toLowerCase()}
+				{/if}
+			</Dialog.Title>
+		</Dialog.Header>
+
+		<div class="grid gap-4 py-4">
+			<div class="grid grid-cols-4 items-center gap-4">
+				<Label class="mb-0" for="start">Inizio</Label>
+				<Input id="start" type="time" bind:value={rangeStart} class="col-span-3" />
+			</div>
+			<div class="grid grid-cols-4 items-center gap-4">
+				<Label class="mb-0" for="end">Fine</Label>
+				<Input id="end" type="time" bind:value={rangeEnd} class="col-span-3" />
+			</div>
+		</div>
+		<div class="grid">
+			{#if error}
+				<div class="text-sm text-destructive">{error}</div>
+			{/if}
+		</div>
+
+		<Dialog.Footer>
+			<div class="flex flex-row-reverse">
+				{#if action === 'add'}
+					<Button class="ml-2" onclick={() => confirmRange()}>Aggiungi</Button>
+				{:else}
+					<Button class="ml-2" onclick={() => confirmRange(editingIndex)}>Conferma</Button
+					>
+				{/if}
+				<Button variant="outline" onclick={() => (isDialogOpen = false)}>Annulla</Button>
+			</div>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

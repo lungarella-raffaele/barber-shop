@@ -31,7 +31,7 @@
 
 <Sidebar.Provider>
 	<AppSidebar {isLogged} {isAdmin} />
-	<main class="relative flex h-screen w-full flex-col">
+	<main class="relative flex h-screen w-full flex-col lg:mx-60">
 		<div class="sticky top-0 z-50 flex items-center justify-between border-b bg-background p-3">
 			<!-- Leading -->
 			<Sidebar.Trigger />

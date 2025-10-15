@@ -4,7 +4,7 @@ import { logger } from '$lib/server/logger';
 import { getBoolean, getNumber, getString } from '$lib/utils';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
-import { KindService } from '@service';
+import { KindService } from '@service/kind.service';
 import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ locals }) => {

@@ -8,7 +8,7 @@ import { verify } from 'argon2';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
-import { UserService } from '@service';
+import { UserService } from '@service/user.service.js';
 import { EmailService } from '$lib/server/mailer';
 
 export const load: PageServerLoad = async (event) => {

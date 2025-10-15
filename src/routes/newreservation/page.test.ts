@@ -31,17 +31,19 @@ describe('New reservation page', () => {
 const userProps: PageData = {
 	banner: null,
 	currentReservations: [],
-	kinds: [
-		{
-			id: '1',
-			name: 'Haircut',
-			description: 'Nice haircut',
-			duration: 30,
-			price: 22,
-			active: false,
-			staffID: 'emiliano'
-		}
-	],
+	kinds: new Promise((resolve) => {
+		resolve([
+			{
+				id: '1',
+				name: 'Haircut',
+				description: 'Nice haircut',
+				duration: 30,
+				price: 22,
+				active: false,
+				staffID: 'emiliano'
+			}
+		]);
+	}),
 	user: {
 		data: {
 			id: 'user-id',
@@ -56,25 +58,51 @@ const userProps: PageData = {
 	},
 	title: '',
 	closures: [],
-	staff: [{ name: 'emiliano', id: 'emiliano', avatar: 'avatar.png' }]
+	schedule: [
+		{
+			staffID: '345',
+			day: 0,
+			startHour: 9,
+			startMinute: 0,
+			endHour: 10,
+			endMinute: 30
+		}
+	],
+	staff: new Promise((resolve) => {
+		resolve([{ name: 'emiliano', id: 'emiliano', avatar: 'avatar.png' }]);
+	})
 };
 
 const noUserProps: PageData = {
 	banner: null,
 	currentReservations: [],
-	kinds: [
-		{
-			id: '1',
-			name: 'Haircut',
-			staffID: 'emiliano',
-			description: 'Nice haircut',
-			duration: 30,
-			price: 22,
-			active: false
-		}
-	],
+	kinds: new Promise((resolve) => {
+		resolve([
+			{
+				id: '1',
+				name: 'Haircut',
+				staffID: 'emiliano',
+				description: 'Nice haircut',
+				duration: 30,
+				price: 22,
+				active: false
+			}
+		]);
+	}),
 	user: null,
 	title: '',
 	closures: [],
-	staff: [{ name: 'emiliano', id: 'emiliano', avatar: 'avatar.png' }]
+	staff: new Promise((resolve) => {
+		resolve([{ name: 'emiliano', id: 'emiliano', avatar: 'avatar.png' }]);
+	}),
+	schedule: [
+		{
+			staffID: '345',
+			day: 0,
+			startHour: 9,
+			startMinute: 0,
+			endHour: 10,
+			endMinute: 30
+		}
+	]
 };
