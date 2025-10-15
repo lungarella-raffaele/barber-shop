@@ -3,9 +3,8 @@ import { CalendarDate, parseDate, parseTime, Time } from '@internationalized/dat
 import { expect } from '@playwright/test';
 import { describe, it } from 'vitest';
 import { getSlots } from './get-slots';
-import { monday, normalDay, saturday } from './get-slots.stub';
+import { monday, normalDay, saturday, schedule } from './get-slots.stub';
 import { isEqualTime } from '$lib/utils';
-import { workingHours } from '$lib/working-hours';
 import { Day } from '$lib/enums/days';
 
 describe('Get slots', () => {
@@ -30,7 +29,7 @@ describe('Get slots', () => {
 				}
 			];
 
-			const slots = getSlots(date, currentReservations);
+			const slots = getSlots(date, currentReservations, schedule);
 			expect(slots?.every((el, index) => equalSlot(el, monday[index], index))).toBe(true);
 		});
 
@@ -59,7 +58,7 @@ describe('Get slots', () => {
 				}
 			];
 
-			const slots = getSlots(date, currentReservations);
+			const slots = getSlots(date, currentReservations, schedule);
 			expect(slots?.every((el, index) => equalSlot(el, normalDay[index], index))).toBe(true);
 		});
 		it('saturday', () => {
@@ -82,7 +81,7 @@ describe('Get slots', () => {
 				}
 			];
 
-			const slots = getSlots(date, currentReservations);
+			const slots = getSlots(date, currentReservations, schedule);
 			expect(slots?.every((el, index) => equalSlot(el, saturday[index], index))).toBe(true);
 		});
 	});
@@ -91,16 +90,16 @@ describe('Get slots', () => {
 		it('monday', () => {
 			const date = new CalendarDate(2022, 1, 3);
 
-			expect(getSlots(date, [])?.length).toEqual(monday.length);
+			expect(getSlots(date, [], schedule)?.length).toEqual(monday.length);
 		});
 		it('normal day', () => {
 			const date = new CalendarDate(2022, 1, 4);
 
-			expect(getSlots(date, [])?.length).toEqual(normalDay.length);
+			expect(getSlots(date, [], schedule)?.length).toEqual(normalDay.length);
 		});
 		it('saturday', () => {
 			const date = new CalendarDate(2022, 1, 8);
-			expect(getSlots(date, [])?.length).toEqual(saturday.length);
+			expect(getSlots(date, [], schedule)?.length).toEqual(saturday.length);
 		});
 	});
 
@@ -108,24 +107,24 @@ describe('Get slots', () => {
 		it('monday', () => {
 			const monday = new CalendarDate(2022, 1, 3);
 			expect(
-				getSlots(monday, [])?.find(
-					(el) => el.start === workingHours.get(Day.MONDAY)?.[0].end
+				getSlots(monday, [], schedule)?.find(
+					(el) => el.start === schedule.get(Day.MONDAY)?.[0].end
 				)
 			).toBe(undefined);
 		});
 		it('normal day', () => {
 			const monday = new CalendarDate(2022, 2, 3);
 			expect(
-				getSlots(monday, [])?.find(
-					(el) => el.start === workingHours.get(Day.THURSDAY)?.[0].end
+				getSlots(monday, [], schedule)?.find(
+					(el) => el.start === schedule.get(Day.THURSDAY)?.[0].end
 				)
 			).toBe(undefined);
 		});
 		it('saturday', () => {
 			const monday = new CalendarDate(2022, 1, 3);
 			expect(
-				getSlots(monday, [])?.find(
-					(el) => el.start === workingHours.get(Day.SATURDAY)?.[0].end
+				getSlots(monday, [], schedule)?.find(
+					(el) => el.start === schedule.get(Day.SATURDAY)?.[0].end
 				)
 			).toBe(undefined);
 		});
@@ -188,7 +187,7 @@ describe('Get slots', () => {
 			{ start: parseTime('18:15:00'), available: false, invalid: false, past: false }
 		];
 
-		const slots = getSlots(date, currentReservations);
+		const slots = getSlots(date, currentReservations, schedule);
 		expect(slots?.length).toEqual(correctSlots.length);
 		expect(slots?.every((el, index) => equalSlot(el, correctSlots[index], index))).toBe(true);
 	});
@@ -251,7 +250,7 @@ describe('Get slots', () => {
 				{ start: parseTime('18:15:00'), available: true, invalid: true, past: false }
 			];
 
-			const slots = getSlots(date, currentReservations, new Time(0, 45));
+			const slots = getSlots(date, currentReservations, schedule, new Time(0, 45));
 
 			expect(slots?.length).toEqual(correctSlots.length);
 			expect(slots?.every((el, index) => equalSlot(el, correctSlots[index], index))).toBe(
@@ -299,7 +298,7 @@ describe('Get slots', () => {
 				{ start: parseTime('18:15:00'), available: true, invalid: true, past: false }
 			];
 
-			const slots = getSlots(date, [], new Time(0, 45));
+			const slots = getSlots(date, [], schedule, new Time(0, 45));
 
 			expect(slots?.length).toEqual(correctSlots.length);
 			expect(slots?.every((el, index) => equalSlot(el, correctSlots[index], index))).toBe(

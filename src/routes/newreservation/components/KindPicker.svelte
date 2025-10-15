@@ -19,10 +19,8 @@
 		{#each kinds as kind (kind.id)}
 			<Label
 				for={kind.id}
-				class="mb-2 flex w-full items-center justify-between space-x-2 rounded-lg border p-4 transition-all duration-200 ease-in-out
-			{kind.id === value
-					? 'border-primary bg-primary-foreground shadow-lg'
-					: 'hover:border-primary-foreground'}"
+				class="mb-2 flex w-full items-center justify-between space-x-2 rounded-lg border bg-background p-4 transition-all duration-200 ease-in-out
+			{kind.id === value ? 'border-primary bg-primary-foreground shadow-lg' : 'hover:border-primary'}"
 			>
 				<div class="flex items-center">
 					<RadioGroup.Item value={kind.id} id={kind.id} class="mr-4 " />

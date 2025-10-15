@@ -7,6 +7,7 @@ import type {
 	DBSession,
 	DBUser
 } from '../server/db/schema';
+import type { Day } from '$lib/enums/days';
 
 export type { DBBanner, DBShutdown, DBReservation, DBKind, DBSession, DBUser };
 
@@ -76,6 +77,12 @@ export type StaffData = {
 };
 
 export type UserSession = { user: User; session: DBSession };
+
+export type ScheduleRange = {
+	start: Time;
+	end: Time;
+};
+export type ScheduleUI = Map<Day, ScheduleRange[]>;
 
 // You can also add client-specific utility types here
 export type UserWithoutPassword = Omit<DBUser, 'passwordHash'>;

@@ -1,6 +1,7 @@
-import { UserService } from '@service';
+import { UserService } from '@service/user.service.js';
 import type { Actions, PageServerLoad } from './$types';
-import { ReservationService, CleanupService } from '@service';
+import { ReservationService } from '@service/reservation.service.js';
+import { CleanupService } from '@service/clean-up.service.js';
 
 export const load: PageServerLoad = async () => {
 	const user = new UserService();

@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
-import { UserService } from '@service';
+import { UserService } from '@service/user.service.js';
 import { BASE_URL } from '$env/static/private';
 import { EmailService } from '$lib/server/mailer';
 
