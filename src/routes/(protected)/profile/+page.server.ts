@@ -6,7 +6,7 @@ import { getString } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import { hash, verify } from 'argon2';
 import type { Actions, PageServerLoad } from './$types';
-import { UserService } from '@service';
+import { UserService } from '@service/user.service.js';
 import { err, ok, type Result } from '$lib/modules/result';
 import { EmailService } from '$lib/server/mailer';
 

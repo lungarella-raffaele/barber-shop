@@ -102,7 +102,7 @@
 
 					<Button
 						onclick={toggleRecoverPassword}
-						class="text-underline m-0 p-0 text-white"
+						class="text-underline m-0 p-0 text-foreground"
 						href="/signup"
 						aria-label="Sign up"
 						variant="link"
@@ -115,7 +115,7 @@
 					Password dimenticata?
 					<Button
 						onclick={toggleRecoverPassword}
-						class="text-underline m-0 p-0 text-white"
+						class="text-underline m-0 p-0 text-foreground"
 						variant="link"
 						aria-label="Recover password">Recupera password</Button
 					>

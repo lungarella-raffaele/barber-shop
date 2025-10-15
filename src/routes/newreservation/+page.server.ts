@@ -1,11 +1,15 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types.js';
-import { ReservationService, KindService, ShutdownService, UserService } from '@service';
+import { ReservationService } from '@service/reservation.service.js';
+import { KindService } from '@service/kind.service.js';
+import { ShutdownService } from '@service/shutdown.service.js';
+import { UserService } from '@service/user.service.js';
 import type { Data } from '@types';
 import { logger } from '$lib/server/logger.js';
 import { EmailService } from '$lib/server/mailer.js';
 import { formatDate, formatTime } from '$lib/utils.js';
 import { BASE_URL } from '$env/static/private';
+import { ScheduleService } from '@service/schedule.service.js';
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -89,22 +93,21 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const reservationService = new ReservationService();
 	const shutdowns = new ShutdownService();
 
-	const [kinds, currentReservations, closures, staff] = await Promise.all([
-		kind.getAll(),
+	const [currentReservations, closures] = await Promise.all([
 		reservationService.getAll(),
-		shutdowns.getAll(),
-		new UserService().getAllStaff()
+		shutdowns.getAll()
 	]);
 
-	if (!kinds || !currentReservations || !closures || !staff) {
+	if (!currentReservations || !closures) {
 		return error(500); //TODO
 	}
 
 	return {
 		currentReservations,
 		closures,
-		kinds,
-		staff,
+		kinds: kind.getAll(),
+		staff: new UserService().getAllStaff(),
+		schedule: await new ScheduleService().getAll(),
 		user: locals.user,
 		title: 'Nuova prenotazione | '
 	};

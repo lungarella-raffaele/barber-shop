@@ -1,4 +1,4 @@
-import type { ReservedSlot, Slot } from '@types';
+import type { ReservedSlot, ScheduleUI, Slot } from '@types';
 import {
 	type CalendarDate,
 	getDayOfWeek,
@@ -8,12 +8,16 @@ import {
 	Time,
 	type DateValue
 } from '@internationalized/date';
-import { workingHours } from '$lib/working-hours';
 
 export const SlotDuration = new Time(0, 15);
 
-export const getSlots = (date: CalendarDate, reservations: ReservedSlot[], kind?: Time) => {
-	let slots = generateSlots(date);
+export const getSlots = (
+	date: CalendarDate,
+	reservations: ReservedSlot[],
+	schedule: ScheduleUI,
+	kind?: Time
+) => {
+	let slots = generateSlots(date, schedule);
 
 	// reserved slots
 	slots = reserved(slots, reservations);
@@ -100,9 +104,9 @@ function slotCount(duration: Time, slotDuration: Time): number {
 	return Math.ceil(totalMinutes / slotMinutes);
 }
 
-function generateSlots(date: DateValue) {
+function generateSlots(date: DateValue, schedule: ScheduleUI) {
 	const dayOfTheWeek = getDayOfWeek(date, 'it-IT');
-	const businessIntervals = workingHours.get(dayOfTheWeek);
+	const businessIntervals = schedule.get(dayOfTheWeek);
 	if (!businessIntervals) {
 		return [];
 	}

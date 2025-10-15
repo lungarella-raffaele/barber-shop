@@ -13,17 +13,20 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
 	import { getSlots } from '$lib/modules/get-slots';
-	import { minutesToTime } from '$lib/utils';
+	import { mapToUI, minutesToTime } from '$lib/utils';
 	import { parseDate, parseTime } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
 	import StaffPicker from './components/StaffPicker.svelte';
-	import type { DBReservation } from '@types';
+	import type { DBReservation, DBKind } from '@types';
+	import { onMount } from 'svelte';
+	import { Skeleton } from '$lib/components/ui/skeleton';
 
 	const { data }: { data: PageData } = $props();
+
 	const rm = ReservationManager.instance(data.user?.role);
-	const kinds = $derived(data.kinds.filter((el) => el.staffID === rm.data.staff));
+	const schedule = $derived(mapToUI(data.schedule ?? [], rm.data.staff));
 
 	const submitReservation: SubmitFunction = ({ formData }) => {
 		loading = true;
@@ -64,7 +67,12 @@
 	let isDialogOpen = $state(false);
 	let loading = $state(false);
 
-	const kind = $derived(data.kinds.find((el) => el.id === rm.data.kind));
+	let kinds: DBKind[] = [];
+
+	onMount(async () => {
+		kinds = (await data.kinds) ?? [];
+	});
+	const kind = $derived(kinds.find((el) => el.id === rm.data.kind));
 
 	const availableSlots = $derived.by(() => {
 		if (!rm.data.date || !rm.data.staff) {
@@ -80,6 +88,7 @@
 					start: parseTime(entry.hour),
 					duration: minutesToTime(entry.kind.duration)
 				})),
+			schedule,
 			kind?.duration ? minutesToTime(kind.duration) : undefined
 		);
 	});
@@ -102,15 +111,17 @@
 
 <h1 class="title">Prenotazione</h1>
 
-<form method="POST" use:enhance={submitReservation} id="reservationForm">
-	<ConfirmDialog
-		bind:isOpen={isDialogOpen}
-		{loading}
-		staffs={data.staff}
-		kinds={data.kinds}
-		data={rm.data}
-	/>
-</form>
+{#await Promise.all([data.staff, data.kinds]) then [staff, kinds]}
+	<form method="POST" use:enhance={submitReservation} id="reservationForm">
+		<ConfirmDialog
+			bind:isOpen={isDialogOpen}
+			{loading}
+			staff={staff ?? []}
+			kinds={kinds ?? []}
+			data={rm.data}
+		/>
+	</form>
+{/await}
 
 <Tabs.Root bind:value={rm.currentTab}>
 	<Tabs.List class="flex">
@@ -195,6 +206,7 @@
 			<Card.Header class="pt-0">
 				<Card.Title class="mt-0">Staff</Card.Title>
 				<Card.Description>Chi dovrà servirti?</Card.Description>
+
 				<StaffPicker bind:value={rm.data.staff} staff={data.staff} />
 			</Card.Header>
 			<Card.Header>
@@ -202,7 +214,18 @@
 				<Card.Description>Scegli il taglio di capelli dai seguenti</Card.Description>
 			</Card.Header>
 			<Card.Content class="pt-3">
-				<KindPicker {kinds} bind:value={rm.data.kind} />
+				{#await data.kinds}
+					<div class="flex flex-col gap-4">
+						{#each { length: 6 }}
+							<Skeleton class="h-[82px] w-full" />
+						{/each}
+					</div>
+				{:then data}
+					<KindPicker
+						kinds={data?.filter((el) => el.staffID === rm.data.staff) ?? []}
+						bind:value={rm.data.kind}
+					/>
+				{/await}
 			</Card.Content>
 			<Card.Footer class="mt-8 items-center justify-between">
 				<Button

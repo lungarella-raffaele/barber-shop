@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import {
 		ArrowUpRight,
 		Calendar,
@@ -16,8 +17,14 @@
 
 	const { isLogged, isAdmin } = $props();
 
+	type MenuItem = {
+		title: string;
+		url: string;
+		icon: typeof House;
+	};
+
 	// Menu items.
-	const navigation = [
+	const navigation: MenuItem[] = [
 		{
 			title: 'Home',
 			url: '/',
@@ -59,7 +66,7 @@
 	];
 </script>
 
-<Sidebar.Root>
+<Sidebar.Root variant="floating">
 	<Sidebar.Content>
 		<Sidebar.Group>
 			<Sidebar.GroupLabel>Vai a</Sidebar.GroupLabel>
@@ -67,7 +74,7 @@
 				<Sidebar.Menu>
 					{#each navigation as item (item.title)}
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
+							<Sidebar.MenuButton isActive={item.url === page.url.pathname}>
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
 										<item.icon />
@@ -89,7 +96,7 @@
 						{#if isAdmin}
 							{#each admin as item (item.title)}
 								<Sidebar.MenuItem>
-									<Sidebar.MenuButton>
+									<Sidebar.MenuButton isActive={item.url === page.url.pathname}>
 										{#snippet child({ props })}
 											<a href={item.url} {...props}>
 												<item.icon />
@@ -102,7 +109,7 @@
 						{/if}
 						{#each user as item (item.title)}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton>
+								<Sidebar.MenuButton isActive={item.url === page.url.pathname}>
 									{#snippet child({ props })}
 										<a href={item.url} {...props}>
 											<item.icon />

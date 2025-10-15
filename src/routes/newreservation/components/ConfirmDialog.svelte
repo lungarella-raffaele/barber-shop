@@ -11,13 +11,13 @@
 		data,
 		isOpen = $bindable(),
 		kinds,
-		staffs,
+		staff,
 		loading
 	}: {
 		data: Data;
 		isOpen: boolean;
 		kinds: DBKind[];
-		staffs: Staff[];
+		staff: Staff[];
 		loading: boolean;
 	} = $props();
 
@@ -30,7 +30,7 @@
 	});
 
 	const selectedKind = $derived(kinds.find((entry) => entry.id === data.kind));
-	const selectedStaff = $derived(staffs.find((entry) => entry.id === data.staff));
+	const selectedStaff = $derived(staff.find((entry) => entry.id === data.staff));
 </script>
 
 <Dialog.Root bind:open={isOpen}>

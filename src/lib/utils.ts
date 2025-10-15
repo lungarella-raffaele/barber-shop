@@ -7,7 +7,9 @@ import {
 } from '@internationalized/date';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { Slot } from '@types';
+import type { ScheduleRange, ScheduleUI, Slot } from '@types';
+import type { Day } from './enums/days';
+import type { DBSchedule } from './server/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -145,4 +147,27 @@ export function printSlots(slots: Slot[]) {
 
 		console.info(`Hour: ${hour}:${minute}  |  Available: ${available}  |  Invalid: ${invalid}`);
 	});
+}
+
+export function mapToUI(schedule: DBSchedule[], staffID: string): ScheduleUI {
+	// Group schedules by day
+	const grouped = Object.groupBy(
+		schedule.filter((el) => el.staffID === staffID),
+		({ day }) => day
+	);
+
+	// Create a Map with all days initialized
+	const scheduleMap = new Map<Day, ScheduleRange[]>();
+
+	// Convert grouped object to Map
+	Object.entries(grouped).forEach(([day, schedules]) => {
+		const dayNum = Number(day) as Day;
+		const ranges = (schedules || []).map((s) => ({
+			start: new Time(s.startHour, s.startMinute),
+			end: new Time(s.endHour, s.endMinute)
+		}));
+		scheduleMap.set(dayNum, ranges);
+	});
+
+	return scheduleMap;
 }

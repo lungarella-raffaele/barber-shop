@@ -59,7 +59,7 @@
 		{/if}
 	</div>
 
-	<article class="prose pl-4 dark:prose-invert lg:pl-40">
+	<article class="prose dark:prose-invert">
 		<h1>Chi sono</h1>
 		<p>
 			Gestito da Emiliano Lo Russo, il nostro salone offre servizi di alta qualità per uomini,
@@ -85,7 +85,7 @@
 			</Button>
 		</div>
 	</article>
-	<div class="mb-40 flex flex-col gap-10 p-4 lg:px-40">
+	<div class="mb-40 mt-10 flex flex-col gap-10">
 		<img src="barber-shop.webp" alt="barber while working" class="max-w-[800px] rounded-md" />
 		<img src="salon.webp" alt="salon" class="max-w-[800px] rounded-md" />
 		<img src="working-picture.webp" alt="salon" class="max-w-[800px] rounded-md" />

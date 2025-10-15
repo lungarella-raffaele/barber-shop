@@ -1,5 +1,6 @@
-import type { Slot } from '@types';
-import { parseTime } from '@internationalized/date';
+import type { ScheduleRange, Slot } from '@types';
+import { parseTime, Time } from '@internationalized/date';
+import { Day } from '$lib/enums/days';
 
 // The following days have plain 15 minutes slots
 export const monday: Slot[] = [
@@ -84,3 +85,78 @@ export const saturday: Slot[] = [
 	{ start: parseTime('14:30:00'), available: true, invalid: false, past: false },
 	{ start: parseTime('14:45:00'), available: true, invalid: false, past: false }
 ];
+
+export const schedule = new Map<Day, ScheduleRange[]>([
+	[
+		Day.MONDAY,
+		[
+			{
+				start: new Time(14),
+				end: new Time(19)
+			}
+		]
+	],
+	[
+		Day.TUESDAY,
+		[
+			{
+				start: new Time(9),
+				end: new Time(13)
+			},
+			{
+				start: new Time(14),
+				end: new Time(18, 30)
+			}
+		]
+	],
+	[
+		Day.WEDNESDAY,
+		[
+			{
+				start: new Time(9),
+				end: new Time(13)
+			},
+			{
+				start: new Time(14),
+				end: new Time(18, 30)
+			}
+		]
+	],
+	[
+		Day.THURSDAY,
+		[
+			{
+				start: new Time(9),
+				end: new Time(13)
+			},
+
+			{
+				start: new Time(14),
+				end: new Time(18, 30)
+			}
+		]
+	],
+	[
+		Day.FRIDAY,
+		[
+			{
+				start: new Time(9),
+				end: new Time(13)
+			},
+
+			{
+				start: new Time(14),
+				end: new Time(18, 30)
+			}
+		]
+	],
+	[
+		Day.SATURDAY,
+		[
+			{
+				start: new Time(10),
+				end: new Time(15)
+			}
+		]
+	]
+]);

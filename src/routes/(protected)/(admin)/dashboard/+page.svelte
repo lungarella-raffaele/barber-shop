@@ -12,6 +12,7 @@
 	import { getLocalTimeZone, parseDate, today } from '@internationalized/date';
 	import CalendarIcon from 'lucide-svelte/icons/calendar';
 	import type { PageProps } from './$types';
+	import TimelineSkeleton from './TimelineSkeleton.svelte';
 
 	const { data }: PageProps = $props();
 
@@ -25,7 +26,6 @@
 		}
 	};
 	let isCalendarOpen = $state(false);
-	const reservations = $derived(data?.reservations);
 
 	type View = 'timeline' | 'list';
 	let selectedView: View = $state('timeline');
@@ -80,10 +80,14 @@
 	</Button>
 </div>
 
-{#if !reservations || !reservations.length}
-	<div class="rounded-md border p-4 text-center font-semibold">Nessuna prenotazione</div>
-{:else if selectedView === 'timeline'}
-	<Timeline {reservations} />
-{:else}
-	<DataTable data={reservations} {columns} />
-{/if}
+{#await data.reservations}
+	<TimelineSkeleton />
+{:then reservations}
+	{#if !reservations || !reservations.length}
+		<div class="rounded-md border p-4 text-center font-semibold">Nessuna prenotazione</div>
+	{:else if selectedView === 'timeline'}
+		<Timeline {reservations} />
+	{:else}
+		<DataTable data={reservations} {columns} />
+	{/if}
+{/await}
