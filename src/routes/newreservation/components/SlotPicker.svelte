@@ -14,44 +14,39 @@
 	}: { availableSlots: Slot[]; date: string; value: string } = $props();
 </script>
 
-{#if date}
-	<!-- The grid is used to make the elements live in the same place thus avoiding glithes when animating -->
-	<h2 class="font-semibold leading-none">Orario</h2>
-	<p class="text-sm text-muted-foreground">Seleziona un orario</p>
+<h2 class="font-semibold leading-none">Orario</h2>
+<p class="text-sm text-muted-foreground">Seleziona un orario</p>
 
-	{#if availableSlots.length > 0}
-		<div class="grid overflow-hidden">
-			{#key date}
-				<div
-					class="col-span-full row-span-full"
-					in:fly={{ x: 150, delay: 50 }}
-					out:fly={{ x: -150 }}
-				>
-					<ScrollArea
-						type="always"
-						class="{availableSlots.length > 0 ? 'h-[300px]' : ''} rounded-md border p-4"
+<div class="grid overflow-hidden">
+	<ScrollArea
+		type="always"
+		class="{availableSlots.length > 0 ? 'h-[300px]' : ''} rounded-md border p-4"
+	>
+		{#if date && availableSlots.length > 0}
+			<ToggleGroup.Root type="single" bind:value class="flex flex-col">
+				{#each availableSlots as s, idx (s)}
+					<div
+						class="w-full"
+						in:fly={{ y: -20, duration: 300, delay: 10 * idx }}
+						out:fly={{ y: 20, duration: 200 }}
 					>
-						<ToggleGroup.Root type="single" class="flex flex-col" bind:value>
-							{#each availableSlots as s (s)}
-								{@render SlotEntry(s)}
-							{/each}
-						</ToggleGroup.Root>
-					</ScrollArea>
-				</div>
-			{/key}
-		</div>
-	{:else if date}
-		<h2 class="text-lg font-bold">
-			Nessun orario disponibile per {formatDate(date.toString())}
-		</h2>
-	{:else}
-		Nessun orario disponibile
-	{/if}
-{/if}
+						{@render SlotEntry(s)}
+					</div>
+				{/each}
+			</ToggleGroup.Root>
+		{:else if date}
+			Nessun orario disponibile per il {formatDate(date.toString())}
+			<br />
+			<span class="text-muted-foreground">Scegli un altro giorno</span>
+		{:else}
+			Nessuna data selezionata
+		{/if}
+	</ScrollArea>
+</div>
 
 {#snippet SlotEntry(s: Slot)}
 	<ToggleGroup.Item
-		class="flex w-full justify-between border bg-background align-middle transition-all duration-200 ease-in-out data-[disabled]:border-destructive data-[state=on]:border-primary data-[state=on]:bg-primary-foreground"
+		class="flex w-full justify-between border align-middle transition-all duration-200 ease-in-out data-[disabled]:border-destructive data-[state=on]:border-primary data-[state=on]:bg-primary-foreground"
 		value={s.start.toString()}
 		disabled={!s.available || s.invalid || s.past}
 	>

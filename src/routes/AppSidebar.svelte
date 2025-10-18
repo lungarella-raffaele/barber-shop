@@ -6,11 +6,12 @@
 		Calendar,
 		CircleUser,
 		Citrus,
-		DollarSign,
+		Euro,
 		House,
 		Instagram,
 		Library,
-		LogOut
+		LogOut,
+		MapPin
 	} from '$lib/components/icons/index';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
@@ -33,7 +34,7 @@
 		{
 			title: 'Prezzi',
 			url: '/prices',
-			icon: DollarSign
+			icon: Euro
 		},
 		{
 			title: 'Prenota',
@@ -62,6 +63,11 @@
 			title: 'instagram',
 			url: BARBER_SHOP_DETAILS.instagram,
 			icon: Instagram
+		},
+		{
+			title: 'Posizione',
+			url: BARBER_SHOP_DETAILS.google_page,
+			icon: MapPin
 		}
 	];
 </script>

@@ -1,7 +1,7 @@
 import * as table from '$lib/server/db/schema';
 import { logger } from '../logger';
 import { db } from '$lib/server/db';
-import type { DBSchedule } from '$lib/server/db/schema';
+import type { DBSchedule, Schedule } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export class ScheduleService {
@@ -14,10 +14,13 @@ export class ScheduleService {
 		}
 	}
 
-	async insert(schedule: DBSchedule[]): Promise<boolean> {
+	async update(schedules: Schedule[]): Promise<boolean> {
 		try {
-			const result = await db.insert(table.schedule).values(schedule).returning();
-			return !!result;
+			// Delete all existing schedules
+			await db.delete(table.schedule);
+			// Insert new schedules
+			const result = await db.insert(table.schedule).values(schedules).returning();
+			return !!result.length;
 		} catch (e) {
 			logger.error(e);
 			return false;
@@ -26,6 +29,7 @@ export class ScheduleService {
 
 	async delete(id: number): Promise<boolean> {
 		try {
+			logger.info({ id }, 'Come mai non si elimina?');
 			await db.delete(table.schedule).where(eq(table.schedule.id, id));
 			return true;
 		} catch (e) {

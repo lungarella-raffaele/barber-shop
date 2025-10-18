@@ -140,8 +140,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const kinds = new KindService();
-		const response = await kinds.delete(id);
+		const response = await new KindService().delete(id);
 
 		if (response) {
 			logger.info('Delete kind' + `${response.name}`);
@@ -150,7 +149,7 @@ export const actions: Actions = {
 				success: true
 			};
 		} else {
-			logger.error('Could not add kind');
+			logger.error('Could not delete kind');
 			return {
 				isDeletingKind: true,
 				success: false

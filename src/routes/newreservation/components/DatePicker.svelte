@@ -8,11 +8,10 @@
 		today,
 		type DateValue
 	} from '@internationalized/date';
+	import type { DBShutdown } from '@types';
+	import { checkShutdown } from './check-shutdown';
 
-	let {
-		value = $bindable(),
-		closures
-	}: { value: string; closures: { start: string; end: string; id: string }[] } = $props();
+	let { value = $bindable(), shutdown }: { value: string; shutdown: DBShutdown[] } = $props();
 	const rm = ReservationManager.get();
 	function isDateDisabled(date: DateValue) {
 		// Only future reservations and sundays are disabled
@@ -20,16 +19,7 @@
 	}
 
 	function isDateUnavailable(date: DateValue): boolean {
-		for (const c of closures) {
-			const start = parseDate(c.start);
-			const end = parseDate(c.end);
-			if (date.compare(end) > 0) {
-				continue;
-			}
-			return date.compare(start) >= 0 && date.compare(end) <= 0;
-		}
-
-		return false;
+		return checkShutdown(date, shutdown, rm.data.staff);
 	}
 </script>
 

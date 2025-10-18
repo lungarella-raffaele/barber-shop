@@ -75,6 +75,9 @@ export const banner = sqliteTable('banner', {
 
 export const shutdowns = sqliteTable('shutdown', {
 	id: text('id').primaryKey(),
+	staffID: text('staff_id')
+		.notNull()
+		.references(() => staff.userID),
 	start: text('start').notNull(),
 	end: text('end').notNull()
 });
@@ -105,4 +108,5 @@ export type DBBanner = typeof banner.$inferSelect;
 export type DBShutdown = typeof shutdowns.$inferSelect;
 export type DBEmailVerificationToken = typeof emailVerification.$inferSelect;
 export type DBPasswordRecover = typeof passwordRecover.$inferSelect;
-export type DBSchedule = Omit<typeof schedule.$inferSelect, 'id'>;
+export type DBSchedule = typeof schedule.$inferSelect;
+export type Schedule = Omit<typeof schedule.$inferSelect, 'id'>;

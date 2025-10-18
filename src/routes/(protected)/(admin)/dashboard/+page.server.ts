@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	return {
 		reservations,
 		date,
-		title: 'Admin |'
+		title: 'Admin -'
 	};
 };
 

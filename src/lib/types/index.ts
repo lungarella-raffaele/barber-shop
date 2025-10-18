@@ -81,6 +81,7 @@ export type UserSession = { user: User; session: DBSession };
 export type ScheduleRange = {
 	start: Time;
 	end: Time;
+	id?: number;
 };
 export type ScheduleUI = Map<Day, ScheduleRange[]>;
 

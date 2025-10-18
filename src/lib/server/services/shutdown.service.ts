@@ -14,12 +14,25 @@ export class ShutdownService {
 		}
 	}
 
-	async insert(start: string, end: string) {
+	async getStaffShutdown(staffID: string): Promise<DBShutdown[] | null> {
+		try {
+			return await db
+				.select()
+				.from(table.shutdowns)
+				.where(eq(table.shutdowns.staffID, staffID));
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
+	}
+
+	async insert(start: string, end: string, staffID: string) {
 		try {
 			return await db
 				.insert(table.shutdowns)
-				.values({ id: crypto.randomUUID(), start, end })
-				.returning({ id: table.shutdowns.id });
+				.values({ id: crypto.randomUUID(), start, end, staffID })
+				.returning({ id: table.shutdowns.id })
+				.get();
 		} catch (e) {
 			logger.error(e);
 			return null;

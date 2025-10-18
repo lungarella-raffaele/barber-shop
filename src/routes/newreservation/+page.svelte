@@ -45,9 +45,7 @@
 				}
 			} else if (result.type === 'failure') {
 				if (result.status === 404) {
-					// const step = result.data.step;
 					toast.warning('Controlla i dati inseriti');
-					// reservationManager.goToTab(step);
 				} else if (result.status === 500) {
 					toast.error('Impossibile effettuare la prenotazione.', {
 						description: 'Riprova più tardi',
@@ -254,7 +252,7 @@
 				<Card.Description>Scegli la data della prenotazione</Card.Description>
 			</Card.Header>
 			<Card.Content class="space-y-2">
-				<DatePicker bind:value={rm.data.date} closures={data.closures} />
+				<DatePicker bind:value={rm.data.date} shutdown={data.shutdown} />
 				<SlotPicker {availableSlots} date={rm.data.date} bind:value={rm.data.hour} />
 			</Card.Content>
 			<Card.Footer class="mt-8 items-center justify-between">
