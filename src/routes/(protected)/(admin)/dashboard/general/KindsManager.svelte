@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import EditButton from '$lib/components/app/EditButton.svelte';
 	import { Check, CirclePlus, Save, Trash, X } from '$lib/components/icons/index';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
@@ -179,7 +180,7 @@
 				</div>
 			</form>
 
-			<form action="?/deleteKind" method="post" id="{kind.id}-delete-kind">
+			<form action="?/deleteKind" method="post" id="{kind.id}-delete-kind" use:enhance>
 				<input type="hidden" name="id" value={kind.id} />
 			</form>
 		</Accordion.Content>

@@ -91,24 +91,23 @@ export const actions: Actions = {
 export const load: PageServerLoad = async ({ locals }) => {
 	const kind = new KindService();
 	const reservationService = new ReservationService();
-	const shutdowns = new ShutdownService();
 
-	const [currentReservations, closures] = await Promise.all([
+	const [currentReservations, shutdown] = await Promise.all([
 		reservationService.getAll(),
-		shutdowns.getAll()
+		new ShutdownService().getAll()
 	]);
 
-	if (!currentReservations || !closures) {
+	if (!currentReservations || !shutdown) {
 		return error(500); //TODO
 	}
 
 	return {
 		currentReservations,
-		closures,
+		shutdown,
 		kinds: kind.getAll(),
 		staff: new UserService().getAllStaff(),
 		schedule: await new ScheduleService().getAll(),
 		user: locals.user,
-		title: 'Nuova prenotazione | '
+		title: 'Nuova prenotazione -'
 	};
 };

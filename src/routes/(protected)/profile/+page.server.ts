@@ -33,7 +33,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	return {
 		user: locals.user,
-		title: 'Profilo | ',
+		title: 'Profilo -',
 		updatedEmail
 	};
 };

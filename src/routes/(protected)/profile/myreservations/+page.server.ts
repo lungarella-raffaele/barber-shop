@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	logger.info(`Retrieved ${reservations.length} reservations`);
 
-	return { reservations, title: 'Prenotazioni | ' };
+	return { reservations, title: 'Prenotazioni -' };
 };
 
 export const actions: Actions = {

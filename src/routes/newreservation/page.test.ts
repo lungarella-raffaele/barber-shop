@@ -57,7 +57,7 @@ const userProps: PageData = {
 		role: 'user'
 	},
 	title: '',
-	closures: [],
+	shutdown: [],
 	schedule: [
 		{
 			staffID: '345',
@@ -65,7 +65,8 @@ const userProps: PageData = {
 			startHour: 9,
 			startMinute: 0,
 			endHour: 10,
-			endMinute: 30
+			endMinute: 30,
+			id: 0
 		}
 	],
 	staff: new Promise((resolve) => {
@@ -91,7 +92,7 @@ const noUserProps: PageData = {
 	}),
 	user: null,
 	title: '',
-	closures: [],
+	shutdown: [],
 	staff: new Promise((resolve) => {
 		resolve([{ name: 'emiliano', id: 'emiliano', avatar: 'avatar.png' }]);
 	}),
@@ -102,7 +103,8 @@ const noUserProps: PageData = {
 			startHour: 9,
 			startMinute: 0,
 			endHour: 10,
-			endMinute: 30
+			endMinute: 30,
+			id: 0
 		}
 	]
 };

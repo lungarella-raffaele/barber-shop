@@ -14,7 +14,7 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		form: await superValidate(zod(signupSchema)),
-		title: 'Sign Up | '
+		title: 'Sign Up -'
 	};
 };
 

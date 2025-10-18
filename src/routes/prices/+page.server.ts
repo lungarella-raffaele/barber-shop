@@ -6,7 +6,7 @@ export const load: PageServerLoad = async () => {
 	return {
 		kinds: new KindService().getAll(),
 		staff: new UserService().getAllStaff(),
-		title: 'Listino Prezzi | ',
+		title: 'Listino Prezzi -',
 		header: 'Listino Prezzi'
 	};
 };

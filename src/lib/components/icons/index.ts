@@ -50,3 +50,5 @@ export { default as Timer } from 'lucide-svelte/icons/timer';
 export { default as Trash } from 'lucide-svelte/icons/trash-2';
 export { default as User } from 'lucide-svelte/icons/user';
 export { default as X } from 'lucide-svelte/icons/x';
+export { default as Loader } from 'lucide-svelte/icons/loader';
+export { default as Euro } from 'lucide-svelte/icons/euro';

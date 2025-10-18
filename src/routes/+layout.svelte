@@ -31,11 +31,13 @@
 
 <Sidebar.Provider>
 	<AppSidebar {isLogged} {isAdmin} />
-	<main class="relative flex h-screen w-full flex-col lg:mx-60">
-		<div class="sticky top-0 z-50 flex items-center justify-between border-b bg-background p-3">
-			<!-- Leading -->
+	<main
+		class="2xl:mx-120 relative flex min-h-screen w-full flex-col px-4 md:mx-0 lg:mx-20 lg:px-0 xl:mx-60"
+	>
+		<div
+			class="sticky top-1 z-50 mb-8 flex items-center justify-between border-b bg-background p-3"
+		>
 			<Sidebar.Trigger />
-			<!-- Trailing -->
 			<div class="flex items-center">
 				{#if !data.user}
 					<Button aria-label="Go to login" href="/login" variant="ghost">Login</Button>
@@ -86,8 +88,8 @@
 			</div>
 		</div>
 
-		<div class="flex min-h-0 flex-1 flex-col">
-			<div class="flex-1 p-3">
+		<div class="flex flex-1 flex-col">
+			<div class="flex-1">
 				{#if data.banner?.visible}
 					<Banner message={data.banner.message} />
 				{/if}

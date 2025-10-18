@@ -80,4 +80,11 @@
 	.title {
 		@apply mb-4 text-start text-2xl font-bold;
 	}
+
+	.text-shadow {
+		text-shadow:
+			0px 1px 0px rgb(0 0 0 / 0.075),
+			0px 1px 1px rgb(0 0 0 / 0.075),
+			0px 2px 2px rgb(0 0 0 / 0.075);
+	}
 }

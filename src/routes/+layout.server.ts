@@ -8,7 +8,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	const banner = (await db.select().from(table.banner).get()) ?? null;
 
 	const user = locals.user;
-	const title = 'Home |';
+	const title = 'Home -';
 
 	return { user, title, banner };
 };

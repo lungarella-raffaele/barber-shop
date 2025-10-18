@@ -3,11 +3,16 @@ import { fail } from 'sveltekit-superforms';
 import type { PageServerLoad } from './$types';
 import { ShutdownService } from '@service/shutdown.service';
 import { ScheduleService } from '@service/schedule.service';
-import type { DBSchedule } from '$lib/server/db/schema';
+import type { Schedule } from '$lib/server/db/schema';
+import { redirect } from '@sveltejs/kit';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.user) {
+		redirect(301, '/login');
+	}
+
 	return {
-		periods: new ShutdownService().getAll(),
+		shutdown: new ShutdownService().getStaffShutdown(locals.user.data.id),
 		schedule: new ScheduleService().getAll()
 	};
 };
@@ -17,11 +22,12 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const start = data.get('start') as string;
 		const end = data.get('end') as string;
+		const id = data.get('id') as string;
 
 		if (!start || !end) {
 			return fail(404);
 		}
-		return await new ShutdownService().insert(start, end);
+		return await new ShutdownService().insert(start, end, id);
 	},
 	deleteShutdown: async ({ request }) => {
 		const data = await request.formData();
@@ -31,7 +37,7 @@ export const actions: Actions = {
 	addSchedule: async ({ request, locals }) => {
 		const data = await request.formData();
 
-		let dbschedule = JSON.parse(data.get('data') as string) as DBSchedule[];
+		let dbschedule = JSON.parse(data.get('data') as string) as Schedule[];
 
 		if (!locals.user) {
 			return fail(401, { message: 'Unauthorized' });
@@ -50,6 +56,17 @@ export const actions: Actions = {
 			};
 		});
 
-		return { success: await new ScheduleService().insert(dbschedule) };
+		return { success: await new ScheduleService().update(dbschedule) };
+	},
+	deleteSchedule: async ({ request }) => {
+		const data = await request.formData();
+		const id = data.get('id') as string;
+
+		const idNum = isNaN(Number(id)) ? null : Number(id);
+
+		if (!idNum) {
+			return fail(404);
+		}
+		return await new ScheduleService().delete(idNum);
 	}
 };

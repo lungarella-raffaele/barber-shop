@@ -11,29 +11,31 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { formatTime } from '$lib/utils';
-	import type { DBSchedule } from '$lib/server/db/schema';
+	import type { DBSchedule, Schedule } from '$lib/server/db/schema';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
-	import { Save } from '$lib/components/icons/index';
+	import { LoaderCircle, Save } from '$lib/components/icons/index';
 	import { Trash } from '$lib/components/icons/index';
 	import { Skeleton } from '$lib/components/ui/skeleton';
+	import { toast } from 'svelte-sonner';
+	import { invalidateAll } from '$app/navigation';
 
 	const { schedule, staffID }: { schedule: Promise<DBSchedule[] | null>; staffID: string } =
 		$props();
 
-	console.log(schedule);
-	function mapToDB(scheduleMap: Map<Day, ScheduleRange[]>): DBSchedule[] {
+	function mapToDB(scheduleMap: Map<Day, ScheduleRange[]>): Omit<Schedule, 'staffID'>[] {
 		const arr = Array.from(scheduleMap.entries()).map(([day, ranges]) => ({
 			day,
-			schedules: ranges.map(({ start, end }) => ({
+			schedules: ranges.map(({ start, end, id }) => ({
 				startHour: start.hour,
 				startMinute: start.minute,
 				endHour: end.hour,
-				endMinute: end.minute
+				endMinute: end.minute,
+				id
 			}))
 		}));
 
-		const dbarr: DBSchedule[] = [];
+		const dbarr: Omit<Schedule, 'staffID'>[] = [];
 		arr.forEach((el) => {
 			el.schedules.forEach((schedule) => {
 				dbarr.push({
@@ -41,8 +43,7 @@
 					startHour: schedule.startHour,
 					startMinute: schedule.startMinute,
 					endHour: schedule.endHour,
-					endMinute: schedule.endMinute,
-					staffID: 'staff123'
+					endMinute: schedule.endMinute
 				});
 			});
 		});
@@ -137,17 +138,40 @@
 		rangeEnd = '17:00';
 	}
 
+	let deleting = $state(false);
+	const submitDelete: SubmitFunction = () => {
+		deleting = true;
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				toast.success('Range eliminato!');
+				invalidateAll();
+			} else if (result.type === 'failure') {
+				toast.error('Impossibile eliminare il range.');
+			}
+			deleting = false;
+			isDialogOpen = false;
+			deleteDialog = false;
+		};
+	};
+
+	let updating = $state(false);
 	const submitFunction: SubmitFunction = ({ formData }) => {
+		updating = true;
 		formData.append('data', JSON.stringify(mapToDB(scheduleMap)));
 
 		return ({ result }) => {
 			if (result.type === 'success') {
-				console.log('aaa');
+				toast.success('Orario aggiornato!');
 			} else {
-				console.log('bbb');
+				toast.success("Impossibile aggiornare l'orario.");
 			}
+
+			updating = false;
 		};
 	};
+
+	let deleteDialog = $state(false);
+	let idRangeToDelete: number | null = $state(null);
 </script>
 
 <Tabs.Root bind:value={activeTab} class="mb-5">
@@ -193,9 +217,19 @@
 													rangeStart = convertTimeFormat(s.start);
 													rangeEnd = convertTimeFormat(s.end);
 													editingIndex = idx;
-												}}>Edit</Button
+												}}>Modifica</Button
 											>
-											<Button size="sm" variant="destructive">
+											<Button
+												size="sm"
+												variant="destructive"
+												type="submit"
+												onclick={() => {
+													if (s.id) {
+														deleteDialog = true;
+														idRangeToDelete = s.id;
+													}
+												}}
+											>
 												<Trash />
 											</Button>
 										</div>
@@ -227,13 +261,20 @@
 		</Tabs.Content>
 	{/each}
 </Tabs.Root>
+
 <form action="?/addSchedule" method="POST" use:enhance={submitFunction}>
 	<Button type="submit" class="w-full">
-		<Save />
-		Salva Orario</Button
-	>
+		{#if !updating}
+			<Save />
+			Salva Orario
+		{:else}
+			<LoaderCircle class="animate-spin" />
+			Attendi
+		{/if}
+	</Button>
 </form>
 
+<!-- Dialog to add or change range -->
 <Dialog.Root bind:open={isDialogOpen}>
 	<Dialog.Content>
 		<Dialog.Header>
@@ -272,6 +313,45 @@
 				{/if}
 				<Button variant="outline" onclick={() => (isDialogOpen = false)}>Annulla</Button>
 			</div>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Dialog to delete range -->
+<Dialog.Root bind:open={deleteDialog}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Conferma eliminazione di range</Dialog.Title>
+			<Dialog.Description>Sei sicuro di voler eliminare questo range?</Dialog.Description>
+		</Dialog.Header>
+
+		<Dialog.Footer>
+			<form
+				action="?/deleteSchedule"
+				method="POST"
+				id="deleteform"
+				use:enhance={submitDelete}
+			>
+				<input type="hidden" name="id" value={idRangeToDelete} />
+				<div class="flex flex-row-reverse">
+					<Button class="ml-2" variant="destructive" type="submit" disabled={deleting}>
+						{#if !deleting}
+							Conferma
+						{:else}
+							<LoaderCircle class="animate-spin" />
+							Attendi
+						{/if}
+					</Button>
+					<Button
+						disabled={deleting}
+						variant="outline"
+						onclick={() => {
+							deleteDialog = false;
+							idRangeToDelete = null;
+						}}>Annulla</Button
+					>
+				</div>
+			</form>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
