@@ -164,7 +164,8 @@ export function mapToUI(schedule: DBSchedule[], staffID: string): ScheduleUI {
 		const dayNum = Number(day) as Day;
 		const ranges = (schedules || []).map((s) => ({
 			start: new Time(s.startHour, s.startMinute),
-			end: new Time(s.endHour, s.endMinute)
+			end: new Time(s.endHour, s.endMinute),
+			id: s.id
 		}));
 		scheduleMap.set(dayNum, ranges);
 	});

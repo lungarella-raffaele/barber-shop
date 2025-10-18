@@ -47,15 +47,15 @@
 						</Table.Cell>
 
 						<Table.Cell>
-							<Skeleton class="h-[20px] w-[60px]" />
+							<Skeleton class="h-[30px] w-[60px]" />
 						</Table.Cell>
 
 						<Table.Cell>
-							<Skeleton class="h-[20px] w-[40px]" />
+							<Skeleton class="h-[30px] w-[40px]" />
 						</Table.Cell>
 
 						<Table.Cell>
-							<Skeleton class="h-[20px] w-[30px]" />
+							<Skeleton class="h-[30px] w-[40px]" />
 						</Table.Cell>
 					</Table.Row>
 				{/each}

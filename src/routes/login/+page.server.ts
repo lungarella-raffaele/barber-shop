@@ -18,7 +18,7 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		form: await superValidate(zod(loginSchema)),
-		title: 'Sign In | '
+		title: 'Sign In -'
 	};
 };
 
@@ -109,8 +109,7 @@ export const actions: Actions = {
 
 		return {
 			success: true,
-			message:
-				'Se la mail inserita è giusta ti arriverà una mail per aggiornare la password del tuo account'
+			message: 'Ti arriverà una mail per aggiornare la password del tuo account.'
 		};
 	}
 };
