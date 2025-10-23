@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import ConfirmDialog from './components/ConfirmDialog.svelte';
-	import DatePicker from './components/DatePicker.svelte';
-	import KindPicker from './components/KindPicker.svelte';
-	import SlotPicker from './components/SlotPicker.svelte';
+	import ConfirmDialog from './components/confirm.svelte';
+	import DatePicker from './components/datepicker.svelte';
+	import KindPicker from './components/kindpicker.svelte';
+	import SlotPicker from './components/slotpicker.svelte';
 	import { ChevronLeft, ChevronRight } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button/index';
 	import * as Card from '$lib/components/ui/card';
@@ -18,7 +18,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
-	import StaffPicker from './components/StaffPicker.svelte';
+	import StaffPicker from './components/staffpicker.svelte';
 	import type { DBReservation, DBKind } from '@types';
 	import { onMount } from 'svelte';
 	import { Skeleton } from '$lib/components/ui/skeleton';

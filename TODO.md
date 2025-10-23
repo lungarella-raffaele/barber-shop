@@ -1,13 +1,15 @@
 # TODO
 
-- [x] Shutdowns must have a staff ID;
+- [ ] Overrall testing of the whole application;
+- [ ] Check password recover (expired recover token);
+- [ ] Create a paginated reservations page;
+- [ ] Schedule tabs do not work properly on mobile;
+- [x] Create a set of utilities to populate DB;
+- [x] Fix Hero page, maybe having an image behind the hero to center it better;
 - [x] Schedule deletion and PUT;
 - [x] Schedule handle user feedback;
-- [ ] Fix Hero page, maybe having an image behind the hero to center it better;
-- [ ] Overrall testing of the whole application;
-- [ ] Create a set of utilities to populate DB;
-- [ ] Check password recover (expired recover token)
-- [ ] Il menu si blocca dopo un certo punto
+- [x] Shutdowns must have a staff ID;
+- [x] Sticky menu is not working properly;
 
 ## Orario
 - Monday 2 PM – 7 PM

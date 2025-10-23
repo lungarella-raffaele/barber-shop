@@ -37,13 +37,13 @@ export type User =
 	  }
 	| {
 			role: 'staff';
-			data: DBUser & { avatar: string };
+			data: DBUser & { avatar: string | null };
 	  };
 
 export type Staff = {
 	name: string;
 	id: string;
-	avatar: string;
+	avatar: string | null;
 };
 
 export type Data = AnonymousData | UsualData | StaffData;

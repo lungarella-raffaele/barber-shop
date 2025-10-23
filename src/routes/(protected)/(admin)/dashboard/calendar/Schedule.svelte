@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as Select from '$lib/components/ui/select/index.js';
 	import { mapToUI } from '$lib/utils';
 	import type { ScheduleRange } from '@types';
 	import { Day, getWeekDay } from '$lib/enums/days';
@@ -14,14 +15,17 @@
 	import type { DBSchedule, Schedule } from '$lib/server/db/schema';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
-	import { LoaderCircle, Save } from '$lib/components/icons/index';
+	import { LoaderCircle, Pencil, Save } from '$lib/components/icons/index';
 	import { Trash } from '$lib/components/icons/index';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
+	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 
 	const { schedule, staffID }: { schedule: Promise<DBSchedule[] | null>; staffID: string } =
 		$props();
+
+	const isMobile = new IsMobile();
 
 	function mapToDB(scheduleMap: Map<Day, ScheduleRange[]>): Omit<Schedule, 'staffID'>[] {
 		const arr = Array.from(scheduleMap.entries()).map(([day, ranges]) => ({
@@ -144,7 +148,7 @@
 		return async ({ result }) => {
 			if (result.type === 'success') {
 				toast.success('Range eliminato!');
-				invalidateAll();
+				await invalidateAll();
 			} else if (result.type === 'failure') {
 				toast.error('Impossibile eliminare il range.');
 			}
@@ -174,13 +178,23 @@
 	let idRangeToDelete: number | null = $state(null);
 </script>
 
-<Tabs.Root bind:value={activeTab} class="mb-5">
-	<Tabs.List>
-		{#each tabs as t}
-			<Tabs.Trigger value={t}>{getWeekDay(Number(t))}</Tabs.Trigger>
-		{/each}
-	</Tabs.List>
-
+<Tabs.Root bind:value={activeTab} class="mb-5" orientation="vertical">
+	{#if isMobile.current}
+		<Select.Root type="single" bind:value={activeTab}>
+			<Select.Trigger>{getWeekDay(Number(activeTab))}</Select.Trigger>
+			<Select.Content>
+				{#each tabs as t}
+					<Select.Item value={t}>{getWeekDay(Number(t))}</Select.Item>
+				{/each}
+			</Select.Content>
+		</Select.Root>
+	{:else}
+		<Tabs.List>
+			{#each tabs as t}
+				<Tabs.Trigger value={t}>{getWeekDay(Number(t))}</Tabs.Trigger>
+			{/each}
+		</Tabs.List>
+	{/if}
 	{#each tabs as t}
 		<Tabs.Content value={t}>
 			<Card.Root>
@@ -209,7 +223,7 @@
 									<div class="flex gap-2">
 										<div class="flex flex-row gap-2 align-middle">
 											<Button
-												size="sm"
+												size="icon"
 												variant="secondary"
 												onclick={() => {
 													action = 'edit';
@@ -217,10 +231,10 @@
 													rangeStart = convertTimeFormat(s.start);
 													rangeEnd = convertTimeFormat(s.end);
 													editingIndex = idx;
-												}}>Modifica</Button
+												}}><Pencil /></Button
 											>
 											<Button
-												size="sm"
+												size="icon"
 												variant="destructive"
 												type="submit"
 												onclick={() => {

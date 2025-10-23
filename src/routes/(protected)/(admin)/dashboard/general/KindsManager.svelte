@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import EditButton from '$lib/components/app/EditButton.svelte';
+	import EditButton from '$lib/components/app/editbutton.svelte';
 	import { Check, CirclePlus, Save, Trash, X } from '$lib/components/icons/index';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import { Button } from '$lib/components/ui/button';

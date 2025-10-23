@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import PasswordInput from '$lib/components/app/PasswordInput.svelte';
+	import PasswordInput from '$lib/components/app/passwordinput.svelte';
 	import { LoaderCircle } from '$lib/components/icons/index';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Card from '$lib/components/ui/card';

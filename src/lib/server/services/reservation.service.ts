@@ -88,7 +88,7 @@ export class ReservationService {
 
 			return ok(queryRes);
 		} catch (e) {
-			logger.error('Error while adding usual user', e);
+			logger.error({ e }, 'Error while adding usual user');
 			return err('server-err');
 		}
 	}
@@ -190,7 +190,7 @@ export class ReservationService {
 
 			return ok(res);
 		} catch (e) {
-			logger.error('Error while adding usual user', e);
+			logger.error({ e }, 'Error while adding usual user');
 			return err('server-err');
 		}
 	}
@@ -268,20 +268,6 @@ export class ReservationService {
 	async getByUser(email: string) {
 		try {
 			return await this.getReservations().where(eq(table.reservation.email, email));
-			// return await db
-			// 	.select({
-			// 		id: table.reservation.id,
-			// 		date: table.reservation.date,
-			// 		hour: table.reservation.hour,
-			// 		name: table.reservation.name,
-			// 		email: table.reservation.email,
-			// 		kindName: table.kind.name,
-			// 		kindDuration: table.kind.duration,
-			// 		kindPrice: table.kind.price
-			// 	})
-			// 	.from(table.reservation)
-			// 	.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-			// 	.where(eq(table.reservation.email, email));
 		} catch (e) {
 			logger.error(e);
 			return null;

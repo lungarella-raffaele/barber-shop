@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import Logo from './Logo.svelte';
-	import PasswordRecover from './PasswordRecover.svelte';
-	import Pendingreservation from './PendingReservation.svelte';
-	import ReservationConfirmed from './ReservationConfirmed.svelte';
-	import UserConfirmed from './UserConfirmed.svelte';
+	import Logo from './logo.svelte';
+	import PasswordRecover from './passwordrecover.svelte';
+	import Pendingreservation from './pendingreservation.svelte';
+	import ReservationConfirmed from './reservationconfirmed.svelte';
+	import UserConfirmed from './userconfirmed.svelte';
 	import { ArrowUpRight } from '$lib/components/icons';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
@@ -81,7 +81,7 @@
 				<div
 					role="img"
 					aria-label="Vista principale del salone EMI Hair Club con interni moderni"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center md:col-span-3"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md md:col-span-3"
 					style="background-image: url('/barber-shop.webp')"
 				></div>
 
@@ -89,35 +89,35 @@
 				<div
 					role="img"
 					aria-label="Poltrona da barbiere professionale nel nostro salone"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md"
 					style="background-image: url('/chair.webp')"
 				></div>
 
 				<div
 					role="img"
 					aria-label="Area reception e scrivania del salone"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md"
 					style="background-image: url('/desk-wide.webp')"
 				></div>
 
 				<div
 					role="img"
 					aria-label="Interno del salone con vista completa delle postazioni di lavoro"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center md:col-span-3"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md md:col-span-3"
 					style="background-image: url('/salon.webp')"
 				></div>
 
 				<div
 					role="img"
 					aria-label="Dettaglio della scrivania e area di lavoro del barbiere"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center md:col-span-3"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md md:col-span-3"
 					style="background-image: url('/desk.webp')"
 				></div>
 
 				<div
 					role="img"
 					aria-label="Dettaglio della poltrona da barbiere con vista laterale"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md"
 					style="background-image: url('/chair-wide.webp')"
 				></div>
 			</div>

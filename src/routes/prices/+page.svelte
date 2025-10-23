@@ -4,7 +4,7 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
-	import StaffPicker from '../newreservation/components/StaffPicker.svelte';
+	import StaffPicker from '../newreservation/components/staffpicker.svelte';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
