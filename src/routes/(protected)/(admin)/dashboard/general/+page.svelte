@@ -1,5 +1,5 @@
 <script lang="ts">
-	import KindsManager from './KindsManager.svelte';
+	import KindsManager from './kindsmanager.svelte';
 	import { Save } from '$lib/components/icons/index';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';

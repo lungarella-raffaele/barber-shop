@@ -6,7 +6,7 @@
 	import { toast } from 'svelte-sonner';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
-	import Passwordinput from '$lib/components/app/PasswordInput.svelte';
+	import Passwordinput from '$lib/components/app/passwordinput.svelte';
 
 	const { id, error, success } = $props();
 

@@ -72,7 +72,7 @@
 	];
 </script>
 
-<Sidebar.Root variant="floating">
+<Sidebar.Root variant="sidebar">
 	<Sidebar.Content>
 		<Sidebar.Group>
 			<Sidebar.GroupLabel>Vai a</Sidebar.GroupLabel>

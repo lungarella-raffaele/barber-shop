@@ -2,7 +2,6 @@
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
-	import EditButton from '$lib/components/app/EditButton.svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -16,7 +15,8 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import { KeyRound, Mail, Save } from '$lib/components/icons';
-	import Passwordinput from '$lib/components/app/PasswordInput.svelte';
+	import Passwordinput from '$lib/components/app/passwordinput.svelte';
+	import EditButton from '$lib/components/app/editbutton.svelte';
 
 	const { data, form }: PageProps = $props();
 

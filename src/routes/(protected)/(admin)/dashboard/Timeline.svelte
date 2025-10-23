@@ -2,7 +2,7 @@
 	import { generateSlotsFromInterval, SlotDuration } from '$lib/modules/get-slots';
 	import { extractHoursAndMinutes, formatTime, toDecimalHours } from '$lib/utils';
 	import { Time } from '@internationalized/date';
-	import TimelineButton from './TimelineButton.svelte';
+	import TimelineButton from './timelinebutton.svelte';
 	import type { Reservation } from '@types';
 
 	const {

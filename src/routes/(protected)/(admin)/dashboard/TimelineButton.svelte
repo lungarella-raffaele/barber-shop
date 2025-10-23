@@ -5,15 +5,17 @@
 	import { onMount } from 'svelte';
 	import { Check, Shield, X } from '$lib/components/icons';
 	import { Button } from '$lib/components/ui/button';
+	import type { Reservation } from '@types';
 
-	const { height, top, reservation } = $props();
+	const { height, top, reservation }: { height: number; top: number; reservation: Reservation } =
+		$props();
 
 	let ref: HTMLElement | null = $state(null);
 	onMount(() => {
 		if (!ref) {
 			return;
 		}
-		const color = getColor(reservation.kindDuration);
+		const color = getColor(reservation.kind.duration);
 		ref.style.top = `${top}px`;
 		ref.style.height = `${height}px`;
 		ref.style.backgroundColor = rgbaToString(changeOpacity(color, 0.4));
@@ -87,12 +89,12 @@
 			>
 				<div class="text-sm">
 					<b>{reservation.name}</b>
-					{reservation.kindName}
+					{reservation.kind.name}
 				</div>
 
-				{#if reservation.kindDuration >= 30}
+				{#if reservation.kind.duration >= 30}
 					<div class="flex items-center text-xs text-secondary-foreground">
-						{formatTime(reservation.hour)} - {reservation.kindDuration}min
+						{formatTime(reservation.hour)} - {reservation.kind.duration}min
 					</div>
 				{/if}
 
@@ -113,7 +115,7 @@
 						/>
 					{/if}
 
-					{#if reservation.isAdmin}
+					{#if !!reservation.staff}
 						<Shield
 							class="rounded-lg bg-white bg-opacity-90 p-1 shadow-md"
 							color="green"
@@ -128,7 +130,7 @@
 	<Popover.Content class="w-60">
 		<div class="grid gap-2">
 			<b>{reservation.name}</b>
-			{reservation.kindName}
+			{reservation.kind.name}
 			<Button href="/{reservation.id}">Vedi dettaglio</Button>
 			<hr />
 			<Button variant="destructive" onclick={() => (isDialogOpen = true)}>Elimina</Button>

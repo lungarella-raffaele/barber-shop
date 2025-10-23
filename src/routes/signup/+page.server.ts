@@ -33,10 +33,17 @@ export const actions: Actions = {
 		const user = await userService.insertUser({ email, password, name, phoneNumber });
 
 		if (!user.isOk()) {
-			return message(form, {
-				text: 'Al momento il servizio non risponde. Riprova in seguito.',
-				success: false
-			});
+			if (user.error === 'already-existing') {
+				return message(form, {
+					text: "L'email inserita è già in uso.",
+					success: false
+				});
+			} else {
+				return message(form, {
+					text: 'Al momento il servizio non risponde. Riprova in seguito.',
+					success: false
+				});
+			}
 		}
 
 		const sent = await new EmailService().verifyEmail({

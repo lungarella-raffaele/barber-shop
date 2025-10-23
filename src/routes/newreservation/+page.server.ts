@@ -67,6 +67,8 @@ export const actions: Actions = {
 					to: data.email
 				});
 
+				logger.warn(sent);
+
 				if (sent.isErr()) {
 					logger.error('Could not send email');
 					return fail(404); // TODO: Better error handling

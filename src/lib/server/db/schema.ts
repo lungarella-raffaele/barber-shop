@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 
 export const user = sqliteTable('user', {
 	id: text('id').primaryKey(),
@@ -10,26 +10,6 @@ export const user = sqliteTable('user', {
 	expiresAt: integer('expires_at', { mode: 'timestamp' })
 });
 
-export const schedule = sqliteTable('schedule', {
-	id: integer('id').primaryKey({ autoIncrement: true }),
-	staffID: text('staffID')
-		.notNull()
-		.references(() => staff.userID),
-	day: integer('day').notNull(),
-	startHour: integer('start_hour').notNull(),
-	startMinute: integer('start_minute').notNull().default(0),
-	endHour: integer('end_hour').notNull(),
-	endMinute: integer('end_minute').notNull().default(0)
-});
-
-export const staff = sqliteTable('staff', {
-	userID: text('user_id')
-		.primaryKey()
-		.notNull()
-		.references(() => user.id),
-	avatar: text('string').notNull()
-});
-
 export const session = sqliteTable('session', {
 	id: text('id').primaryKey(),
 	userID: text('user_id')
@@ -38,22 +18,26 @@ export const session = sqliteTable('session', {
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull()
 });
 
-export const reservation = sqliteTable('reservation', {
-	id: text('id').primaryKey(),
-	date: text('date').notNull(),
-	hour: text('hour').notNull(),
-	phoneNumber: text('phone_number'),
-	kindID: text('kind_id')
-		.notNull()
-		.references(() => kind.id),
-	name: text('name').notNull(),
-	email: text('email').notNull(),
-	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
-	pending: integer({ mode: 'boolean' }).notNull(),
-	staffID: text('staff_id')
-		.notNull()
-		.references(() => staff.userID)
-});
+export const reservation = sqliteTable(
+	'reservation',
+	{
+		id: text('id').primaryKey(),
+		date: text('date').notNull(),
+		hour: text('hour').notNull(),
+		phoneNumber: text('phone_number'),
+		kindID: text('kind_id')
+			.notNull()
+			.references(() => kind.id),
+		name: text('name').notNull(),
+		email: text('email').notNull(),
+		expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+		pending: integer({ mode: 'boolean' }).notNull(),
+		staffID: text('staff_id')
+			.notNull()
+			.references(() => staff.userID)
+	},
+	(t) => [unique().on(t.date, t.hour, t.staffID)]
+);
 
 export const kind = sqliteTable('kind', {
 	id: text('id').primaryKey(),
@@ -73,6 +57,7 @@ export const banner = sqliteTable('banner', {
 	visible: integer({ mode: 'boolean' })
 });
 
+// was closures
 export const shutdowns = sqliteTable('shutdown', {
 	id: text('id').primaryKey(),
 	staffID: text('staff_id')
@@ -97,6 +82,26 @@ export const passwordRecover = sqliteTable('password_recover', {
 		.notNull()
 		.references(() => user.id),
 	expiresAt: integer('expires_at', { mode: 'timestamp' })
+});
+
+export const schedule = sqliteTable('schedule', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	staffID: text('staff_id')
+		.notNull()
+		.references(() => staff.userID),
+	day: integer('day').notNull(),
+	startHour: integer('start_hour').notNull(),
+	startMinute: integer('start_minute').notNull().default(0),
+	endHour: integer('end_hour').notNull(),
+	endMinute: integer('end_minute').notNull().default(0)
+});
+
+export const staff = sqliteTable('staff', {
+	userID: text('user_id')
+		.primaryKey()
+		.notNull()
+		.references(() => user.id),
+	avatar: text('avatar')
 });
 
 export type DBSession = typeof session.$inferSelect;
