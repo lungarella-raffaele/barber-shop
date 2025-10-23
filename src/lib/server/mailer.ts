@@ -6,22 +6,25 @@ import { err, ok } from '$lib/modules/result';
 
 const resend = new Resend(MAILER);
 
-const mailers = {
-	users: 'Emi Hair Club <users@mailer.emihairclub.com>'
-};
-
 export class EmailService {
 	private async send(payload: { body: string; to: string; subject: string }) {
+		const { data, error } = await resend.emails.send({
+			from: 'Acme <onboarding@resend.dev>',
+			to: ['delivered@resend.dev'],
+			subject: 'Hello World',
+			html: '<strong>It works!</strong>'
+		});
 		try {
 			const emailResponse = await resend.emails.send({
-				from: mailers.users,
+				// from: mailer,
+				from: 'Acme <onboarding@resend.dev>',
 				to: payload.to,
 				subject: payload.subject,
 				html: `${TEMPLATE(payload.body)}`
 			});
 
 			if (emailResponse.data) {
-				return ok(undefined);
+				return ok(emailResponse.data.id);
 			} else {
 				throw new Error('');
 			}

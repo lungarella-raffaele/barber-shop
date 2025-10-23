@@ -81,7 +81,7 @@
 				<div
 					role="img"
 					aria-label="Vista principale del salone EMI Hair Club con interni moderni"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center md:col-span-3"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md md:col-span-3"
 					style="background-image: url('/barber-shop.webp')"
 				></div>
 
@@ -89,35 +89,35 @@
 				<div
 					role="img"
 					aria-label="Poltrona da barbiere professionale nel nostro salone"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md"
 					style="background-image: url('/chair.webp')"
 				></div>
 
 				<div
 					role="img"
 					aria-label="Area reception e scrivania del salone"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md"
 					style="background-image: url('/desk-wide.webp')"
 				></div>
 
 				<div
 					role="img"
 					aria-label="Interno del salone con vista completa delle postazioni di lavoro"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center md:col-span-3"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md md:col-span-3"
 					style="background-image: url('/salon.webp')"
 				></div>
 
 				<div
 					role="img"
 					aria-label="Dettaglio della scrivania e area di lavoro del barbiere"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center md:col-span-3"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md md:col-span-3"
 					style="background-image: url('/desk.webp')"
 				></div>
 
 				<div
 					role="img"
 					aria-label="Dettaglio della poltrona da barbiere con vista laterale"
-					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center"
+					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md"
 					style="background-image: url('/chair-wide.webp')"
 				></div>
 			</div>

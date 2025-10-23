@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import AppSidebar from './AppSidebar.svelte';
 	import Banner from './Banner.svelte';
 	import CookieBanner from './CookieBanner.svelte';
@@ -13,13 +13,44 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
 	import '../app.css';
+	import { watch } from '$lib/modules/watch.svelte';
+	import { Progress } from '$lib/components/ui/progress';
+	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 
 	const { data, children } = $props();
 
 	const isLogged = $derived(data.user !== null);
 	const isAdmin = $derived(data.user?.role === 'staff');
 
+	let openSidebar = $state(true);
 	let logoutForm: HTMLFormElement | undefined = $state();
+
+	let isNavigating = $state(false);
+	let navigationProgress = $state(0);
+	const isMobile = new IsMobile();
+	watch(
+		() => navigating.complete,
+		() => {
+			if (navigating.complete) {
+				isNavigating = true;
+				navigationProgress = 0;
+				// Use requestAnimationFrame to ensure the display change is rendered before the width transition starts
+				requestAnimationFrame(() => {
+					navigationProgress = 30;
+				});
+			} else if (!navigating.complete && isNavigating) {
+				if (isMobile.current) openSidebar = false;
+
+				requestAnimationFrame(() => {
+					navigationProgress = 100;
+				});
+				setTimeout(() => {
+					isNavigating = false;
+					navigationProgress = 0;
+				}, 300);
+			}
+		}
+	);
 </script>
 
 <svelte:head>
@@ -29,13 +60,15 @@
 <ModeWatcher />
 <Toaster richColors position="top-center" />
 
-<Sidebar.Provider>
+<Sidebar.Provider bind:open={() => openSidebar, (newOpen) => (openSidebar = newOpen)}>
 	<AppSidebar {isLogged} {isAdmin} />
-	<main
-		class="2xl:mx-120 relative flex min-h-screen w-full flex-col px-4 md:mx-0 lg:mx-20 lg:px-0 xl:mx-60"
-	>
+	{#if isNavigating}
+		<Progress class="fixed top-0 z-50 h-[4px] w-full rounded-none" value={navigationProgress} />
+	{/if}
+	<main class="2xl:mx-120 relative min-h-screen w-full px-4 md:mx-0 lg:mx-20 lg:px-0 xl:mx-60">
+		<!-- Menu -->
 		<div
-			class="sticky top-1 z-50 mb-8 flex items-center justify-between border-b bg-background p-3"
+			class="sticky top-0 z-40 mb-8 flex items-center justify-between border-b bg-background p-3"
 		>
 			<Sidebar.Trigger />
 			<div class="flex items-center">

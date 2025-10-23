@@ -13,7 +13,6 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import Schedule from './Schedule.svelte';
-	import { onMount } from 'svelte';
 
 	const { data }: PageProps = $props();
 
@@ -34,7 +33,7 @@
 		return async ({ result }) => {
 			if (result.type === 'success') {
 				toast.success('Periodo di chiusura confermato!');
-				invalidateAll();
+				await invalidateAll();
 			} else if (result.type === 'failure') {
 				toast.error('Impossibile aggiungere il periodo di chiusura.');
 			}
@@ -55,7 +54,7 @@
 		return async ({ result }) => {
 			if (result.type === 'success') {
 				toast.success('Periodo di chiusura eliminato!');
-				invalidateAll();
+				await invalidateAll();
 			} else if (result.type === 'failure') {
 				toast.error('Impossibile eliminare il periodo di chiusura.');
 			}
@@ -77,10 +76,6 @@
 	};
 
 	let idToDelete = $state('');
-
-	onMount(async () => {
-		console.log(await data.shutdown);
-	});
 </script>
 
 <svelte:head>

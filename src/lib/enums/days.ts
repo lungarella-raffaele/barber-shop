@@ -44,6 +44,6 @@ export function getWeekDay(day: Day) {
 		case Day.SUNDAY:
 			return 'Domenica';
 		default:
-			return 'Dio cane';
+			return 'None';
 	}
 }
