@@ -4,7 +4,7 @@
 </script>
 
 <div
-	class="flex flex-col lg:flex-row-reverse [&_*]:text-xs [&_*]:font-light [&_*]:text-muted-foreground"
+	class="mt-8 flex flex-col lg:flex-row-reverse [&_*]:text-xs [&_*]:font-light [&_*]:text-muted-foreground"
 >
 	<div class="flex justify-center">
 		{#if BARBER_SHOP_DETAILS.phone}

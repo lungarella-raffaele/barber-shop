@@ -28,6 +28,11 @@ export type Reservation = {
 		name: string;
 		price: number;
 	};
+	user: {
+		id: string;
+		name: string;
+		email: string;
+	} | null;
 };
 
 export type User =

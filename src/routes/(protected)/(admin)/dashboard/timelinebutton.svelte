@@ -115,7 +115,7 @@
 						/>
 					{/if}
 
-					{#if !!reservation.staff}
+					{#if reservation.staff.id === reservation.user?.id}
 						<Shield
 							class="rounded-lg bg-white bg-opacity-90 p-1 shadow-md"
 							color="green"

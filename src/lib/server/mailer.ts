@@ -7,11 +7,12 @@ import { err, ok } from '$lib/modules/result';
 const resend = new Resend(MAILER);
 
 export class EmailService {
+	#from = 'Emi Hair Club <users@mailer.emihairclub.com>';
 	private async send(payload: { body: string; to: string; subject: string }) {
 		try {
 			const emailResponse = await resend.emails.send({
 				// from: mailer,
-				from: 'Acme <onboarding@resend.dev>',
+				from: this.#from,
 				to: payload.to,
 				subject: payload.subject,
 				html: `${TEMPLATE(payload.body)}`
@@ -209,9 +210,10 @@ const TEMPLATE = (CONTENT: string) =>
 			<!-- FOOTER -->
 			<div class="salon-info">
 				<p>
-					<strong>Emi Hair Club</strong><br />
-					${BARBER_SHOP_DETAILS.street}<br />
-					${BARBER_SHOP_DETAILS.phone}
+					<strong>Emi Hair Club</strong>
+					<br />
+					${BARBER_SHOP_DETAILS.street ?? ''}<br />
+					${BARBER_SHOP_DETAILS.phone ?? ''}
 				</p>
 				<div class="footer">
 					<p>${new Date().getFullYear()} Emi Hair Club</p>

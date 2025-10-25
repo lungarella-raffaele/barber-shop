@@ -72,7 +72,7 @@
 
 			<Label class="mb-0 text-right text-xs text-muted-foreground">Data</Label>
 			<span class="col-span-3">
-				{formatDate(data.date)}
+				{formatDate(data.date)},
 				{formatTime(data.hour)}
 			</span>
 

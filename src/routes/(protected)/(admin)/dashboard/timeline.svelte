@@ -32,6 +32,8 @@
 	const minutesPerSlot = 15;
 
 	const TIME_SLOT = pixelPerMinute * minutesPerSlot;
+
+	console.log(reservations);
 </script>
 
 <div class="w-full rounded-md border p-4 shadow">
