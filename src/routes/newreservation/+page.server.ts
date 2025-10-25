@@ -60,8 +60,8 @@ export const actions: Actions = {
 				const sent = await new EmailService().newReservation({
 					name: data.name,
 					link: `${BASE_URL}?reservation=${result.value.id}`,
-					staffName: result.value.staffID,
-					serviceName: result.value.kindID,
+					staffName: result.value.staff.name,
+					serviceName: result.value.kind.name,
 					date: formatDate(result.value.date),
 					hour: formatTime(result.value.hour),
 					to: data.email

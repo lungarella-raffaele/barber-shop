@@ -1,8 +1,17 @@
-<script>
+<script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { BARBER_SHOP_DETAILS } from '$lib/constants';
 	import { formatDate, formatTime } from '$lib/utils';
-	const { reservation, success, error } = $props();
+	import type { Reservation } from '@types';
+	const {
+		reservation,
+		success,
+		error
+	}: {
+		reservation: Reservation | null | undefined;
+		success: boolean | null;
+		error: string | null;
+	} = $props();
 </script>
 
 <div
@@ -49,6 +58,16 @@
 					<tr>
 						<th scope="row">Ora</th>
 						<td>{formatTime(reservation.hour)}</td>
+					</tr>
+
+					<tr>
+						<th scope="row">Staff</th>
+						<td>{formatDate(reservation.staff.name)}</td>
+					</tr>
+
+					<tr>
+						<th scope="row">Servizio</th>
+						<td>{formatDate(reservation.kind.name)}</td>
 					</tr>
 				</tbody>
 			</table>

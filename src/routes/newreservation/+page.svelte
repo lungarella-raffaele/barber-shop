@@ -124,7 +124,7 @@
 <Tabs.Root bind:value={rm.currentTab}>
 	<Tabs.List class="flex">
 		{#if !data.user}
-			<Tabs.Trigger class="flex-1" value="info">Nominativo</Tabs.Trigger>
+			<Tabs.Trigger class="flex-1" value="info">Dati personali</Tabs.Trigger>
 		{/if}
 		<Tabs.Trigger class="flex-1" value="kind">Servizio</Tabs.Trigger>
 		<Tabs.Trigger class="flex-1" disabled={!rm.data.kind} value="date">Data</Tabs.Trigger>
@@ -134,43 +134,43 @@
 		<Tabs.Content value="info">
 			<Card.Root>
 				<Card.Header>
-					<Card.Title>Nominativo</Card.Title>
-					<Card.Description>Inserisci le tue informazioni personali</Card.Description>
+					<Card.Title>Dati personali</Card.Title>
+					<Card.Description>Inserisci i tuoi dati personali</Card.Description>
 				</Card.Header>
 				<Card.Content>
 					{#if rm.data.who === 'anonymous'}
-						<div class="mb-4">
-							<Label>Nome</Label>
+						<div class="mb-8">
+							<Label>Nome *</Label>
 							<Input
 								name="name"
 								bind:value={rm.data.name}
-								placeholder="Inserisci il tuo nome"
+								placeholder="Mario Rossi"
 								autocomplete="name"
+								required
 							/>
 						</div>
 
-						<Label>Email</Label>
+						<Label>Email *</Label>
 						<Input
 							name="email"
 							bind:value={rm.data.email}
-							placeholder="Inserisci la tua email"
+							placeholder="mariorossi@esempio.com"
 							autocomplete="email"
+							required
 						/>
-						<p class="mb-4 ml-2 mt-2 text-sm text-muted-foreground">
-							Ti verrà inviata una mail per confermare la prenotazione all'indirizzo
-							email indicato indicato.
+						<p class="mb-8 ml-2 mt-2 text-sm text-muted-foreground">
+							Riceverai una mail di conferma all'indirizzo email indicato.
 						</p>
 
 						<Label>Numero di telefono</Label>
 						<Input
 							name="phone"
 							bind:value={rm.data.phone}
-							placeholder="Inserisci il tuo numero di cellulare"
+							placeholder="+39 333 444 55 66"
 							autocomplete="mobile tel"
 						/>
-						<p class="mb-4 ml-2 mt-2 text-sm text-muted-foreground">
-							Il numero di cellulare è opzionale e verrà utilizzato solo nel momento
-							in cui ci saranno comunicazioni urgenti.
+						<p class="mb-8 ml-2 mt-2 text-sm text-muted-foreground">
+							Numero di cellulare opzionale, usato solo per comunicazioni urgenti.
 						</p>
 					{/if}
 				</Card.Content>

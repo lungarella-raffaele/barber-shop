@@ -74,7 +74,8 @@ export const load: PageServerLoad = async (event) => {
 					pageCase,
 					success: false,
 					pendingUser: null,
-					error: 'server_error'
+					error: 'server_error',
+					reservation: null
 				};
 			}
 
@@ -84,7 +85,8 @@ export const load: PageServerLoad = async (event) => {
 					pageCase,
 					success: false,
 					pendingUser: user,
-					error: 'not_pending'
+					error: 'not_pending',
+					reservation: null
 				};
 			}
 
@@ -94,7 +96,8 @@ export const load: PageServerLoad = async (event) => {
 					pageCase,
 					success: false,
 					pendingUser: null,
-					error: 'server_error'
+					error: 'server_error',
+					reservation: null
 				};
 			}
 
@@ -148,7 +151,8 @@ export const load: PageServerLoad = async (event) => {
 					pageCase,
 					success: false,
 					recoverID: null,
-					error: 'server_error'
+					error: 'server_error',
+					reservation: null
 				};
 			}
 			const passwordRecover = await userService.getPasswordRecover(id);
@@ -157,7 +161,8 @@ export const load: PageServerLoad = async (event) => {
 					pageCase,
 					success: false,
 					recoverID: null,
-					error: 'server_error'
+					error: 'server_error',
+					reservation: null
 				};
 			}
 
@@ -166,7 +171,8 @@ export const load: PageServerLoad = async (event) => {
 					pageCase,
 					success: false,
 					recoverID: null,
-					error: 'expired'
+					error: 'expired',
+					reservation: null
 				};
 			}
 

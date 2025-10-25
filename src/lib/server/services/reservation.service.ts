@@ -1,11 +1,10 @@
 import { db } from '$lib/server/db';
-import type { DBReservation, DBUser } from '$lib/server/db/schema';
 import * as table from '$lib/server/db/schema';
 import { and, count, eq, gt, lt, sql } from 'drizzle-orm';
 import { logger } from '../logger';
 import { err, ok, type Result } from '$lib/modules/result';
 import { LOCK_DURATION } from '$lib/constants';
-import type { AnonymousData, Reservation, StaffData, UsualData } from '@types';
+import type { AnonymousData, DBUser, Reservation, StaffData, UsualData } from '@types';
 import { anonymousUserSchema, staffUserSchema, usualUserSchema } from '@schema';
 import { alias } from 'drizzle-orm/sqlite-core/alias';
 
@@ -33,6 +32,11 @@ export class ReservationService {
 					duration: table.kind.duration,
 					name: table.kind.name,
 					price: table.kind.price
+				},
+				user: {
+					name: customerUser.name,
+					email: customerUser.email,
+					id: customerUser.id
 				}
 			})
 			.from(table.reservation)
@@ -42,7 +46,7 @@ export class ReservationService {
 			.leftJoin(customerUser, eq(table.reservation.email, customerUser.email));
 	}
 
-	async insertByUser(data: UsualData, user: DBUser): Promise<Result<DBReservation, InsertError>> {
+	async insertByUser(data: UsualData, user: DBUser): Promise<Result<Reservation, InsertError>> {
 		try {
 			const schema = usualUserSchema.safeParse({ ...data, date: data.date?.toString() });
 
@@ -86,14 +90,20 @@ export class ReservationService {
 				return err('server-err');
 			}
 
-			return ok(queryRes);
+			const fullReservation = await this.getByID(queryRes.id);
+			if (!fullReservation) {
+				logger.error('Could not fetch inserted reservation');
+				return err('server-err');
+			}
+
+			return ok(fullReservation);
 		} catch (e) {
 			logger.error({ e }, 'Error while adding usual user');
 			return err('server-err');
 		}
 	}
 
-	async insertByAnonymous(data: AnonymousData): Promise<Result<DBReservation, InsertError>> {
+	async insertByAnonymous(data: AnonymousData): Promise<Result<Reservation, InsertError>> {
 		try {
 			const schema = anonymousUserSchema.safeParse({
 				name: data.name,
@@ -134,7 +144,13 @@ export class ReservationService {
 				return err('server-err');
 			}
 
-			return ok(res);
+			const fullReservation = await this.getByID(res.id);
+			if (!fullReservation) {
+				logger.error('Could not fetch inserted reservation');
+				return err('server-err');
+			}
+
+			return ok(fullReservation);
 		} catch (e) {
 			logger.error(e);
 			return err('server-err');
@@ -145,7 +161,7 @@ export class ReservationService {
 		data: StaffData,
 		user: DBUser,
 		alternativeName: string
-	): Promise<Result<DBReservation, InsertError>> {
+	): Promise<Result<Reservation, InsertError>> {
 		try {
 			const schema = staffUserSchema.safeParse({
 				...data,
@@ -188,7 +204,13 @@ export class ReservationService {
 				return err('server-err');
 			}
 
-			return ok(res);
+			const fullReservation = await this.getByID(res.id);
+			if (!fullReservation) {
+				logger.error('Could not fetch inserted reservation');
+				return err('server-err');
+			}
+
+			return ok(fullReservation);
 		} catch (e) {
 			logger.error({ e }, 'Error while adding usual user');
 			return err('server-err');
@@ -198,29 +220,6 @@ export class ReservationService {
 	async getAll(): Promise<Reservation[] | null> {
 		try {
 			return await this.getReservations().where(gt(table.reservation.expiresAt, new Date()));
-			// return await db
-			// 	.select({
-			// 		id: table.reservation.id,
-			// 		date: table.reservation.date,
-			// 		hour: table.reservation.hour,
-			// 		name: table.reservation.name,
-			// 		email: table.reservation.email,
-			// 		staff: {
-			// 			id: staffUser.id,
-			// 			name: staffUser.name
-			// 		},
-			// 		kind: {
-			// 			duration: table.kind.duration,
-			// 			name: table.kind.name,
-			// 			price: table.kind.price
-			// 		}
-			// 	})
-			// 	.from(table.reservation)
-			// 	.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-			// 	.innerJoin(table.staff, eq(table.reservation.staffID, table.staff.userID))
-			// 	.innerJoin(staffUser, eq(table.staff.userID, staffUser.id))
-			// 	.leftJoin(customerUser, eq(table.reservation.email, customerUser.email))
-			// 	.where(gt(table.reservation.expiresAt, new Date()));
 		} catch (e) {
 			logger.error(e);
 			return null;
@@ -232,40 +231,13 @@ export class ReservationService {
 			return await this.getReservations().where(
 				and(eq(table.reservation.date, date), eq(table.reservation.pending, false))
 			);
-
-			// const result = await db
-			// 	.select({
-			// 		id: table.reservation.id,
-			// 		date: table.reservation.date,
-			// 		hour: table.reservation.hour,
-			// 		name: table.reservation.name,
-			// 		pending: table.reservation.pending,
-			// 		email: table.reservation.email,
-			// 		staff: table.staff.userID,
-			// 		kind: {
-			// 			name: table.kind.name,
-			// 			duration: table.kind.duration,
-			// 			price: table.kind.price
-			// 		}
-			// 	})
-			// 	.from(table.reservation)
-			// 	.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-			// 	.innerJoin(table.staff, eq(table.staff.userID, table.user.id))
-			// 	.leftJoin(table.user, eq(table.reservation.email, table.user.email))
-			// 	.where(and(eq(table.reservation.date, date), eq(table.reservation.pending, false)));
-
-			// return result.map((entry) => ({
-			// 	...entry,
-			// 	fromAdmin: !!entry.staff,
-			// 	staffID: entry.staff
-			// }));
 		} catch (err) {
 			console.error(err);
 			return null;
 		}
 	}
 
-	async getByUser(email: string) {
+	async getByUser(email: string): Promise<Reservation[] | null> {
 		try {
 			return await this.getReservations().where(eq(table.reservation.email, email));
 		} catch (e) {
@@ -307,9 +279,9 @@ export class ReservationService {
 	/**
 	 * Updates the reservation to expire after the day of the reservation
 	 */
-	async updateExpiration(id: string) {
+	async updateExpiration(id: string): Promise<Reservation | null> {
 		try {
-			return await db
+			const updated = await db
 				.update(table.reservation)
 				.set({
 					pending: false,
@@ -318,6 +290,13 @@ export class ReservationService {
 				.where(eq(table.reservation.id, id))
 				.returning()
 				.get();
+
+			const fullReservation = await this.getByID(updated.id);
+			if (!fullReservation) {
+				logger.error('Could not fetch inserted reservation');
+				return null;
+			}
+			return fullReservation;
 		} catch (e) {
 			logger.error(e);
 			return null;
