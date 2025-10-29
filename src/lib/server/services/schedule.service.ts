@@ -14,10 +14,10 @@ export class ScheduleService {
 		}
 	}
 
-	async update(schedules: Schedule[]): Promise<boolean> {
+	async update(schedules: Schedule[], staffID: string): Promise<boolean> {
 		try {
 			// Delete all existing schedules
-			await db.delete(table.schedule);
+			await db.delete(table.schedule).where(eq(table.schedule.staffID, staffID));
 			// Insert new schedules
 			const result = await db.insert(table.schedule).values(schedules).returning();
 			return !!result.length;

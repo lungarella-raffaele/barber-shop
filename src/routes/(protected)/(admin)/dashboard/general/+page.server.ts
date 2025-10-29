@@ -1,11 +1,10 @@
-import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
 import { logger } from '$lib/server/logger';
 import { getBoolean, getNumber, getString } from '$lib/utils';
-import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 import { KindService } from '@service/kind.service';
 import { error } from '@sveltejs/kit';
+import { BannerService } from '@service/banner.service';
+import { StaffService } from '@service/staff.service';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -17,7 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		return error(500);
 	}
 	return {
-		banner: await db.select().from(table.banner).where(eq(table.banner.id, 1)).get(),
+		banner: await new BannerService().get(),
 		kinds
 	};
 };
@@ -29,7 +28,7 @@ export const actions: Actions = {
 		const message = getString(data, 'message');
 		const visible = getBoolean(data, 'visible');
 
-		await db.update(table.banner).set({ message, visible }).where(eq(table.banner.id, 1));
+		await new BannerService().update(message, visible);
 	},
 	updateKind: async ({ request, locals }) => {
 		const data = await request.formData();
@@ -41,7 +40,7 @@ export const actions: Actions = {
 		const price = getNumber(data, 'price');
 		const active = getBoolean(data, 'active');
 
-		if (!id || !name || !description || !duration || !price) {
+		if (!id || !name || !duration || !price) {
 			return {
 				isUpdatingKind: true,
 				success: false
@@ -95,7 +94,7 @@ export const actions: Actions = {
 
 		const staffID = locals.user.data.id;
 
-		if (!name || !description || !duration || !price) {
+		if (!name || !duration || !price) {
 			logger.error('Data is not enough to add a kind');
 			return {
 				isAddingKind: true,
@@ -155,5 +154,12 @@ export const actions: Actions = {
 				success: false
 			};
 		}
+	},
+	toggleStaff: async ({ request }) => {
+		const data = await request.formData();
+		const active = getBoolean(data, 'active');
+		const id = getString(data, 'id');
+
+		return await new StaffService().toggleActive(active, id);
 	}
 };

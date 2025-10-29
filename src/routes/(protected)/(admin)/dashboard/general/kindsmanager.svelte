@@ -45,18 +45,24 @@
 		<div class="flex flex-col p-4">
 			<h2 class="mb-4 p-2 text-lg font-bold">Aggiungi servizio</h2>
 			<form action="?/addKind" id="adding-kind-form" method="post">
-				<Label for="new-kind-name">Nome</Label>
-				<Input id="new-kind-name" type="text" placeholder="Nome" name="name" class="mb-4" />
+				<Label for="new-kind-name">Nome*</Label>
+				<Input
+					id="new-kind-name"
+					type="text"
+					placeholder="Taglio di capelli"
+					name="name"
+					class="mb-4"
+				/>
 
 				<Label for="new-kind-description">Descrizione</Label>
 				<Textarea
 					id="new-kind-description"
-					placeholder="Descrizione del servizio"
+					placeholder="..."
 					name="description"
 					class="mb-4"
 				/>
 
-				<Label for="new-kind-duration">Durata</Label>
+				<Label for="new-kind-duration">Durata*</Label>
 				<Input
 					id="new-kind-duration"
 					placeholder="Durata del servizio"
@@ -65,7 +71,7 @@
 					type="number"
 				/>
 
-				<Label for="new-kind-price">Prezzo</Label>
+				<Label for="new-kind-price">Prezzo*</Label>
 				<Input
 					id="new-kind-price"
 					placeholder="Prezzo del servizio"

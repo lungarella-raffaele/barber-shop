@@ -77,5 +77,4 @@
 		<Footer />
 	</main>
 </Sidebar.Provider>
-
 <CookieBanner />

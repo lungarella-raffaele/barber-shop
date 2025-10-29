@@ -51,10 +51,10 @@
 		</Card.Header>
 		<Card.Content>
 			<!--email -->
-			<Form.Field form={sForm} name="email">
+			<Form.Field form={sForm} name="email" class="mb-8">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Email</Form.Label>
+						<Form.Label>Email*</Form.Label>
 						<Input
 							autocomplete="email"
 							{...props}
@@ -67,15 +67,15 @@
 			</Form.Field>
 
 			<!--password -->
-			<Form.Field form={sForm} name="password">
+			<Form.Field form={sForm} name="password" class="mb-8">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Password</Form.Label>
+						<Form.Label>Password*</Form.Label>
 
 						<PasswordInput
 							{...props}
 							bind:value={$formData.password}
-							placeholder="Inserisci la tua password"
+							placeholder="********"
 						/>
 					{/snippet}
 				</Form.Control>
@@ -85,12 +85,12 @@
 			<Form.Field form={sForm} name="confirmPassword">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Conferma password</Form.Label>
+						<Form.Label>Conferma password*</Form.Label>
 
 						<PasswordInput
 							{...props}
 							bind:value={$formData.confirmPassword}
-							placeholder="Conferma la tua password"
+							placeholder="********"
 						/>
 					{/snippet}
 				</Form.Control>
@@ -100,14 +100,14 @@
 			<Separator class="my-5" />
 
 			<!--name -->
-			<Form.Field form={sForm} name="name">
+			<Form.Field form={sForm} name="name" class="mb-8">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Nome</Form.Label>
+						<Form.Label>Nome*</Form.Label>
 						<Input
 							{...props}
 							bind:value={$formData.name}
-							placeholder="Nome"
+							placeholder="Mario Rossi"
 							autocomplete="name"
 						/>
 					{/snippet}
@@ -123,7 +123,7 @@
 						<Input
 							{...props}
 							bind:value={$formData.phoneNumber}
-							placeholder="Inserisci il tuo numero"
+							placeholder="+39 333 444 55 66"
 						/>
 					{/snippet}
 				</Form.Control>

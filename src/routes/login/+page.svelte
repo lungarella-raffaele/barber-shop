@@ -61,7 +61,7 @@
 							autocomplete="email"
 							{...props}
 							bind:value={$formData.email}
-							placeholder="Inserisci la tua email"
+							placeholder="mariorossi@example.com"
 						/>
 					{/snippet}
 				</Form.Control>
@@ -70,11 +70,11 @@
 			<Form.Field form={sForm} name="password">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Passwords</Form.Label>
+						<Form.Label>Password</Form.Label>
 						<Passwordinput
 							{...props}
 							bind:value={$formData.password}
-							placeholder="Inserisci la tua password"
+							placeholder="********"
 						></Passwordinput>
 					{/snippet}
 				</Form.Control>
@@ -143,7 +143,7 @@
 						id="email"
 						name="email"
 						class="col-span-3"
-						placeholder="Email del tuo account"
+						placeholder="mariorossi@example.com"
 					/>
 				</div>
 			</div>

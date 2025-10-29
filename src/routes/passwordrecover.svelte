@@ -67,17 +67,13 @@
 					<Label for="new-pass">Nuova password</Label>
 					<Passwordinput
 						class="mb-4"
-						placeholder="Inserisci la nuova password"
+						placeholder="********"
 						name="new-pass"
 						id="new-pass"
 					/>
 
 					<Label for="confirm-pass">Conferma password</Label>
-					<Passwordinput
-						name="confirm-pass"
-						id="confirm-pass"
-						placeholder="Conferma password"
-					/>
+					<Passwordinput name="confirm-pass" id="confirm-pass" placeholder="********" />
 
 					<input type="hidden" value={id} name="recover-id" />
 					<div class="text-end">

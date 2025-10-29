@@ -3,18 +3,22 @@ import type { Actions, PageServerLoad } from './$types.js';
 import { ReservationService } from '@service/reservation.service.js';
 import { KindService } from '@service/kind.service.js';
 import { ShutdownService } from '@service/shutdown.service.js';
-import { UserService } from '@service/user.service.js';
+import { StaffService } from '@service/staff.service.js';
 import type { Data } from '@types';
 import { logger } from '$lib/server/logger.js';
 import { EmailService } from '$lib/server/mailer.js';
 import { formatDate, formatTime } from '$lib/utils.js';
 import { BASE_URL } from '$env/static/private';
 import { ScheduleService } from '@service/schedule.service.js';
+import { rateLimit } from '$lib/server/rate-limit.js';
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	default: async (event) => {
+		const { request, locals } = event;
 		const user = locals.user;
 		const formData = await request.formData();
+
+		rateLimit({ event, message: 'Troppe prenotazioni. Riprova tra qualche minuto.' });
 
 		let data: Data | undefined;
 		try {
@@ -107,7 +111,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		currentReservations,
 		shutdown,
 		kinds: kind.getAll(),
-		staff: new UserService().getAllStaff(),
+		staff: new StaffService().getAll(),
 		schedule: await new ScheduleService().getAll(),
 		user: locals.user,
 		title: 'Nuova prenotazione -'

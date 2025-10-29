@@ -7,8 +7,13 @@ import { fail, redirect } from '@sveltejs/kit';
 import { hash, verify } from 'argon2';
 import type { Actions, PageServerLoad } from './$types';
 import { UserService } from '@service/user.service.js';
+import { EmailVerificationService } from '@service/email-verification.service.js';
+import { SessionService } from '@service/session.service.js';
+import { PasswordRecoverService } from '@service/password-recover.service.js';
+import { ReservationService } from '@service/reservation.service.js';
 import { err, ok, type Result } from '$lib/modules/result';
 import { EmailService } from '$lib/server/mailer';
+import * as auth from '$lib/server/auth';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const confirmID = url.searchParams.get('confirm-email-change'); // Coming from an email
@@ -16,10 +21,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	let updatedEmail: Result<undefined, undefined> | null = null;
 	if (confirmID) {
-		const verified = await userService.getEmailVerification(confirmID);
+		const verified = await new EmailVerificationService().getByID(confirmID);
 
 		if (verified) {
-			if (await userService.patchEmail(verified.userID, verified.email)) {
+			if (await userService.updateEmail(verified.userID, verified.email)) {
 				updatedEmail = ok(undefined);
 			}
 		}
@@ -45,7 +50,8 @@ export const actions: Actions = {
 			return fail(401);
 		}
 
-		await new UserService().logout(event.locals.session.id, event);
+		await auth.invalidateSession(event.locals.session.id);
+		auth.deleteSessionTokenCookie(event);
 
 		return redirect(302, '/');
 	},
@@ -89,7 +95,7 @@ export const actions: Actions = {
 		}
 
 		const userService = new UserService();
-		const existingUser = await userService.get(email);
+		const existingUser = await userService.getByEmail(email);
 
 		if (existingUser && existingUser.data.verifiedEmail) {
 			return fail(400, {
@@ -98,7 +104,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const emailVerification = await userService.insertEmailVerification(
+		const emailVerification = await new EmailVerificationService().insert(
 			email,
 			locals.user.data.id
 		);
@@ -117,7 +123,7 @@ export const actions: Actions = {
 		});
 
 		if (sent.isErr()) {
-			await userService.deleteEmailVerification(emailVerification.id);
+			await new EmailVerificationService().delete(emailVerification.id);
 
 			return fail(500, {
 				message: 'Impossibile cambiare email. Riprova più tardi',
@@ -139,13 +145,22 @@ export const actions: Actions = {
 		}
 
 		const userService = new UserService();
+		const sessionService = new SessionService();
+		const passwordRecoverService = new PasswordRecoverService();
+		const reservationService = new ReservationService();
 
 		logger.warn('Deleting account of user: ' + user.data.email);
-		const res = await userService.deleteAccount(user.data);
+
+		// Delete all related data
+		await sessionService.deleteAllByUserID(user.data.id);
+		await reservationService.deleteAll(user.data.email);
+		await passwordRecoverService.deleteByUserID(user.data.id);
+
+		const res = await userService.delete(user.data.id);
 
 		if (res) {
 			logger.info('Successfully deleted account of user: ' + res.email);
-			await userService.logout(session.id, event);
+			auth.deleteSessionTokenCookie(event);
 
 			return redirect(302, '/');
 		} else {
@@ -192,7 +207,7 @@ export const actions: Actions = {
 			parallelism: 1
 		});
 
-		const response = await userService.patchPassword(passwordHash, user.data.id);
+		const response = await userService.updatePassword(passwordHash, user.data.id);
 		if (!response) {
 			return fail(404, {
 				message: 'Impossibile aggiornare la password. Riprova più tardi.'

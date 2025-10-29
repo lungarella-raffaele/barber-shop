@@ -47,12 +47,12 @@ export const kind = sqliteTable('kind', {
 	name: text('name').notNull().unique(),
 	duration: integer('duration').notNull(),
 	price: integer('price').notNull(),
-	description: text('description').notNull(),
+	description: text('description'),
 	active: integer({ mode: 'boolean' }).notNull()
 });
 
 export const banner = sqliteTable('banner', {
-	id: integer().primaryKey(),
+	id: integer().primaryKey().default(1),
 	message: text('message'),
 	visible: integer({ mode: 'boolean' })
 });
@@ -101,7 +101,8 @@ export const staff = sqliteTable('staff', {
 		.primaryKey()
 		.notNull()
 		.references(() => user.id),
-	avatar: text('avatar')
+	avatar: text('avatar'),
+	isActive: integer({ mode: 'boolean' }).default(false)
 });
 
 export type DBSession = typeof session.$inferSelect;

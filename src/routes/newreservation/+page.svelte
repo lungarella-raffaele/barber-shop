@@ -19,7 +19,7 @@
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
 	import StaffPicker from './components/staffpicker.svelte';
-	import type { DBReservation, DBKind } from '@types';
+	import type { DBReservation, DBKind, Staff } from '@types';
 	import { onMount } from 'svelte';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 
@@ -98,6 +98,10 @@
 			isDialogOpen = true;
 		}
 	};
+
+	const getStaff = (staff: Staff[], kinds: DBKind[]) => {
+		return staff.filter((s) => kinds.some((k) => k.staffID, s.id));
+	};
 </script>
 
 <svelte:head>
@@ -140,7 +144,7 @@
 				<Card.Content>
 					{#if rm.data.who === 'anonymous'}
 						<div class="mb-8">
-							<Label>Nome *</Label>
+							<Label>Nome*</Label>
 							<Input
 								name="name"
 								bind:value={rm.data.name}
@@ -150,7 +154,7 @@
 							/>
 						</div>
 
-						<Label>Email *</Label>
+						<Label>Email*</Label>
 						<Input
 							name="email"
 							bind:value={rm.data.email}
@@ -196,7 +200,7 @@
 							type="text"
 							name="alternativeName"
 							bind:value={rm.data.name}
-							placeholder="Inserisci il nome di chi sta prenotando"
+							placeholder="Mario Rossi"
 						/>
 					</div>
 				{/if}

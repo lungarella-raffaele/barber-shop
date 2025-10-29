@@ -59,7 +59,7 @@
 				toast.error('Impossibile eliminare il periodo di chiusura.');
 			}
 			calendarOpen = false;
-			deleting = true;
+			deleting = false;
 			isDialogOpen = false;
 		};
 	};

@@ -9,6 +9,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	const reservations = new ReservationService().getTodayReservations(
 		date ?? today(getLocalTimeZone()).toString()
 	);
+
 	return {
 		reservations,
 		date,

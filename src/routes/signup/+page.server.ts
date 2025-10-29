@@ -6,6 +6,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { UserService } from '@service/user.service.js';
 import { BASE_URL } from '$env/static/private';
 import { EmailService } from '$lib/server/mailer';
+import { rateLimit } from '$lib/server/rate-limit';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -29,8 +30,20 @@ export const actions: Actions = {
 		}
 
 		const { email, password, name, phoneNumber } = form.data;
+
+		// Rate limit by email to prevent signup spam
+		const limit = rateLimit({
+			event,
+			email,
+			message: 'Troppi tentativi di registrazione. Riprova più tardi.',
+			additionalData: { form }
+		});
+		if (limit) {
+			return limit;
+		}
+
 		const userService = new UserService();
-		const user = await userService.insertUser({ email, password, name, phoneNumber });
+		const user = await userService.insert({ email, password, name, phoneNumber });
 
 		if (!user.isOk()) {
 			if (user.error === 'already-existing') {
