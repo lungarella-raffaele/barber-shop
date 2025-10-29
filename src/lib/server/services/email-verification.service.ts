@@ -15,7 +15,7 @@ export class EmailVerificationService {
 					id: crypto.randomUUID(),
 					userID,
 					expiresAt,
-					email: newEmail
+					email: newEmail.toLowerCase().trim()
 				})
 				.returning()
 				.get();

@@ -75,7 +75,7 @@ export const actions: Actions = {
 	recoverPassword: async (event) => {
 		const data = await event.request.formData();
 
-		const email = getString(data, 'email');
+		const email = getString(data, 'email').toLowerCase().trim();
 
 		if (!email) {
 			return fail(404, { success: false, message: 'Nessuna mail inserita.' });
@@ -116,7 +116,7 @@ export const actions: Actions = {
 
 		const sent = await new EmailService().recoverPassword({
 			name: user.data.name,
-			to: email,
+			to: email.toLocaleUpperCase().trim(),
 			link: `${BASE_URL}?recover=${recover.id}`
 		});
 
