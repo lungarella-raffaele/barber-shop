@@ -5,6 +5,7 @@ import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { DAY_IN_MS } from '$lib/constants';
+import { SessionService } from '@service/session.service';
 import { UserService } from '@service/user.service';
 import type { UserSession } from '@types';
 
@@ -23,7 +24,7 @@ export async function createSession(token: string, userID: string) {
 		userID,
 		expiresAt: new Date(Date.now() + DAY_IN_MS * 30)
 	};
-	await new UserService().insertSession(session);
+	await new SessionService().insert(session);
 	return session;
 }
 
@@ -31,11 +32,23 @@ export async function validateSessionToken(
 	token: string
 ): Promise<UserSession | { session: null; user: null }> {
 	const sessionID = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	const result = await new UserService().getUserSession(sessionID);
+	const sessionData = await new SessionService().getByID(sessionID);
 
-	if (!result) {
+	if (!sessionData) {
 		return { session: null, user: null };
 	}
+
+	const userService = new UserService();
+	const userData = await userService.getByID(sessionData.userID);
+
+	if (!userData) {
+		return { session: null, user: null };
+	}
+
+	const result: UserSession = {
+		session: sessionData,
+		user: userData
+	};
 
 	const { session } = result;
 

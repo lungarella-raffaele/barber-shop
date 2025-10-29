@@ -5,7 +5,8 @@ import type {
 	DBReservation,
 	DBKind,
 	DBSession,
-	DBUser
+	DBUser,
+	DBStaff
 } from '../server/db/schema';
 import type { Day } from '$lib/enums/days';
 
@@ -42,7 +43,7 @@ export type User =
 	  }
 	| {
 			role: 'staff';
-			data: DBUser & { avatar: string | null };
+			data: DBUser & DBStaff;
 	  };
 
 export type Staff = {

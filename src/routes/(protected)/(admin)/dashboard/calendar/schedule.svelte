@@ -15,17 +15,18 @@
 	import type { DBSchedule, Schedule } from '$lib/server/db/schema';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
-	import { LoaderCircle, Pencil, Save } from '$lib/components/icons/index';
+	import { LoaderCircle, Pencil, Save, X } from '$lib/components/icons/index';
 	import { Trash } from '$lib/components/icons/index';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
+	import Badge from '$lib/components/ui/badge/badge.svelte';
 
 	const { schedule, staffID }: { schedule: Promise<DBSchedule[] | null>; staffID: string } =
 		$props();
 
-	const isMobile = new IsMobile();
+	const isMobile = new IsMobile(900);
 
 	function mapToDB(scheduleMap: Map<Day, ScheduleRange[]>): Omit<Schedule, 'staffID'>[] {
 		const arr = Array.from(scheduleMap.entries()).map(([day, ranges]) => ({
@@ -220,6 +221,12 @@
 											</span>
 										</div>
 									</div>
+
+									{#if !s.id}
+										<Badge variant="outline" class="border-yellow-400">
+											Da salvare
+										</Badge>
+									{/if}
 									<div class="flex gap-2">
 										<div class="flex flex-row gap-2 align-middle">
 											<Button
@@ -233,18 +240,32 @@
 													editingIndex = idx;
 												}}><Pencil /></Button
 											>
+
 											<Button
 												size="icon"
-												variant="destructive"
+												variant={s.id ? 'destructive' : 'ghost'}
 												type="submit"
 												onclick={() => {
 													if (s.id) {
 														deleteDialog = true;
 														idRangeToDelete = s.id;
+													} else {
+														const ranges =
+															scheduleMap
+																.get(Number(t) as Day)
+																?.filter((_, i) => idx !== i) ?? [];
+
+														scheduleMap.set(Number(t), ranges);
+														console.log(scheduleMap);
+														scheduleMap = new Map(scheduleMap);
 													}
 												}}
 											>
-												<Trash />
+												{#if s.id}
+													<Trash />
+												{:else}
+													<X />
+												{/if}
 											</Button>
 										</div>
 									</div>

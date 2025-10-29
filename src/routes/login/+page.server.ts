@@ -9,7 +9,9 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { UserService } from '@service/user.service.js';
+import { PasswordRecoverService } from '@service/password-recover.service.js';
 import { EmailService } from '$lib/server/mailer';
+import { rateLimit } from '$lib/server/rate-limit';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -33,7 +35,15 @@ export const actions: Actions = {
 			});
 		}
 
-		const existingUser = await new UserService().get(form.data.email);
+		const limit = rateLimit({
+			event,
+			email: form.data.email,
+			message: 'Troppi tentativi di login. Riprova tra 15 minuti.',
+			additionalData: { form, success: false }
+		});
+		if (limit) return limit;
+
+		const existingUser = await new UserService().getByEmail(form.data.email);
 
 		if (!existingUser || !existingUser.data.verifiedEmail) {
 			return fail(400, {
@@ -62,8 +72,8 @@ export const actions: Actions = {
 		}
 		return redirect(302, '/');
 	},
-	recoverPassword: async ({ request }) => {
-		const data = await request.formData();
+	recoverPassword: async (event) => {
+		const data = await event.request.formData();
 
 		const email = getString(data, 'email');
 
@@ -76,8 +86,18 @@ export const actions: Actions = {
 			return fail(404, { success: false, message: 'Inserisci una mail valida' });
 		}
 
+		// Rate limit by email to prevent abuse
+		const limit = rateLimit({
+			event,
+			email,
+			message: "Troppi tentativi di recupero password. Riprova tra un'ora."
+		});
+		if (limit) {
+			return limit;
+		}
+
 		const userService = new UserService();
-		const user = await userService.get(email);
+		const user = await userService.getByEmail(email);
 		if (!user) {
 			return {
 				success: true,
@@ -85,7 +105,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const recover = await userService.insertPassRecover(user.data.id);
+		const recover = await new PasswordRecoverService().insert(user.data.id);
 
 		if (!recover) {
 			return fail(500, {

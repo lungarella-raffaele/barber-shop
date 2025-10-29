@@ -7,6 +7,7 @@ import type { PageServerLoad } from './$types';
 import { PageCase, getPageCase } from './page-cases';
 import { ReservationService } from '@service/reservation.service';
 import { UserService } from '@service/user.service';
+import { PasswordRecoverService } from '@service/password-recover.service';
 
 export const load: PageServerLoad = async (event) => {
 	const url = event.url;
@@ -90,7 +91,7 @@ export const load: PageServerLoad = async (event) => {
 				};
 			}
 
-			const response = await userService.patchPending(user.data.id);
+			const response = await userService.verifyEmail(user.data.id);
 			if (!response) {
 				return {
 					pageCase,
@@ -155,7 +156,7 @@ export const load: PageServerLoad = async (event) => {
 					reservation: null
 				};
 			}
-			const passwordRecover = await userService.getPasswordRecover(id);
+			const passwordRecover = await new PasswordRecoverService().getByID(id);
 			if (!passwordRecover) {
 				return {
 					pageCase,
@@ -199,7 +200,7 @@ export const actions: Actions = {
 	changePassword: async (event) => {
 		const data = await event.request.formData();
 		const password = getString(data, 'new-pass');
-		const recoverID = getString(data, 'recover-id');
+		const id = getString(data, 'recover-id');
 
 		const userService = new UserService();
 
@@ -207,7 +208,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Inserisci le informazioni necessarie' });
 		}
 
-		const passwordRecover = await userService.getPasswordRecover(recoverID);
+		const passwordRecover = await new PasswordRecoverService().getByID(id);
 
 		if (!passwordRecover) {
 			logger.error(
@@ -227,13 +228,13 @@ export const actions: Actions = {
 			return fail(500, { message: 'La richiesta è scaduta', error: 'expired' });
 		}
 
-		userService.expirePasswordRecover(passwordRecover.id);
+		await new PasswordRecoverService().expire(passwordRecover.id);
 		const passwordHash = await hash(password, {
 			memoryCost: 19456,
 			timeCost: 2,
 			parallelism: 1
 		});
-		const response = await userService.patchPassword(passwordHash, passwordRecover.userID);
+		const response = await userService.updatePassword(passwordHash, passwordRecover.userID);
 
 		if (!response) {
 			logger.error(
@@ -248,6 +249,11 @@ export const actions: Actions = {
 
 		if (!user) {
 			logger.error(`${event.url}: Could not find user`);
+			return;
+		}
+
+		if (!user.data.verifiedEmail) {
+			logger.error(`${event.url}: User email not verified`);
 			return;
 		}
 

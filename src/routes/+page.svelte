@@ -24,7 +24,7 @@
 
 {#if pageCase === PageCase.PENDING_RESERVATION && data.reservation?.pending}
 	<Pendingreservation reservation={data.reservation} error={data.error} success={data.success} />
-{:else if pageCase === PageCase.CONFIRM_RESERVATION || (pageCase === PageCase.PENDING_RESERVATION && !data.reservation.pending)}
+{:else if pageCase === PageCase.CONFIRM_RESERVATION || (pageCase === PageCase.PENDING_RESERVATION && !data.reservation?.pending)}
 	<ReservationConfirmed
 		reservation={data.reservation}
 		success={data.success}

@@ -40,7 +40,7 @@
 		{/if}
 	</Button>
 	<Input
-		placeholder="Password"
+		placeholder="********"
 		bind:ref
 		class={className}
 		bind:value

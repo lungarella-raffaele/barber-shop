@@ -8,6 +8,7 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import { toast } from 'svelte-sonner';
 	import type { PageProps } from './$types';
+	import { enhance } from '$app/forms';
 
 	const { data, form }: PageProps = $props();
 
@@ -18,15 +19,11 @@
 		message === data.banner?.message && visible === data.banner.visible
 	);
 
+	const isStaffActive = $derived(data.user.data.isActive ?? false);
+
 	$effect(() => {
-		if (form && !form.success) {
-			if (form.isUpdatingKind) {
-				toast.error('Nome obbligatorio', {
-					description: `L'informazione del nome è obbligatorio per il profilo`
-				});
-			} else if (form.isAddingKind) {
-				toast.error('Impossibile aggiungere il servizio. Riprova più tardi.');
-			}
+		if (form && !form.success && form.isUpdatingKind) {
+			toast.error('Controlla i dati inseriti.');
 		}
 	});
 </script>
@@ -40,7 +37,7 @@
 </svelte:head>
 
 <h2 class="mb-2 text-lg font-bold">Banner</h2>
-<form method="post" action="/updateBanner">
+<form method="post" action="?/updateBanner">
 	<Input
 		bind:value={message}
 		name="message"
@@ -51,7 +48,7 @@
 
 	<div class="flex items-center space-x-2">
 		<Switch bind:checked={visible} name="visible" id="banner-visibility" />
-		<Label for="banner-visibility">Visibilità banner</Label>
+		<Label class="mb-0" for="banner-visibility">Visibilità banner</Label>
 	</div>
 	<Button class="mt-4" disabled={saveDisabled} type="submit">
 		<Save />
@@ -62,3 +59,20 @@
 <Separator class="my-8" />
 
 <KindsManager kinds={data.kinds} />
+
+<Separator class="my-8" />
+
+<h2 class="mb-2 text-lg font-bold">Stato utenza</h2>
+<form action="?/toggleStaff" method="POST" use:enhance>
+	<div class="flex items-center">
+		<input type="hidden" value={data.user.data.id} name="id" />
+		<Switch type="submit" checked={isStaffActive} name="active" />
+		<Label class="mb-0">
+			{#if isStaffActive}
+				Attivo
+			{:else}
+				Disattivo
+			{/if}
+		</Label>
+	</div>
+</form>

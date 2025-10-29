@@ -142,7 +142,7 @@
 				class="mb-4"
 				name="name"
 				value={data.user.data.name}
-				placeholder="Il tuo nome"
+				placeholder="Mario Rossi"
 				disabled={!isEditingInfo}
 			/>
 
@@ -151,7 +151,7 @@
 				class="mb-4"
 				name="phone"
 				value={data.user.data.phoneNumber}
-				placeholder="Il tuo numero di cellulare"
+				placeholder="+39 333 444 55 66"
 				disabled={!isEditingInfo}
 			/>
 
@@ -164,7 +164,7 @@
 			class="mr-4"
 			id="name"
 			value={data.user.data.email}
-			placeholder="La tua email"
+			placeholder="mariorossi@example.com"
 			disabled
 		/>
 
@@ -230,7 +230,7 @@
 				<Input
 					id="name"
 					name="email"
-					placeholder="Inserisci la nuova mail"
+					placeholder="mariorossi@example.com"
 					class="col-span-3"
 				/>
 			</div>

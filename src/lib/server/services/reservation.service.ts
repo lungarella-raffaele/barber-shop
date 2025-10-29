@@ -61,11 +61,6 @@ export class ReservationService {
 			expiresAt.setDate(expiresAt.getDate() + 1);
 			expiresAt.setHours(23, 59, 59, 999);
 
-			if (!this.checkAvailability(date, hour)) {
-				logger.error('Reservation already present');
-				return err('conflict');
-			}
-
 			const reservation: table.DBReservation = {
 				date,
 				hour,
@@ -79,18 +74,14 @@ export class ReservationService {
 				staffID: staff
 			};
 
-			const queryRes = await db
-				.insert(table.reservation)
-				.values(reservation)
-				.returning()
-				.get();
+			const queryRes = await this.insertWithAvailabilityCheck(reservation);
 
-			if (!queryRes) {
+			if (queryRes.isErr()) {
 				logger.error('Could not insert reservation');
-				return err('server-err');
+				return err(queryRes.error);
 			}
 
-			const fullReservation = await this.getByID(queryRes.id);
+			const fullReservation = await this.getByID(queryRes.unwrap().id);
 			if (!fullReservation) {
 				logger.error('Could not fetch inserted reservation');
 				return err('server-err');
@@ -120,10 +111,6 @@ export class ReservationService {
 				return err('invalid-data');
 			}
 
-			if (!this.checkAvailability(schema.data.date, data.hour)) {
-				return err('conflict');
-			}
-
 			const reservation: table.DBReservation = {
 				date: schema.data.date,
 				hour: schema.data.hour,
@@ -137,14 +124,14 @@ export class ReservationService {
 				staffID: schema.data.staff
 			};
 
-			const queryRes = await db.insert(table.reservation).values(reservation).returning();
+			const queryRes = await this.insertWithAvailabilityCheck(reservation);
 
-			const res = queryRes[0];
-			if (!res) {
-				return err('server-err');
+			if (queryRes.isErr()) {
+				logger.error('Could not insert reservation');
+				return err(queryRes.error);
 			}
 
-			const fullReservation = await this.getByID(res.id);
+			const fullReservation = await this.getByID(queryRes.unwrap().id);
 			if (!fullReservation) {
 				logger.error('Could not fetch inserted reservation');
 				return err('server-err');
@@ -180,10 +167,6 @@ export class ReservationService {
 			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
 			expiresAt.setHours(23, 59, 59, 999); // Set to end of the day
 
-			if (!this.checkAvailability(date, hour)) {
-				return err('conflict');
-			}
-
 			const reservation: table.DBReservation = {
 				date,
 				hour,
@@ -197,14 +180,14 @@ export class ReservationService {
 				phoneNumber: null
 			};
 
-			const queryRes = await db.insert(table.reservation).values(reservation).returning();
+			const queryRes = await this.insertWithAvailabilityCheck(reservation);
 
-			const res = queryRes[0];
-			if (!res) {
-				return err('server-err');
+			if (queryRes.isErr()) {
+				logger.error('Could not insert reservation');
+				return err(queryRes.error);
 			}
 
-			const fullReservation = await this.getByID(res.id);
+			const fullReservation = await this.getByID(queryRes.unwrap().id);
 			if (!fullReservation) {
 				logger.error('Could not fetch inserted reservation');
 				return err('server-err');
@@ -276,6 +259,17 @@ export class ReservationService {
 		}
 	}
 
+	async deleteAllExpired() {
+		try {
+			return await db
+				.delete(table.reservation)
+				.where(lt(table.reservation.expiresAt, new Date()));
+		} catch (err) {
+			logger.error('Error while removing expired reservations');
+			console.error(err);
+		}
+	}
+
 	/**
 	 * Updates the reservation to expire after the day of the reservation
 	 */
@@ -304,31 +298,44 @@ export class ReservationService {
 	}
 
 	/**
-	 * Checks if the following date and hour is already present in db.
-	 * If present checks if the reservation is expired
+	 * Inserts a reservation after checking availability within a transaction.
 	 */
-	async checkAvailability(date: string, hour: string): Promise<boolean> {
+	private async insertWithAvailabilityCheck(
+		reservation: table.DBReservation
+	): Promise<Result<table.DBReservation, InsertError>> {
 		try {
-			const result = await db
-				.select({ count: count() })
-				.from(table.reservation)
-				.where(
-					and(
-						eq(table.reservation.date, date),
-						eq(table.reservation.hour, hour),
-						eq(table.reservation.pending, false),
-						lt(table.reservation.expiresAt, new Date())
-					)
-				);
+			return ok(
+				await db.transaction(async (tx) => {
+					const existing = await tx
+						.select({ count: count() })
+						.from(table.reservation)
+						.where(
+							and(
+								eq(table.reservation.date, reservation.date),
+								eq(table.reservation.hour, reservation.hour),
+								eq(table.reservation.staffID, reservation.staffID),
+								gt(table.reservation.expiresAt, new Date())
+							)
+						);
 
-			if (result && result.length > 0) {
-				return result[0].count === 0;
-			} else {
-				return true;
+					if (existing[0].count > 0) {
+						throw new Error('CONFLICT');
+					}
+
+					// Insert reservation
+					const result = await tx
+						.insert(table.reservation)
+						.values(reservation)
+						.returning();
+					return result[0] ?? result;
+				})
+			);
+		} catch (e) {
+			if ((e as Error).message === 'CONFLICT') {
+				return err('conflict');
 			}
-		} catch (error) {
-			console.error('Error checking reservation:', error);
-			return false;
+
+			return err('server-err');
 		}
 	}
 

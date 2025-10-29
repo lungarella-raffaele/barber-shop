@@ -1,16 +1,14 @@
-import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
-import type { RequestEvent } from '@sveltejs/kit';
-import { and, count, eq, lt } from 'drizzle-orm';
+import * as table from '$lib/server/db/schema';
+import { and, count, eq, isNotNull, lt } from 'drizzle-orm';
 import { logger } from '../logger';
-import { ReservationService } from '@service/reservation.service';
 import { err, ok, type Result } from '$lib/modules/result';
-import * as table from '../db/schema';
 import { hash } from 'argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { DAY_IN_MS } from '$lib/constants';
 import { emailSchema, passwordSchema } from '$lib/modules/zod-schemas';
-import type { DBSession, DBUser, Staff, User, UserSession } from '@types';
+import type { DBUser, User } from '@types';
+import { StaffService } from '@service/staff.service';
 
 type InsertError =
 	| 'already-existing'
@@ -20,7 +18,7 @@ type InsertError =
 	| 'generic';
 
 export class UserService {
-	async insertUser(data: {
+	async insert(data: {
 		email: string;
 		password: string;
 		name: string;
@@ -33,7 +31,7 @@ export class UserService {
 
 			const email = data.email.toLowerCase();
 
-			const isPresent = await this.get(email);
+			const isPresent = await this.getByEmail(email);
 			if (isPresent) {
 				return err('already-existing');
 			}
@@ -78,7 +76,7 @@ export class UserService {
 		}
 	}
 
-	async get(email: string): Promise<User | null> {
+	async getByEmail(email: string): Promise<User | null> {
 		try {
 			const lowercaseEmail = email.toLowerCase();
 			const user = await db
@@ -92,11 +90,7 @@ export class UserService {
 				return null;
 			}
 
-			const staff = await db
-				.select()
-				.from(table.staff)
-				.where(eq(table.staff.userID, user.id))
-				.get();
+			const staff = await new StaffService().getByUserID(user.id);
 
 			if (!staff) {
 				return {
@@ -106,55 +100,9 @@ export class UserService {
 			} else {
 				return {
 					role: 'staff',
-					data: { ...user, avatar: staff.avatar }
+					data: { ...user, ...staff }
 				};
 			}
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async patchPending(id: string) {
-		try {
-			return await db
-				.update(table.user)
-				.set({
-					verifiedEmail: true
-				})
-				.where(eq(table.user.id, id))
-				.returning()
-				.get();
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async patchPassword(passwordHash: string, id: string) {
-		try {
-			return await db
-				.update(table.user)
-				.set({ passwordHash })
-				.where(eq(table.user.id, id))
-				.returning()
-				.get();
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async patchEmail(id: string, email: string) {
-		try {
-			return await db
-				.update(table.user)
-				.set({
-					email
-				})
-				.where(eq(table.user.id, id))
-				.returning()
-				.get();
 		} catch (e) {
 			logger.error(e);
 			return null;
@@ -183,7 +131,7 @@ export class UserService {
 			} else {
 				return {
 					role: 'staff',
-					data: { ...result.user, avatar: result.staff.avatar }
+					data: { ...result.user, ...result.staff }
 				};
 			}
 		} catch (err) {
@@ -192,61 +140,47 @@ export class UserService {
 		}
 	}
 
-	async insertSession(session: table.DBSession) {
+	async verifyEmail(id: string) {
 		try {
-			return await db.insert(table.session).values(session);
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async deleteAccount(user: table.DBUser) {
-		try {
-			await this.deleteAllSessionOfUser(user.id);
-			await new ReservationService().deleteAll(user.email);
-			await this.deleteTokens(user.id);
-			return await db.delete(table.user).where(eq(table.user.id, user.id)).returning().get();
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async logout(id: string, event: RequestEvent) {
-		await auth.invalidateSession(id);
-		auth.deleteSessionTokenCookie(event);
-	}
-
-	async deleteTokens(id: string) {
-		try {
-			return await db.delete(table.session).where(eq(table.emailVerification.userID, id));
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async deleteAllSessionOfUser(id: string) {
-		try {
-			return await db.delete(table.session).where(eq(table.session.userID, id));
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async countExpired() {
-		try {
-			const entries = await db
-				.select({ count: count() })
-				.from(table.user)
-				.where(
-					and(eq(table.user.verifiedEmail, false), lt(table.user.expiresAt, new Date()))
-				)
+			return await db
+				.update(table.user)
+				.set({
+					verifiedEmail: true,
+					expiresAt: null
+				})
+				.where(eq(table.user.id, id))
+				.returning()
 				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
+	}
 
-			return entries?.count;
+	async updatePassword(passwordHash: string, id: string) {
+		try {
+			return await db
+				.update(table.user)
+				.set({ passwordHash })
+				.where(eq(table.user.id, id))
+				.returning()
+				.get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
+	}
+
+	async updateEmail(id: string, email: string) {
+		try {
+			return await db
+				.update(table.user)
+				.set({
+					email
+				})
+				.where(eq(table.user.id, id))
+				.returning()
+				.get();
 		} catch (e) {
 			logger.error(e);
 			return null;
@@ -277,7 +211,7 @@ export class UserService {
 		}
 	}
 
-	async updateUserInfo(id: string, name?: string, phoneNumber?: string) {
+	async updateInfo(id: string, name?: string, phoneNumber?: string) {
 		try {
 			const updateData: Record<string, string> = {};
 
@@ -300,192 +234,46 @@ export class UserService {
 		}
 	}
 
-	async insertEmailVerification(newEmail: string, userID: string) {
+	async delete(id: string) {
 		try {
-			const expiresAt = new Date();
-			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
+			return await db.delete(table.user).where(eq(table.user.id, id)).returning().get();
+		} catch (e) {
+			logger.error(e);
+			return null;
+		}
+	}
 
-			return await db
-				.insert(table.emailVerification)
-				.values({
-					id: crypto.randomUUID(),
-					userID,
-					expiresAt,
-					email: newEmail
-				})
-				.returning()
+	async countExpired() {
+		try {
+			const entries = await db
+				.select({ count: count() })
+				.from(table.user)
+				.where(
+					and(eq(table.user.verifiedEmail, false), lt(table.user.expiresAt, new Date()))
+				)
 				.get();
+
+			return entries?.count;
 		} catch (e) {
 			logger.error(e);
 			return null;
 		}
 	}
 
-	async deleteEmailVerification(id: string) {
-		try {
-			return await db
-				.delete(table.emailVerification)
-				.where(eq(table.emailVerification.id, id));
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async getEmailVerification(id: string) {
-		try {
-			return await db
-				.select()
-				.from(table.emailVerification)
-				.where(eq(table.emailVerification.id, id))
-				.get();
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async insertPassRecover(userID: string) {
-		try {
-			const expiresAt = new Date();
-			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
-
-			return await db
-				.insert(table.passwordRecover)
-				.values({
-					id: crypto.randomUUID(),
-					userID,
-					expiresAt
-				})
-				.returning()
-				.get();
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async getPasswordRecover(id: string) {
-		try {
-			return await db
-				.select()
-				.from(table.passwordRecover)
-				.where(eq(table.passwordRecover.id, id))
-				.get();
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async expirePasswordRecover(id: string) {
-		try {
-			return await db
-				.update(table.passwordRecover)
-				.set({ expiresAt: null })
-				.where(eq(table.passwordRecover.id, id))
-				.returning()
-				.get();
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async deletePasswordRecover() {
-		try {
-			return await db
-				.delete(table.passwordRecover)
-				.where(lt(table.passwordRecover.expiresAt, new Date()));
-		} catch (err) {
-			logger.error('Error while removing expired passwords recover records');
-			console.error(err);
-		}
-	}
-	async deleteEmailVerifications() {
-		try {
-			return await db
-				.delete(table.emailVerification)
-				.where(lt(table.emailVerification.expiresAt, new Date()));
-		} catch (err) {
-			logger.error('Error while removing expired verify email records');
-			console.error(err);
-		}
-	}
-
-	async deleteAllExpiredReservations() {
-		try {
-			return await db
-				.delete(table.reservation)
-				.where(lt(table.reservation.expiresAt, new Date()));
-		} catch (err) {
-			logger.error('Error while removing expired reservations');
-			console.error(err);
-		}
-	}
-
-	async deleteAllExpiredUsers() {
+	async deleteAllExpired() {
 		try {
 			return await db
 				.delete(table.user)
 				.where(
-					and(eq(table.user.verifiedEmail, false), lt(table.user.expiresAt, new Date()))
+					and(
+						eq(table.user.verifiedEmail, false),
+						isNotNull(table.user.expiresAt),
+						lt(table.user.expiresAt, new Date())
+					)
 				);
 		} catch (err) {
 			logger.error('Error while removing expired users');
 			console.error(err);
-		}
-	}
-
-	async getUserSession(sessionID: string): Promise<UserSession | null> {
-		try {
-			const [result] = await db
-				.select({
-					user: table.user,
-					staff: table.staff,
-					session: table.session
-				})
-				.from(table.session)
-				.innerJoin(table.user, eq(table.session.userID, table.user.id))
-				.leftJoin(table.staff, eq(table.staff.userID, table.user.id))
-				.where(eq(table.session.id, sessionID));
-
-			if (!result.staff) {
-				const user: User & { session: DBSession } = {
-					role: 'user',
-					data: result.user,
-					session: result.session
-				};
-				return { user, session: result.session };
-			} else {
-				const staff: User & { session: DBSession } = {
-					role: 'staff',
-					data: { ...result.user, avatar: result.staff.avatar },
-					session: result.session
-				};
-				return { user: staff, session: result.session };
-			}
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	async getAllStaff(): Promise<Staff[] | null> {
-		try {
-			const result = await db
-				.select({
-					name: table.user.name,
-					id: table.staff.userID,
-					avatar: table.staff.avatar
-				})
-				.from(table.staff)
-				.innerJoin(table.user, eq(table.user.id, table.staff.userID));
-
-			return result;
-		} catch (e) {
-			logger.error(e);
-			return null;
 		}
 	}
 

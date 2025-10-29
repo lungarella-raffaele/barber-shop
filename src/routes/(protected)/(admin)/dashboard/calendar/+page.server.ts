@@ -56,7 +56,7 @@ export const actions: Actions = {
 			};
 		});
 
-		return { success: await new ScheduleService().update(dbschedule) };
+		return { success: await new ScheduleService().update(dbschedule, locals.user.data.id) };
 	},
 	deleteSchedule: async ({ request }) => {
 		const data = await request.formData();

@@ -5,12 +5,12 @@ const MOBILE_BREAKPOINT = 768;
 export class IsMobile {
 	#current = $state<boolean>(false);
 
-	constructor() {
+	constructor(breakpoint = MOBILE_BREAKPOINT) {
 		$effect(() => {
 			return untrack(() => {
-				const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+				const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
 				const onChange = () => {
-					this.#current = window.innerWidth < MOBILE_BREAKPOINT;
+					this.#current = window.innerWidth < breakpoint;
 				};
 				mql.addEventListener('change', onChange);
 				onChange();
