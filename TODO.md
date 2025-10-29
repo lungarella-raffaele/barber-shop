@@ -1,15 +1,11 @@
 # TODO
 
-## Known Bugs
-
 - [ ] Password recover not working (expired recover token);
 - [ ] Overall testing of the whole application;
 - [ ] Create a paginated reservations page;
-
----
 - [ ] Find a nice rate limit pattern;
 - [ ] Consistent error messages;
-- [ ] Check `.toLowerCase().trim()` to emails in reservation.service;
+- [x] Check `.toLowerCase().trim()` to emails in reservation.service;
 - [ ] Schedule cleanup service;
 - [ ] Test DB;
 - [ ] Test Rate Limit;

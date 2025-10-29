@@ -29,7 +29,7 @@ export class UserService {
 				return err('data-required');
 			}
 
-			const email = data.email.toLowerCase();
+			const email = data.email.toLowerCase().trim();
 
 			const isPresent = await this.getByEmail(email);
 			if (isPresent) {
@@ -78,7 +78,7 @@ export class UserService {
 
 	async getByEmail(email: string): Promise<User | null> {
 		try {
-			const lowercaseEmail = email.toLowerCase();
+			const lowercaseEmail = email.toLowerCase().trim();
 			const user = await db
 				.select()
 				.from(table.user)
@@ -171,7 +171,8 @@ export class UserService {
 		}
 	}
 
-	async updateEmail(id: string, email: string) {
+	async updateEmail(id: string, _email: string) {
+		const email = _email.toLowerCase().trim();
 		try {
 			return await db
 				.update(table.user)

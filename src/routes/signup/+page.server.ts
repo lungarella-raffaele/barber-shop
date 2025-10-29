@@ -34,7 +34,7 @@ export const actions: Actions = {
 		// Rate limit by email to prevent signup spam
 		const limit = rateLimit({
 			event,
-			email,
+			email: email.toLowerCase().trim(),
 			message: 'Troppi tentativi di registrazione. Riprova più tardi.',
 			additionalData: { form }
 		});

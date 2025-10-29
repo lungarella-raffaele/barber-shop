@@ -98,7 +98,7 @@ export class ReservationService {
 		try {
 			const schema = anonymousUserSchema.safeParse({
 				name: data.name,
-				email: data.email,
+				email: data.email.toLowerCase().trim(),
 				date: data.date?.toString(),
 				hour: data.hour,
 				kind: data.kind,
@@ -222,7 +222,9 @@ export class ReservationService {
 
 	async getByUser(email: string): Promise<Reservation[] | null> {
 		try {
-			return await this.getReservations().where(eq(table.reservation.email, email));
+			return await this.getReservations().where(
+				eq(table.reservation.email, email.toLowerCase().trim())
+			);
 		} catch (e) {
 			logger.error(e);
 			return null;
@@ -252,7 +254,9 @@ export class ReservationService {
 
 	async deleteAll(email: string) {
 		try {
-			return await db.delete(table.reservation).where(eq(table.reservation.email, email));
+			return await db
+				.delete(table.reservation)
+				.where(eq(table.reservation.email, email.toLowerCase().trim()));
 		} catch (e) {
 			logger.error(e);
 			return null;

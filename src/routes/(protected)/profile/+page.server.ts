@@ -86,7 +86,7 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const email = getString(formData, 'email');
+		const email = getString(formData, 'email').toLowerCase().trim();
 
 		const correctEmail = emailSchema.safeParse(email);
 
