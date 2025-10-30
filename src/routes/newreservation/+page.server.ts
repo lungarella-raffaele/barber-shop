@@ -75,7 +75,9 @@ export const actions: Actions = {
 
 				if (sent.isErr()) {
 					logger.error('Could not send email');
-					return fail(404); // TODO: Better error handling
+					return fail(500, {
+						email: true
+					});
 				}
 			}
 
@@ -104,7 +106,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	]);
 
 	if (!currentReservations || !shutdown) {
-		return error(500); //TODO
+		return error(500);
 	}
 
 	return {

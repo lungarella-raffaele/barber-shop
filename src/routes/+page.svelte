@@ -82,7 +82,7 @@
 					role="img"
 					aria-label="Vista principale del salone EMI Hair Club con interni moderni"
 					class="col-span-1 row-span-2 rounded-lg bg-cover bg-center shadow-md md:col-span-3"
-					style="background-image: url('/barber-shop.webp')"
+					style="background-image: url('/barber.webp')"
 				></div>
 
 				<!-- Tall 1x2 -->

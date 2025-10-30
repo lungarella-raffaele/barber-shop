@@ -1,23 +1,7 @@
 import { redirect, type Handle } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth.js';
-import path from 'path';
-import fs from 'fs';
-
-const maintenanceMode = true;
-const maintenanceHtml = maintenanceMode
-	? fs.readFileSync(path.join(process.cwd(), 'static', 'index.html'), 'utf-8')
-	: null;
 
 const handleAuth: Handle = async ({ event, resolve }) => {
-	if (maintenanceMode && maintenanceHtml) {
-		return new Response(maintenanceHtml, {
-			status: 503,
-			headers: {
-				'Content-Type': 'text/html',
-				'Retry-After': '3600'
-			}
-		});
-	}
 	const sessionToken = event.cookies.get(auth.sessionCookieName);
 
 	if (!sessionToken) {
