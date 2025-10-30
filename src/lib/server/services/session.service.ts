@@ -2,8 +2,9 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '../logger';
+import { Service } from './service';
 
-export class SessionService {
+export class SessionService extends Service {
 	async insert(session: table.DBSession) {
 		try {
 			return await db.insert(table.session).values(session);

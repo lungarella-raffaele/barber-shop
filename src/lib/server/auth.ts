@@ -24,7 +24,7 @@ export async function createSession(token: string, userID: string) {
 		userID,
 		expiresAt: new Date(Date.now() + DAY_IN_MS * 30)
 	};
-	await new SessionService().insert(session);
+	await SessionService.get().insert(session);
 	return session;
 }
 
@@ -32,13 +32,13 @@ export async function validateSessionToken(
 	token: string
 ): Promise<UserSession | { session: null; user: null }> {
 	const sessionID = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	const sessionData = await new SessionService().getByID(sessionID);
+	const sessionData = await SessionService.get().getByID(sessionID);
 
 	if (!sessionData) {
 		return { session: null, user: null };
 	}
 
-	const userService = new UserService();
+	const userService = UserService.get();
 	const userData = await userService.getByID(sessionData.userID);
 
 	if (!userData) {
@@ -79,12 +79,18 @@ export async function invalidateSession(sessionId: string) {
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
 	event.cookies.set(sessionCookieName, token, {
 		expires: expiresAt,
-		path: '/'
+		path: '/',
+		httpOnly: true,
+		sameSite: true,
+		secure: true
 	});
 }
 
 export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
-		path: '/'
+		path: '/',
+		httpOnly: true,
+		sameSite: true,
+		secure: true
 	});
 }

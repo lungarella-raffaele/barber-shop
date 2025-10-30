@@ -43,7 +43,7 @@ export const actions: Actions = {
 		});
 		if (limit) return limit;
 
-		const existingUser = await new UserService().getByEmail(form.data.email);
+		const existingUser = await UserService.get().getByEmail(form.data.email);
 
 		if (!existingUser || !existingUser.data.verifiedEmail) {
 			return fail(400, {
@@ -96,7 +96,7 @@ export const actions: Actions = {
 			return limit;
 		}
 
-		const userService = new UserService();
+		const userService = UserService.get();
 		const user = await userService.getByEmail(email);
 		if (!user) {
 			return {
@@ -105,7 +105,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const recover = await new PasswordRecoverService().insert(user.data.id);
+		const recover = await PasswordRecoverService.get().insert(user.data.id);
 
 		if (!recover) {
 			return fail(500, {

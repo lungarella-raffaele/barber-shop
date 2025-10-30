@@ -3,8 +3,9 @@ import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '../logger';
 import type { Staff } from '@types';
+import { Service } from './service';
 
-export class StaffService {
+export class StaffService extends Service {
 	async getByUserID(userID: string) {
 		try {
 			return await db.select().from(table.staff).where(eq(table.staff.userID, userID)).get();

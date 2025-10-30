@@ -4,8 +4,8 @@ import { StaffService } from '@service/staff.service.js';
 
 export const load: PageServerLoad = async () => {
 	return {
-		kinds: new KindService().getAll(),
-		staff: new StaffService().getAll(),
+		kinds: KindService.get().getAll(),
+		staff: StaffService.get().getAll(),
 		title: 'Listino Prezzi -',
 		header: 'Listino Prezzi'
 	};

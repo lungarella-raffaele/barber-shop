@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		redirect(303, '/login');
 	}
 
-	const reservations = await new ReservationService().getByUser(locals.user.data.email);
+	const reservations = await ReservationService.get().getByUser(locals.user.data.email);
 
 	if (!reservations) {
 		return error(500);
@@ -25,7 +25,7 @@ export const actions: Actions = {
 
 		const id = data.get('id') as string;
 
-		const res = await new ReservationService().delete(id);
+		const res = await ReservationService.get().delete(id);
 
 		if (res) {
 			return {

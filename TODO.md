@@ -1,59 +1,36 @@
 # TODO
 
-- [ ] Password recover not working (expired recover token);
+- [ ] Server side range testing?
+- [ ] Schedule,ranges "Da salvare" is not handled correctly;
+- [ ] Test range.ts;
+- [ ] Grep TODOs accroos the whole application;
 - [ ] Overall testing of the whole application;
-- [ ] Create a paginated reservations page;
-- [ ] Find a nice rate limit pattern;
-- [ ] Consistent error messages;
+- [x] Consistent error messages;
+- [x] Create a paginated reservations page;
+- [x] Not calling schedule cleanup service;
+- [x] Test Rate Limit;
+- [x] Disabling staff should take more effort;
+- [x] Password recover not working (expired recover token);
+- [x] Find a nice rate limit pattern;
+- [x] Auth hook logic issues (fixed execution order);
 - [x] Check `.toLowerCase().trim()` to emails in reservation.service;
-- [ ] Schedule cleanup service;
-- [ ] Test DB;
-- [ ] Test Rate Limit;
-- [x] Index should check pending and expire date;
 - [x] Clean up user is not working;
-- [x] Footer is not always on the bottom (in error pages too);
-- [x] Inserire le informazioni della prenotazione nella mail;
-- [x] Inserire le informazioni della prenotazione nella conferma prenotazione;
-- [x] Schedule tabs do not work properly on mobile;
 - [x] Create a set of utilities to populate DB;
 - [x] Fix Hero page, maybe having an image behind the hero to center it better;
+- [x] Footer is not always on the bottom (in error pages too);
+- [x] Improve Cookie Security
+- [x] Index should check pending and expire date;
+- [x] Injectable Database Connections
+- [x] Inserire le informazioni della prenotazione nella conferma prenotazione;
+- [x] Inserire le informazioni della prenotazione nella mail;
+- [x] Race condition in reservation creation (fixed with transactions);
+- [x] Rate limiting on auth endpoints (login, signup, password recovery, reservations);
 - [x] Schedule deletion and PUT;
 - [x] Schedule handle user feedback;
+- [x] Schedule tabs do not work properly on mobile;
+- [x] Service Instantiation Anti-Pattern
 - [x] Shutdowns must have a staff ID;
 - [x] Sticky menu is not working properly;
-- [x] Race condition in reservation creation (fixed with transactions);
-- [x] Auth hook logic issues (fixed execution order);
-- [x] Rate limiting on auth endpoints (login, signup, password recovery, reservations);
-
-- [ ] Service Instantiation Anti-Pattern
-**Problem**: Creating `new SomeService()` everywhere is inefficient and makes testing hard
-**Solution**:
-- Implement singleton pattern: `getUserService()`, `getReservationService()`
-- Or use dependency injection container (tsyringe)
-- Makes testing easier and more performant
-
-
-- [ ] Injectable Database Connections
-**Problem**: Services use global `db` import, preventing transaction usage across services
-**Solution**:
-
-
-- [ ] Missing Input Validation in Actions
-**Problem**: Some form actions don't validate inputs (e.g., UUID format)
-**Solution**: Add validation middleware or Zod schemas for all action inputs
-
-- [ ] Improve Cookie Security
-**Location**: `src/lib/server/auth.ts`
-**Problem**: `deleteSessionTokenCookie()` should match security options from `setSessionTokenCookie()`
-**Solution**: Add `httpOnly`, `secure`, `sameSite` to delete call
-
-- [ ] Add Request Validation Middleware
-**Improvement**: Centralized validation for common patterns (UUIDs, dates, email format)
-
-- [ ] Type Safety Improvements
-- Stricter types for form data handling
-- Better typed cookie options
-- More explicit return types
 
 ---
 

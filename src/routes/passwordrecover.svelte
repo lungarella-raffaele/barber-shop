@@ -7,9 +7,13 @@
 	import Button from '$lib/components/ui/button/button.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import Passwordinput from '$lib/components/app/passwordinput.svelte';
+	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
+	import { resolve } from '$app/paths';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	const { id, error, success } = $props();
 
+	let isLoading = $state(false);
 	const changePassword: SubmitFunction = ({ formData, cancel }) => {
 		const newPass = formData.get('new-pass');
 		const confirmPass = formData.get('confirm-pass');
@@ -34,15 +38,7 @@
 			return cancel();
 		}
 
-		return async ({ result }) => {
-			if (result.type === 'success') {
-				toast.success('Password aggiornata con successo!');
-			} else if (result.type === 'failure' && result.data) {
-				toast.error('Impossibile aggiornare la password.', {
-					description: result.data.message ? result.data.message : ''
-				});
-			}
-		};
+		isLoading = true;
 	};
 </script>
 
@@ -77,7 +73,14 @@
 
 					<input type="hidden" value={id} name="recover-id" />
 					<div class="text-end">
-						<Button type="submit" class="mt-8">Cambia password</Button>
+						<Button disabled={isLoading} type="submit" class="mt-8">
+							{#if !isLoading}
+								Cambia password
+							{:else}
+								<LoaderCircle class="animate-spin" />
+								Attendi
+							{/if}
+						</Button>
 					</div>
 				</form>
 			</div>

@@ -2,8 +2,9 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq, lt } from 'drizzle-orm';
 import { logger } from '../logger';
+import { Service } from './service';
 
-export class PasswordRecoverService {
+export class PasswordRecoverService extends Service {
 	async insert(userID: string) {
 		try {
 			const expiresAt = new Date();

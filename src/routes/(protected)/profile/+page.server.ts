@@ -17,11 +17,11 @@ import * as auth from '$lib/server/auth';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const confirmID = url.searchParams.get('confirm-email-change'); // Coming from an email
-	const userService = new UserService();
+	const userService = UserService.get();
 
 	let updatedEmail: Result<undefined, undefined> | null = null;
 	if (confirmID) {
-		const verified = await new EmailVerificationService().getByID(confirmID);
+		const verified = await EmailVerificationService.get().getByID(confirmID);
 
 		if (verified) {
 			if (await userService.updateEmail(verified.userID, verified.email)) {
@@ -56,7 +56,7 @@ export const actions: Actions = {
 		return redirect(302, '/');
 	},
 	updateInfo: async ({ locals, request, url }) => {
-		const userService = new UserService();
+		const userService = UserService.get();
 
 		if (!locals.session || !locals.user) {
 			return fail(401, { success: false });
@@ -94,7 +94,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Inserisci una mail valida', success: false });
 		}
 
-		const userService = new UserService();
+		const userService = UserService.get();
 		const existingUser = await userService.getByEmail(email);
 
 		if (existingUser && existingUser.data.verifiedEmail) {
@@ -104,7 +104,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const emailVerification = await new EmailVerificationService().insert(
+		const emailVerification = await EmailVerificationService.get().insert(
 			email,
 			locals.user.data.id
 		);
@@ -123,7 +123,7 @@ export const actions: Actions = {
 		});
 
 		if (sent.isErr()) {
-			await new EmailVerificationService().delete(emailVerification.id);
+			await EmailVerificationService.get().delete(emailVerification.id);
 
 			return fail(500, {
 				message: 'Impossibile cambiare email. Riprova più tardi',
@@ -144,10 +144,10 @@ export const actions: Actions = {
 			return fail(403);
 		}
 
-		const userService = new UserService();
-		const sessionService = new SessionService();
-		const passwordRecoverService = new PasswordRecoverService();
-		const reservationService = new ReservationService();
+		const userService = UserService.get();
+		const sessionService = SessionService.get();
+		const passwordRecoverService = PasswordRecoverService.get();
+		const reservationService = ReservationService.get();
 
 		logger.warn('Deleting account of user: ' + user.data.email);
 
@@ -169,7 +169,7 @@ export const actions: Actions = {
 		}
 	},
 	changePassword: async (event) => {
-		const userService = new UserService();
+		const userService = UserService.get();
 		const user = event.locals.user;
 		const session = event.locals.session;
 

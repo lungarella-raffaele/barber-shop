@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const user = sqliteTable('user', {
 	id: text('id').primaryKey(),
@@ -18,26 +18,22 @@ export const session = sqliteTable('session', {
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull()
 });
 
-export const reservation = sqliteTable(
-	'reservation',
-	{
-		id: text('id').primaryKey(),
-		date: text('date').notNull(),
-		hour: text('hour').notNull(),
-		phoneNumber: text('phone_number'),
-		kindID: text('kind_id')
-			.notNull()
-			.references(() => kind.id),
-		name: text('name').notNull(),
-		email: text('email').notNull(),
-		expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
-		pending: integer({ mode: 'boolean' }).notNull(),
-		staffID: text('staff_id')
-			.notNull()
-			.references(() => staff.userID)
-	},
-	(t) => [unique().on(t.date, t.hour, t.staffID)]
-);
+export const reservation = sqliteTable('reservation', {
+	id: text('id').primaryKey(),
+	date: text('date').notNull(),
+	hour: text('hour').notNull(),
+	phoneNumber: text('phone_number'),
+	kindID: text('kind_id')
+		.notNull()
+		.references(() => kind.id),
+	name: text('name').notNull(),
+	email: text('email').notNull(),
+	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+	pending: integer({ mode: 'boolean' }).notNull(),
+	staffID: text('staff_id')
+		.notNull()
+		.references(() => staff.userID)
+});
 
 export const kind = sqliteTable('kind', {
 	id: text('id').primaryKey(),
@@ -102,7 +98,7 @@ export const staff = sqliteTable('staff', {
 		.notNull()
 		.references(() => user.id),
 	avatar: text('avatar'),
-	isActive: integer({ mode: 'boolean' }).default(false)
+	isActive: integer('is_active', { mode: 'boolean' }).default(false)
 });
 
 export type DBSession = typeof session.$inferSelect;

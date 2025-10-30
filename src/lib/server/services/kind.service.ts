@@ -3,8 +3,9 @@ import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '../logger';
 import { ok, err, type Result } from '$lib/modules/result';
+import { Service } from './service';
 
-export class KindService {
+export class KindService extends Service {
 	async getAll(onlyActive: boolean = true) {
 		try {
 			const query = db.select().from(table.kind);

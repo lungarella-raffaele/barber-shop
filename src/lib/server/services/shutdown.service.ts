@@ -3,8 +3,9 @@ import * as table from '$lib/server/db/schema';
 import type { DBShutdown } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '../logger';
+import { Service } from './service';
 
-export class ShutdownService {
+export class ShutdownService extends Service {
 	async getAll(): Promise<DBShutdown[] | null> {
 		try {
 			return await db.select().from(table.shutdowns);

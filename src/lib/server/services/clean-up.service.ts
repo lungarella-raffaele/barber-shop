@@ -7,22 +7,21 @@ import { ReservationService } from './reservation.service';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { and, eq, isNotNull, lt } from 'drizzle-orm';
+import { Service } from './service';
 
-export class CleanupService {
+export class CleanupService extends Service {
 	async deleteExpiredItems() {
 		try {
-			const reservationService = new ReservationService();
-			const emailVerificationService = new EmailVerificationService();
-			const passwordRecoverService = new PasswordRecoverService();
+			const reservationService = ReservationService.get();
+			const emailVerificationService = EmailVerificationService.get();
+			const passwordRecoverService = PasswordRecoverService.get();
 
-			// Delete expired items in parallel
 			await Promise.all([
 				reservationService.deleteAllExpired(),
 				emailVerificationService.deleteAllExpired(),
 				passwordRecoverService.deleteAllExpired()
 			]);
 
-			// Delete expired users (needs to be done after other cleanups)
 			await this.deleteExpiredUsers();
 		} catch (e) {
 			logger.error(e);
@@ -32,11 +31,10 @@ export class CleanupService {
 
 	private async deleteExpiredUsers() {
 		try {
-			const sessionService = new SessionService();
-			const passwordRecoverService = new PasswordRecoverService();
-			const reservationService = new ReservationService();
+			const sessionService = SessionService.get();
+			const passwordRecoverService = PasswordRecoverService.get();
+			const reservationService = ReservationService.get();
 
-			// First, get all expired users
 			const expiredUsers = await db
 				.select({ id: table.user.id, email: table.user.email })
 				.from(table.user)
@@ -52,15 +50,13 @@ export class CleanupService {
 				return;
 			}
 
-			// Delete related records for each expired user
 			for (const user of expiredUsers) {
 				await sessionService.deleteAllByUserID(user.id);
 				await passwordRecoverService.deleteByUserID(user.id);
 				await reservationService.deleteAll(user.email);
 			}
 
-			// Finally, delete the users
-			await new UserService().deleteAllExpired();
+			await UserService.get().deleteAllExpired();
 		} catch (err) {
 			logger.error('Error while removing expired users');
 			console.error(err);

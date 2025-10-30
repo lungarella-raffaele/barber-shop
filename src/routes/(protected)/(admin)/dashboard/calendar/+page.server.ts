@@ -12,8 +12,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	return {
-		shutdown: new ShutdownService().getStaffShutdown(locals.user.data.id),
-		schedule: new ScheduleService().getAll()
+		shutdown: ShutdownService.get().getStaffShutdown(locals.user.data.id),
+		schedule: ScheduleService.get().getAll()
 	};
 };
 
@@ -27,12 +27,12 @@ export const actions: Actions = {
 		if (!start || !end) {
 			return fail(404);
 		}
-		return await new ShutdownService().insert(start, end, id);
+		return await ShutdownService.get().insert(start, end, id);
 	},
 	deleteShutdown: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id') as string;
-		return await new ShutdownService().delete(id);
+		return await ShutdownService.get().delete(id);
 	},
 	addSchedule: async ({ request, locals }) => {
 		const data = await request.formData();
@@ -56,7 +56,7 @@ export const actions: Actions = {
 			};
 		});
 
-		return { success: await new ScheduleService().update(dbschedule, locals.user.data.id) };
+		return { success: await ScheduleService.get().update(dbschedule, locals.user.data.id) };
 	},
 	deleteSchedule: async ({ request }) => {
 		const data = await request.formData();
@@ -67,6 +67,6 @@ export const actions: Actions = {
 		if (!idNum) {
 			return fail(404);
 		}
-		return await new ScheduleService().delete(idNum);
+		return await ScheduleService.get().delete(idNum);
 	}
 };

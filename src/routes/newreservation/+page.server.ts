@@ -32,7 +32,7 @@ export const actions: Actions = {
 			return fail(404);
 		}
 
-		const reservationService = new ReservationService();
+		const reservationService = ReservationService.get();
 		let result: Awaited<ReturnType<typeof reservationService.insertByUser>> | undefined =
 			undefined;
 		if (data.who === 'usual') {
@@ -52,7 +52,7 @@ export const actions: Actions = {
 				);
 				redirect(308, '/login');
 			}
-			const alternativeName = formData.get('alternativeName') as string;
+			const alternativeName = data.name;
 			result = await reservationService.insertByStaff(data, user.data, alternativeName);
 		} else {
 			logger.error('Did not specify the kind of user');
@@ -95,12 +95,12 @@ export const actions: Actions = {
 };
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const kind = new KindService();
-	const reservationService = new ReservationService();
+	const kind = KindService.get();
+	const reservationService = ReservationService.get();
 
 	const [currentReservations, shutdown] = await Promise.all([
 		reservationService.getAll(),
-		new ShutdownService().getAll()
+		ShutdownService.get().getAll()
 	]);
 
 	if (!currentReservations || !shutdown) {
@@ -111,8 +111,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		currentReservations,
 		shutdown,
 		kinds: kind.getAll(),
-		staff: new StaffService().getAll(),
-		schedule: await new ScheduleService().getAll(),
+		staff: StaffService.get().getAll(),
+		schedule: await ScheduleService.get().getAll(),
 		user: locals.user,
 		title: 'Nuova prenotazione -'
 	};
