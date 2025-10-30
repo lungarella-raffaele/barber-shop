@@ -13,7 +13,7 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import ReservationManager from '$lib/composables/reservation-manager.svelte';
 	import { getSlots } from '$lib/modules/get-slots';
-	import { mapToUI, minutesToTime } from '$lib/utils';
+	import { minutesToTime } from '$lib/utils';
 	import { parseDate, parseTime } from '@internationalized/date';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
@@ -22,6 +22,7 @@
 	import type { DBReservation, DBKind, Staff } from '@types';
 	import { onMount } from 'svelte';
 	import { Skeleton } from '$lib/components/ui/skeleton';
+	import { mapToUI } from '../(protected)/(admin)/dashboard/calendar/ranges';
 
 	const { data }: { data: PageData } = $props();
 
@@ -47,10 +48,17 @@
 				if (result.status === 404) {
 					toast.warning('Controlla i dati inseriti');
 				} else if (result.status === 500) {
-					toast.error('Impossibile effettuare la prenotazione.', {
-						description: 'Riprova più tardi',
-						duration: 4000
-					});
+					if (result.data?.email) {
+						toast.error("Non è stato possibile inviare l'email.", {
+							description: 'Riprova più tardi',
+							duration: 4000
+						});
+					} else {
+						toast.error('Impossibile effettuare la prenotazione.', {
+							description: 'Riprova più tardi',
+							duration: 4000
+						});
+					}
 				} else if (result.status === 409) {
 					toast.error('Prenotazione non disponibile', {
 						description: `Purtroppo la data da te scelta non è più disponibile. Scegli un'altra data`,
@@ -97,10 +105,6 @@
 		if (correctData) {
 			isDialogOpen = true;
 		}
-	};
-
-	const getStaff = (staff: Staff[], kinds: DBKind[]) => {
-		return staff.filter((s) => kinds.some((k) => k.staffID, s.id));
 	};
 </script>
 

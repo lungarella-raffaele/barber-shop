@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as Alert from '$lib/components/ui/alert';
 	import Button from '$lib/components/ui/button/button.svelte';
-
 	import Passwordinput from '$lib/components/app/passwordinput.svelte';
 	import { CircleAlert, CircleCheckBig, LoaderCircle } from '$lib/components/icons/index';
 	import * as Card from '$lib/components/ui/card';
@@ -28,7 +27,7 @@
 	};
 </script>
 
-{#if form && form.message}
+{#if form && 'message' in form && form.message && 'success' in form}
 	<Alert.Root
 		variant={form.success ? 'success' : 'destructive'}
 		class="align mb-3 flex items-center"

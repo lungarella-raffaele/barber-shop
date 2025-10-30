@@ -69,7 +69,6 @@
 		const dayRanges = scheduleMap.get(targetDay);
 
 		if (!dayRanges) {
-			// TODO
 			return;
 		}
 
@@ -103,8 +102,9 @@
 		deleting = true;
 		return async ({ result }) => {
 			if (result.type === 'success') {
-				toast.success('Range eliminato!');
 				await invalidateAll();
+				scheduleMap = mapToUI((await schedule) ?? [], staffID);
+				toast.success('Range eliminato!');
 			} else if (result.type === 'failure') {
 				toast.error('Impossibile eliminare il range.');
 			}
@@ -119,8 +119,10 @@
 		updating = true;
 		formData.append('data', JSON.stringify(mapToDB(scheduleMap)));
 
-		return ({ result }) => {
+		return async ({ result }) => {
 			if (result.type === 'success') {
+				await invalidateAll();
+				scheduleMap = mapToUI((await schedule) ?? [], staffID);
 				toast.success('Orario aggiornato!');
 			} else {
 				toast.success("Impossibile aggiornare l'orario.");

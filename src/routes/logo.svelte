@@ -37,7 +37,7 @@
 	.total {
 		font-size: 0.2rem;
 		position: relative;
-		background-image: url('working-picture.webp');
+		background-image: url('/static/hairs.webp');
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
