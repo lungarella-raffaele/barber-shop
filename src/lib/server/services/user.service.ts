@@ -9,6 +9,7 @@ import { DAY_IN_MS } from '$lib/constants';
 import { emailSchema, passwordSchema } from '$lib/modules/zod-schemas';
 import type { DBUser, User } from '@types';
 import { StaffService } from '@service/staff.service';
+import { Service } from './service';
 
 type InsertError =
 	| 'already-existing'
@@ -17,7 +18,7 @@ type InsertError =
 	| 'invalid-pass'
 	| 'generic';
 
-export class UserService {
+export class UserService extends Service {
 	async insert(data: {
 		email: string;
 		password: string;
@@ -90,7 +91,7 @@ export class UserService {
 				return null;
 			}
 
-			const staff = await new StaffService().getByUserID(user.id);
+			const staff = await StaffService.get().getByUserID(user.id);
 
 			if (!staff) {
 				return {

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Select from '$lib/components/ui/select/index.js';
-	import { mapToUI } from '$lib/utils';
 	import type { ScheduleRange } from '@types';
 	import { Day, getWeekDay } from '$lib/enums/days';
 	import * as Tabs from '$lib/components/ui/tabs';
@@ -11,7 +10,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { formatTime } from '$lib/utils';
+	import { convertTimeFormat, formatTime, parseTimeString, toMinutes } from '$lib/utils';
 	import type { DBSchedule, Schedule } from '$lib/server/db/schema';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
@@ -22,39 +21,12 @@
 	import { invalidateAll } from '$app/navigation';
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import { initializeEmptyMap, mapToDB, mapToUI, validateRange } from './ranges';
 
 	const { schedule, staffID }: { schedule: Promise<DBSchedule[] | null>; staffID: string } =
 		$props();
 
 	const isMobile = new IsMobile(900);
-
-	function mapToDB(scheduleMap: Map<Day, ScheduleRange[]>): Omit<Schedule, 'staffID'>[] {
-		const arr = Array.from(scheduleMap.entries()).map(([day, ranges]) => ({
-			day,
-			schedules: ranges.map(({ start, end, id }) => ({
-				startHour: start.hour,
-				startMinute: start.minute,
-				endHour: end.hour,
-				endMinute: end.minute,
-				id
-			}))
-		}));
-
-		const dbarr: Omit<Schedule, 'staffID'>[] = [];
-		arr.forEach((el) => {
-			el.schedules.forEach((schedule) => {
-				dbarr.push({
-					day: el.day,
-					startHour: schedule.startHour,
-					startMinute: schedule.startMinute,
-					endHour: schedule.endHour,
-					endMinute: schedule.endMinute
-				});
-			});
-		});
-
-		return dbarr;
-	}
 
 	type Action = 'add' | 'edit';
 	let action: Action = $state('add');
@@ -64,13 +36,6 @@
 	let activeTab = $state(tabs[0] ?? '0');
 
 	let scheduleMap: Map<Day, ScheduleRange[]> = $state(initializeEmptyMap());
-	function initializeEmptyMap(): Map<Day, ScheduleRange[]> {
-		const m = new Map<Day, ScheduleRange[]>();
-		for (let i = Number(Day.MONDAY); i <= Number(Day.SUNDAY); i++) {
-			m.set(i as Day, []);
-		}
-		return m;
-	}
 
 	onMount(async () => {
 		scheduleMap = mapToUI((await schedule) ?? [], staffID);
@@ -82,27 +47,6 @@
 
 	let error = $state('');
 
-	function parseTimeString(s: string) {
-		const parts = s.split(':');
-		if (parts.length !== 2) return null;
-
-		const hour = Number(parts[0]);
-		const minute = Number(parts[1]);
-		if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
-		return { hour, minute };
-	}
-
-	function toMinutes(hm: { hour: number; minute: number }) {
-		return hm.hour * 60 + (hm.minute ?? 0);
-	}
-	function convertTimeFormat(time: Time) {
-		// Split the time string by ':'
-		const parts = time.toString().split(':');
-
-		// Return only hours and minutes
-		return `${parts[0]}:${parts[1]}`;
-	}
-
 	function confirmRange(existingIndex?: number) {
 		error = '';
 		const start = parseTimeString(rangeStart);
@@ -112,7 +56,7 @@
 			return;
 		}
 		if (toMinutes(end) <= toMinutes(start)) {
-			error = "L'orario di fine deve essere successivo all'orario di inizio";
+			error = "L'orario di fine deve essere successivo all'orario di inizio.";
 			return;
 		}
 
@@ -122,6 +66,17 @@
 			end: new Time(end.hour, end.minute)
 		};
 
+		const dayRanges = scheduleMap.get(targetDay);
+
+		if (!dayRanges) {
+			// TODO
+			return;
+		}
+
+		if (!validateRange(newRange, dayRanges)) {
+			error = "L'orario inserito va in conflitto con quelli già presenti.";
+			return false;
+		}
 		if (existingIndex !== undefined) {
 			const arr = scheduleMap.get(targetDay) ?? [];
 			arr[existingIndex] = newRange;
@@ -256,7 +211,6 @@
 																?.filter((_, i) => idx !== i) ?? [];
 
 														scheduleMap.set(Number(t), ranges);
-														console.log(scheduleMap);
 														scheduleMap = new Map(scheduleMap);
 													}
 												}}

@@ -5,18 +5,19 @@ import { KindService } from '@service/kind.service';
 import { error } from '@sveltejs/kit';
 import { BannerService } from '@service/banner.service';
 import { StaffService } from '@service/staff.service';
+import { CleanupService } from '@service/clean-up.service';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
 		return error(500);
 	}
 
-	const kinds = await new KindService().getByStaff(locals.user.data.id);
+	const kinds = await KindService.get().getByStaff(locals.user.data.id);
 	if (!kinds) {
 		return error(500);
 	}
 	return {
-		banner: await new BannerService().get(),
+		banner: await BannerService.get().get(),
 		kinds
 	};
 };
@@ -28,7 +29,7 @@ export const actions: Actions = {
 		const message = getString(data, 'message');
 		const visible = getBoolean(data, 'visible');
 
-		await new BannerService().update(message, visible);
+		await BannerService.get().update(message, visible);
 	},
 	updateKind: async ({ request, locals }) => {
 		const data = await request.formData();
@@ -47,7 +48,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const kinds = new KindService();
+		const kinds = KindService.get();
 		if (!locals.user) {
 			return {
 				success: false
@@ -102,7 +103,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const kinds = new KindService();
+		const kinds = KindService.get();
 		const response = await kinds.insert({
 			id: crypto.randomUUID(),
 			name,
@@ -139,7 +140,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const response = await new KindService().delete(id);
+		const response = await KindService.get().delete(id);
 
 		if (response) {
 			logger.info('Delete kind' + `${response.name}`);
@@ -160,6 +161,9 @@ export const actions: Actions = {
 		const active = getBoolean(data, 'active');
 		const id = getString(data, 'id');
 
-		return await new StaffService().toggleActive(active, id);
+		return await StaffService.get().toggleActive(active, id);
+	},
+	clean: async () => {
+		await CleanupService.get().deleteExpiredItems();
 	}
 };

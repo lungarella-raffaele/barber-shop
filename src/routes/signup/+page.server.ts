@@ -42,7 +42,7 @@ export const actions: Actions = {
 			return limit;
 		}
 
-		const userService = new UserService();
+		const userService = UserService.get();
 		const user = await userService.insert({ email, password, name, phoneNumber });
 
 		if (!user.isOk()) {

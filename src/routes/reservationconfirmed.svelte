@@ -62,12 +62,12 @@
 
 					<tr>
 						<th scope="row">Staff</th>
-						<td>{formatDate(reservation.staff.name)}</td>
+						<td>{reservation.staff.name}</td>
 					</tr>
 
 					<tr>
 						<th scope="row">Servizio</th>
-						<td>{formatDate(reservation.kind.name)}</td>
+						<td>{reservation.kind.name}</td>
 					</tr>
 				</tbody>
 			</table>

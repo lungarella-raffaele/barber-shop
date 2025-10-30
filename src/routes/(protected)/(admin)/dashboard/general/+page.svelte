@@ -26,6 +26,7 @@
 			toast.error('Controlla i dati inseriti.');
 		}
 	});
+	let canEdit = $state(false);
 </script>
 
 <svelte:head>
@@ -62,17 +63,34 @@
 
 <Separator class="my-8" />
 
+<h2 class="mb-2 text-lg font-bold">Database</h2>
+<form action="?/clean" method="POST">
+	<Button type="submit">Pulisci</Button>
+</form>
+
+<Separator class="my-8" />
 <h2 class="mb-2 text-lg font-bold">Stato utenza</h2>
+
 <form action="?/toggleStaff" method="POST" use:enhance>
-	<div class="flex items-center">
-		<input type="hidden" value={data.user.data.id} name="id" />
-		<Switch type="submit" checked={isStaffActive} name="active" />
-		<Label class="mb-0">
-			{#if isStaffActive}
-				Attivo
+	<div class="flex justify-between">
+		<div class="flex items-center">
+			<input type="hidden" value={data.user.data.id} name="id" />
+			<Switch disabled={!canEdit} type="submit" checked={isStaffActive} name="active" />
+			<Label class="mb-0">
+				{#if isStaffActive}
+					Attivo
+				{:else}
+					Disattivo
+				{/if}
+			</Label>
+		</div>
+
+		<Button onclick={() => (canEdit = !canEdit)} type="button">
+			{#if canEdit}
+				Annulla
 			{:else}
-				Disattivo
+				Modifica
 			{/if}
-		</Label>
+		</Button>
 	</div>
 </form>

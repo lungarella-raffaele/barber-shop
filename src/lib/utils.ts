@@ -149,26 +149,24 @@ export function printSlots(slots: Slot[]) {
 	});
 }
 
-export function mapToUI(schedule: DBSchedule[], staffID: string): ScheduleUI {
-	// Group schedules by day
-	const grouped = Object.groupBy(
-		schedule.filter((el) => el.staffID === staffID),
-		({ day }) => day
-	);
+export function parseTimeString(s: string) {
+	const parts = s.split(':');
+	if (parts.length !== 2) return null;
 
-	// Create a Map with all days initialized
-	const scheduleMap = new Map<Day, ScheduleRange[]>();
+	const hour = Number(parts[0]);
+	const minute = Number(parts[1]);
+	if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
+	return { hour, minute };
+}
 
-	// Convert grouped object to Map
-	Object.entries(grouped).forEach(([day, schedules]) => {
-		const dayNum = Number(day) as Day;
-		const ranges = (schedules || []).map((s) => ({
-			start: new Time(s.startHour, s.startMinute),
-			end: new Time(s.endHour, s.endMinute),
-			id: s.id
-		}));
-		scheduleMap.set(dayNum, ranges);
-	});
+export function toMinutes(hm: { hour: number; minute: number }) {
+	return hm.hour * 60 + (hm.minute ?? 0);
+}
 
-	return scheduleMap;
+export function convertTimeFormat(time: Time) {
+	// Split the time string by ':'
+	const parts = time.toString().split(':');
+
+	// Return only hours and minutes
+	return `${parts[0]}:${parts[1]}`;
 }

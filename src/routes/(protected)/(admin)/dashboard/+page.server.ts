@@ -6,7 +6,7 @@ import { ReservationService } from '@service/reservation.service';
 export const load: PageServerLoad = async ({ url }) => {
 	const date = url.searchParams.get('date');
 
-	const reservations = new ReservationService().getTodayReservations(
+	const reservations = ReservationService.get().getTodayReservations(
 		date ?? today(getLocalTimeZone()).toString()
 	);
 
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ url }) => {
 
 export const actions: Actions = {
 	delete: async ({ request }) => {
-		const resService = new ReservationService();
+		const resService = ReservationService.get();
 		const data = await request.formData();
 
 		const id = data.get('id') as string;

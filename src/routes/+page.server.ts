@@ -13,8 +13,8 @@ export const load: PageServerLoad = async (event) => {
 	const url = event.url;
 	const pageCase = getPageCase(url);
 
-	const resService = new ReservationService();
-	const userService = new UserService();
+	const resService = ReservationService.get();
+	const userService = UserService.get();
 
 	switch (pageCase) {
 		case PageCase.CONFIRM_RESERVATION: {
@@ -156,7 +156,7 @@ export const load: PageServerLoad = async (event) => {
 					reservation: null
 				};
 			}
-			const passwordRecover = await new PasswordRecoverService().getByID(id);
+			const passwordRecover = await PasswordRecoverService.get().getByID(id);
 			if (!passwordRecover) {
 				return {
 					pageCase,
@@ -202,13 +202,13 @@ export const actions: Actions = {
 		const password = getString(data, 'new-pass');
 		const id = getString(data, 'recover-id');
 
-		const userService = new UserService();
+		const userService = UserService.get();
 
 		if (!password) {
 			return fail(400, { message: 'Inserisci le informazioni necessarie' });
 		}
 
-		const passwordRecover = await new PasswordRecoverService().getByID(id);
+		const passwordRecover = await PasswordRecoverService.get().getByID(id);
 
 		if (!passwordRecover) {
 			logger.error(
@@ -219,7 +219,6 @@ export const actions: Actions = {
 				error: 'server_error'
 			});
 		}
-
 		if (
 			!passwordRecover.expiresAt ||
 			(passwordRecover.expiresAt && expired(passwordRecover.expiresAt.getTime()))
@@ -228,7 +227,7 @@ export const actions: Actions = {
 			return fail(500, { message: 'La richiesta è scaduta', error: 'expired' });
 		}
 
-		await new PasswordRecoverService().expire(passwordRecover.id);
+		await PasswordRecoverService.get().expire(passwordRecover.id);
 		const passwordHash = await hash(password, {
 			memoryCost: 19456,
 			timeCost: 2,
@@ -262,8 +261,8 @@ export const actions: Actions = {
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
 		if (user.role === 'staff') {
-			return redirect(302, '/dashboard');
+			redirect(303, '/dashboard');
 		}
-		return redirect(302, '/');
+		redirect(303, '/');
 	}
 };

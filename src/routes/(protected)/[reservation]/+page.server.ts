@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	const reservation = await new ReservationService().getByID(params.reservation);
+	const reservation = await ReservationService.get().getByID(params.reservation);
 
 	if (
 		!reservation ||

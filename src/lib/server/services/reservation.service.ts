@@ -7,10 +7,11 @@ import { LOCK_DURATION } from '$lib/constants';
 import type { AnonymousData, DBUser, Reservation, StaffData, UsualData } from '@types';
 import { anonymousUserSchema, staffUserSchema, usualUserSchema } from '@schema';
 import { alias } from 'drizzle-orm/sqlite-core/alias';
+import { Service } from './service';
 
 type InsertError = 'conflict' | 'invalid-data' | 'server-err';
 
-export class ReservationService {
+export class ReservationService extends Service {
 	private getReservations() {
 		const staffUser = alias(table.user, 'staffUser');
 		const customerUser = alias(table.user, 'customerUser');
@@ -147,7 +148,7 @@ export class ReservationService {
 	async insertByStaff(
 		data: StaffData,
 		user: DBUser,
-		alternativeName: string
+		alternativeName?: string
 	): Promise<Result<Reservation, InsertError>> {
 		try {
 			const schema = staffUserSchema.safeParse({
