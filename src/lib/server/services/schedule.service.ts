@@ -30,7 +30,6 @@ export class ScheduleService extends Service {
 
 	async delete(id: number): Promise<boolean> {
 		try {
-			logger.info({ id }, 'Come mai non si elimina?');
 			await db.delete(table.schedule).where(eq(table.schedule.id, id));
 			return true;
 		} catch (e) {

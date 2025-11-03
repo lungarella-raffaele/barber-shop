@@ -68,11 +68,7 @@
 
 		const dayRanges = scheduleMap.get(targetDay);
 
-		if (!dayRanges) {
-			return;
-		}
-
-		if (!validateRange(newRange, dayRanges)) {
+		if (dayRanges && !validateRange(newRange, dayRanges)) {
 			error = "L'orario inserito va in conflitto con quelli già presenti.";
 			return false;
 		}
