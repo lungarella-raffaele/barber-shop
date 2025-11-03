@@ -19,15 +19,15 @@ interface RouteConfig {
  */
 const ROUTE_CONFIGS: Record<string, RouteConfig> = {
 	login: {
-		maxRequests: 3,
+		maxRequests: 10,
 		windowMs: 15 * MINUTE_IN_MS
 	},
 	signup: {
-		maxRequests: 2,
+		maxRequests: 10,
 		windowMs: 60 * MINUTE_IN_MS
 	},
 	reservation: {
-		maxRequests: 3,
+		maxRequests: 15,
 		windowMs: 10 * MINUTE_IN_MS
 	}
 };
