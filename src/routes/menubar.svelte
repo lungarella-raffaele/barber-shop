@@ -12,9 +12,7 @@
 	let logoutForm: HTMLFormElement | undefined = $state();
 </script>
 
-<div
-	class="sticky top-0 z-40 mb-8 flex flex-1 items-center justify-between border-b bg-background p-3"
->
+<div class="mb-8 flex flex-1 items-center justify-between border-b bg-background p-3">
 	<Sidebar.Trigger />
 	<div class="flex items-center">
 		{#if !user}

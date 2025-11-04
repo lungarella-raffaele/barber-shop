@@ -40,7 +40,7 @@ export const kind = sqliteTable('kind', {
 	staffID: text('staff_id')
 		.notNull()
 		.references(() => staff.userID),
-	name: text('name').notNull().unique(),
+	name: text('name').notNull(),
 	duration: integer('duration').notNull(),
 	price: integer('price').notNull(),
 	description: text('description'),

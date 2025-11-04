@@ -4,8 +4,11 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
+	import { minutesToTime } from '$lib/utils';
+	import type { Time } from '@internationalized/date';
 	import StaffPicker from '../newreservation/components/staffpicker.svelte';
 	import type { PageData } from './$types';
+	import Duration from '$lib/components/app/duration.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -63,12 +66,11 @@
 				{#each kinds?.filter((el) => el.staffID === selectedStaff) ?? [] as kind (kind.id)}
 					<Table.Row>
 						<Table.Cell>{kind.name}</Table.Cell>
-						<Table.Cell
-							>{kind.duration}
-							<span class="text-muted-foreground">min</span></Table.Cell
-						>
-						<Table.Cell
-							>{kind.price}
+						<Table.Cell>
+							<Duration amount={kind.duration} />
+						</Table.Cell>
+						<Table.Cell>
+							{kind.price}
 							<span class="text-muted-foreground">&euro;</span>
 						</Table.Cell>
 

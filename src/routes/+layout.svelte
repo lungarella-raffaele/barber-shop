@@ -64,7 +64,7 @@
 	<main
 		class="relative flex min-h-screen w-full flex-col px-4 sm:px-8 md:px-16 lg:px-24 xl:px-48 2xl:px-80"
 	>
-		<div>
+		<div class="sticky top-0 z-40">
 			<MenuBar user={data.user} />
 		</div>
 
