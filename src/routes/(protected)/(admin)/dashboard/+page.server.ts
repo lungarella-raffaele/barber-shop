@@ -1,13 +1,18 @@
 import { getLocalTimeZone, today } from '@internationalized/date';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { ReservationService } from '@service/reservation.service';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, locals }) => {
 	const date = url.searchParams.get('date');
 
+	if (!locals.user) {
+		redirect(302, '/login');
+	}
+
 	const reservations = ReservationService.get().getTodayReservations(
-		date ?? today(getLocalTimeZone()).toString()
+		date ?? today(getLocalTimeZone()).toString(),
+		locals.user?.data.id
 	);
 
 	return {

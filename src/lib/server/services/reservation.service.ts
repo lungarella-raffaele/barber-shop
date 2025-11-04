@@ -210,10 +210,13 @@ export class ReservationService extends Service {
 		}
 	}
 
-	async getTodayReservations(date: string): Promise<Reservation[] | null> {
+	async getTodayReservations(date: string, staffID: string): Promise<Reservation[] | null> {
 		try {
 			return await this.getReservations().where(
-				and(eq(table.reservation.date, date), eq(table.reservation.pending, false))
+				and(
+					and(eq(table.reservation.date, date), eq(table.reservation.pending, false)),
+					eq(table.staff.userID, staffID)
+				)
 			);
 		} catch (err) {
 			console.error(err);

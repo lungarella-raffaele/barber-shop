@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Duration from '$lib/components/app/duration.svelte';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import type { DBKind } from '@types';
@@ -26,7 +27,7 @@
 					<RadioGroup.Item value={kind.id} id={kind.id} class="mr-4 " />
 					<div class="flex-1 text-left">
 						<div class="text-lg font-semibold">{kind.name}</div>
-						<div class="text-sm text-muted-foreground">{kind.duration} minuti</div>
+						<Duration amount={kind.duration} class="text-muted-foreground" />
 					</div>
 				</div>
 			</Label>
