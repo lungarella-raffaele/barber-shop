@@ -9,6 +9,7 @@ pnpm i
 ```
 
 Run dev server:
+
 ```bash
 pnpm dev
 ```
