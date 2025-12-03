@@ -10,15 +10,12 @@ import { EmailService } from '$lib/server/mailer.js';
 import { formatDate, formatTime } from '$lib/utils.js';
 import { BASE_URL } from '$env/static/private';
 import { ScheduleService } from '@service/schedule.service.js';
-import { rateLimit } from '$lib/server/rate-limit.js';
 
 export const actions: Actions = {
 	default: async (event) => {
 		const { request, locals } = event;
 		const user = locals.user;
 		const formData = await request.formData();
-
-		rateLimit({ event, message: 'Troppe prenotazioni. Riprova tra qualche minuto.' });
 
 		let data: Data | undefined;
 		try {

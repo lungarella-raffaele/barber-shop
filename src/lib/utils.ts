@@ -7,9 +7,7 @@ import {
 } from '@internationalized/date';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { ScheduleRange, ScheduleUI, Slot } from '@types';
-import type { Day } from './enums/days';
-import type { DBSchedule } from './server/db/schema';
+import type { Slot } from '@types';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));

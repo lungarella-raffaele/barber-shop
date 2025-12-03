@@ -3,7 +3,7 @@ import { emailSchema } from '$lib/modules/zod-schemas';
 import { loginSchema } from '$lib/modules/zod-schemas';
 import * as auth from '$lib/server/auth';
 import { getString } from '$lib/utils';
-import { fail, redirect, type ActionFailure } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { verify } from 'argon2';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -11,7 +11,6 @@ import type { Actions, PageServerLoad } from './$types';
 import { UserService } from '@service/user.service.js';
 import { PasswordRecoverService } from '@service/password-recover.service.js';
 import { EmailService } from '$lib/server/mailer';
-import { rateLimit } from '$lib/server/rate-limit';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -34,19 +33,6 @@ export const actions: Actions = {
 				form
 			});
 		}
-
-		const limit = rateLimit({
-			event,
-			email: form.data.email,
-			message: 'Troppi tentativi di login. Riprova tra 15 minuti.',
-			additionalData: { form, success: false, message: '' }
-		});
-		if (limit)
-			return limit as ActionFailure<{
-				message: string;
-				rateLimited: boolean;
-				form: typeof form;
-			}>;
 
 		const existingUser = await UserService.get().getByEmail(form.data.email);
 
@@ -89,16 +75,6 @@ export const actions: Actions = {
 		const correctEmail = emailSchema.safeParse(email);
 		if (!correctEmail.success) {
 			return fail(404, { success: false, message: 'Inserisci una mail valida' });
-		}
-
-		// Rate limit by email to prevent abuse
-		const limit = rateLimit({
-			event,
-			email,
-			message: "Troppi tentativi di recupero password. Riprova tra un'ora."
-		});
-		if (limit) {
-			return limit;
 		}
 
 		const userService = UserService.get();
