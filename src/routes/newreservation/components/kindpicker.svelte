@@ -25,7 +25,7 @@
 			>
 				<div class="flex items-center">
 					<RadioGroup.Item value={kind.id} id={kind.id} class="mr-4 " />
-					<div class="flex-1 text-left">
+					<div class="flex-1 text-wrap break-all text-left">
 						<div class="text-lg font-semibold">{kind.name}</div>
 						<Duration amount={kind.duration} class="text-muted-foreground" />
 					</div>
