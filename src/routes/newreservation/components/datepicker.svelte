@@ -30,6 +30,7 @@
 	bind:value={
 		() => {
 			try {
+				console.log(rm.data.date);
 				return parseDate(rm.data.date);
 			} catch {
 				return undefined;
