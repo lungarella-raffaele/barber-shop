@@ -42,7 +42,7 @@ export const signupSchema = z
 // Shared field schemas
 const nameSchema = z.string().min(1);
 const dateSchema = z.string().date();
-const hourSchema = z.string();
+const hourSchema = z.string().min(1);
 const kindSchema = z.string().min(1);
 const staffSchema = z.string().min(1);
 const phoneSchema = z.string().optional();

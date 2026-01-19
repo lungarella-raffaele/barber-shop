@@ -89,6 +89,7 @@
 			data.currentReservations
 				.filter((entry) => entry.staff.id === rm.data.staff) // Chosen staff member
 				.filter((el) => el.date === rm.data.date) // Chosen date
+				.filter((entry) => entry.hour) // Ensure hour is not empty
 				.map((entry) => ({
 					date: parseDate(entry.date),
 					start: parseTime(entry.hour),
