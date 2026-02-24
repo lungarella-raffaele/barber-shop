@@ -1,13 +1,13 @@
-import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/libsql';
+import { DATABASE_AUTH_TOKEN, DATABASE_CONNECTION_URL } from "$env/static/private";
+import { drizzle } from "drizzle-orm/libsql";
 
-config({ path: '.env' });
+const url = DATABASE_CONNECTION_URL;
+const authToken = DATABASE_AUTH_TOKEN || undefined;
+
+if (!url) {
+  throw new Error("DATABASE_CONNECTION_URL is not set");
+}
 
 export const db = drizzle({
-	connection: {
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		url: process.env.DATABASE_CONNECTION_URL!,
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		authToken: process.env.DATABASE_AUTH_TOKEN!
-	}
+  connection: { url, authToken },
 });

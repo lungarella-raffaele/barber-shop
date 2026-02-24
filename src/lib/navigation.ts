@@ -1,0 +1,112 @@
+import { dev } from "$app/environment";
+import {
+  Calendar,
+  CirclePlus,
+  CircleUser,
+  Citrus,
+  Euro,
+  Library,
+  LogOut,
+  Puzzle,
+} from "$lib/components/icons/index";
+import type { User } from "$lib/domain";
+import type { Component } from "@lucide/svelte";
+
+export const ROUTES = {
+  home: "/",
+  prices: "/prices",
+  book: "/book",
+  dashboard: "/dashboard",
+  profile: "/profile",
+  myReservations: "/profile/myreservations",
+  login: "/login",
+  signup: "/signup",
+  logout: "/profile?/logout",
+  showcase: "/showcase",
+  settings: "/dashboard/general",
+} as const;
+
+type Route = (typeof ROUTES)[keyof typeof ROUTES];
+type NavigationVisibility = "public" | "logged-out" | "logged-in" | "admin" | "dev";
+type NavigationAction = "link" | "logout";
+
+export type NavigationItem = {
+  title: string;
+  url: Route;
+  icon: typeof Component;
+  visibility: NavigationVisibility;
+  action?: NavigationAction;
+};
+
+const navigation = [
+  {
+    title: "Showcase",
+    url: ROUTES.showcase,
+    icon: Puzzle,
+    visibility: "dev",
+  },
+  { title: "Prenota", url: ROUTES.book, icon: Calendar, visibility: "public" },
+  { title: "Servizi", url: ROUTES.prices, icon: Euro, visibility: "public" },
+  {
+    title: "Accedi",
+    url: ROUTES.login,
+    icon: CircleUser,
+    visibility: "logged-out",
+  },
+  {
+    title: "Registrati",
+    url: ROUTES.signup,
+    icon: CirclePlus,
+    visibility: "logged-out",
+  },
+  {
+    title: "Profilo",
+    url: ROUTES.profile,
+    icon: CircleUser,
+    visibility: "logged-in",
+  },
+  {
+    title: "Prenotazioni",
+    url: ROUTES.myReservations,
+    icon: Library,
+    visibility: "logged-in",
+  },
+  {
+    title: "Dashboard",
+    url: ROUTES.dashboard,
+    icon: Citrus,
+    visibility: "admin",
+  },
+  {
+    title: "Impostazioni",
+    url: ROUTES.settings,
+    icon: Citrus,
+    visibility: "admin",
+  },
+  {
+    title: "Logout",
+    url: ROUTES.logout,
+    icon: LogOut,
+    visibility: "logged-in",
+    action: "logout",
+  },
+] as const satisfies readonly NavigationItem[];
+
+export function getNavigationItems(user: User | null): NavigationItem[] {
+  return navigation.filter((item) => {
+    switch (item.visibility) {
+      case "public":
+        return true;
+      case "logged-out":
+        return user === null;
+      case "logged-in":
+        return user !== null;
+      case "admin":
+        return user?.role === "staff";
+      case "dev":
+        return dev;
+    }
+  });
+}
+
+export const isNavigationItemActive = (pathname: string, url: string) => pathname === url;

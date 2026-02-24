@@ -1,217 +1,268 @@
-import { BASE_URL } from '$env/static/private';
-import { emailSchema } from '$lib/modules/zod-schemas';
-import { passwordSchema } from '$lib/modules/zod-schemas';
-import { logger } from '$lib/server/logger';
-import { getString } from '$lib/utils';
-import { fail, redirect } from '@sveltejs/kit';
-import { hash, verify } from 'argon2';
-import type { Actions, PageServerLoad } from './$types';
-import { UserService } from '@service/user.service.js';
-import { EmailVerificationService } from '@service/email-verification.service.js';
-import { SessionService } from '@service/session.service.js';
-import { PasswordRecoverService } from '@service/password-recover.service.js';
-import { ReservationService } from '@service/reservation.service.js';
-import { err, ok, type Result } from '$lib/modules/result';
-import { EmailService } from '$lib/server/mailer';
-import * as auth from '$lib/server/auth';
+import { BASE_URL } from "$env/static/private";
+import { profileChangeEmailSchema, profileChangePasswordSchema } from "$lib/modules/zod-schemas";
+import * as auth from "$lib/server/auth";
+import { logger } from "$lib/server/logger";
+import { EmailService } from "$lib/server/mailer";
+import { getNumber, getString } from "$lib/utils";
+import { EmailVerificationService } from "@service/email-verification.service.js";
+import { PasswordRecoverService } from "@service/password-recover.service.js";
+import { PublicTokenService } from "@service/public-token.service.js";
+import { ReservationService } from "@service/reservation.service.js";
+import { SessionService } from "@service/session.service.js";
+import { StaffService } from "@service/staff.service";
+import { UserService } from "@service/user.service.js";
+import { fail, redirect } from "@sveltejs/kit";
+import { hash, verify } from "argon2";
+import { message, setError, superValidate } from "sveltekit-superforms";
+import { zod4 as zod } from "sveltekit-superforms/adapters";
+
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	const confirmID = url.searchParams.get('confirm-email-change'); // Coming from an email
-	const userService = UserService.get();
+  if (!locals.user) {
+    redirect(301, "/login");
+  }
 
-	let updatedEmail: Result<undefined, undefined> | null = null;
-	if (confirmID) {
-		const verified = await EmailVerificationService.get().getByID(confirmID);
+  const confirmID = url.searchParams.get("confirm-email-change"); // Coming from an email
 
-		if (verified) {
-			if (await userService.updateEmail(verified.userID, verified.email)) {
-				updatedEmail = ok(undefined);
-			}
-		}
+  const changeEmailForm = await superValidate(zod(profileChangeEmailSchema));
+  const changePasswordForm = await superValidate(zod(profileChangePasswordSchema));
 
-		updatedEmail = err(undefined);
-	}
+  if (confirmID) {
+    const userService = UserService.get();
+    const verified = await EmailVerificationService.get().getByID(confirmID);
 
-	if (!locals.user) {
-		redirect(301, '/login');
-	}
+    if (verified) {
+      const updatedEmail = await userService.updateEmail(verified.userID, verified.email);
+      return {
+        user: locals.user,
+        title: "Profilo -",
+        updatedEmail,
+        changeEmailForm,
+        changePasswordForm,
+      };
+    }
+  }
 
-	return {
-		user: locals.user,
-		title: 'Profilo -',
-		updatedEmail
-	};
+  return {
+    user: locals.user,
+    title: "Profilo -",
+    updatedEmail: null,
+    changeEmailForm,
+    changePasswordForm,
+  };
 };
 
 export const actions: Actions = {
-	logout: async (event) => {
-		logger.info('Logging out...');
-		if (!event.locals.session) {
-			return fail(401);
-		}
+  logout: async (event) => {
+    logger.info("Logging out...");
+    if (!event.locals.session) {
+      return fail(401);
+    }
 
-		await auth.invalidateSession(event.locals.session.id);
-		auth.deleteSessionTokenCookie(event);
+    await auth.invalidateSession(event.locals.session.id);
+    auth.deleteSessionTokenCookie(event);
 
-		return redirect(302, '/');
-	},
-	updateInfo: async ({ locals, request, url }) => {
-		const userService = UserService.get();
+    return redirect(302, "/");
+  },
 
-		if (!locals.session || !locals.user) {
-			return fail(401, { success: false });
-		}
+  updateAvatar: async ({ request, locals }) => {
+    if (!locals.user) return { avatarSuccess: false };
 
-		const formData = await request.formData();
-		const phone = getString(formData, 'phone');
-		const name = getString(formData, 'name');
+    const data = await request.formData();
+    const avatarBase64 = getString(data, "avatarBase64");
+    const avatarOriginal = getString(data, "avatarOriginal");
+    const offsetX = getNumber(data, "offsetX");
+    const offsetY = getNumber(data, "offsetY");
+    const displayScale = getNumber(data, "displayScale");
 
-		if (!name) {
-			return fail(400, { success: false });
-		}
+    if (!avatarBase64 || !avatarOriginal) return { avatarSuccess: false };
 
-		if (locals.user.data.phoneNumber !== phone) {
-			await userService.updatePhoneNumber(locals.user.data.id, phone);
-		}
+    const result = await StaffService.get().updateAvatar(
+      locals.user.data.id,
+      avatarBase64,
+      avatarOriginal,
+      offsetX,
+      offsetY,
+      displayScale,
+    );
+    return { avatarSuccess: !!result };
+  },
+  deleteAvatar: async ({ locals }) => {
+    if (!locals.user) return { avatarSuccess: false };
 
-		if (name && locals.user.data.name !== name) {
-			await userService.updateName(locals.user.data.id, name);
-		}
+    const result = await StaffService.get().deleteAvatar(locals.user.data.id);
+    return { avatarSuccess: !!result };
+  },
+  updateInfo: async ({ locals, request, url }) => {
+    const userService = UserService.get();
 
-		redirect(302, url.pathname);
-	},
-	changeEmail: async ({ locals, request }) => {
-		if (!locals.session || !locals.user) {
-			return fail(401);
-		}
+    if (!locals.session || !locals.user) {
+      return fail(401, { success: false });
+    }
 
-		const formData = await request.formData();
-		const email = getString(formData, 'email').toLowerCase().trim();
+    const formData = await request.formData();
+    const phone = getString(formData, "phone");
+    const name = getString(formData, "name");
 
-		const correctEmail = emailSchema.safeParse(email);
+    if (!name) {
+      return fail(400, { success: false });
+    }
 
-		if (!correctEmail.success) {
-			return fail(400, { message: 'Inserisci una mail valida', success: false });
-		}
+    if (locals.user.data.phoneNumber !== phone) {
+      await userService.updatePhoneNumber(locals.user.data.id, phone);
+    }
 
-		const userService = UserService.get();
-		const existingUser = await userService.getByEmail(email);
+    if (name && locals.user.data.name !== name) {
+      await userService.updateName(locals.user.data.id, name);
+    }
 
-		if (existingUser && existingUser.data.verifiedEmail) {
-			return fail(400, {
-				message: 'Esiste già un utente con la mail inserita',
-				success: false
-			});
-		}
+    redirect(302, url.pathname);
+  },
+  changeEmail: async ({ locals, request }) => {
+    if (!locals.session || !locals.user) {
+      return fail(401);
+    }
 
-		const emailVerification = await EmailVerificationService.get().insert(
-			email,
-			locals.user.data.id
-		);
+    const form = await superValidate(request, zod(profileChangeEmailSchema));
+    if (!form.valid) {
+      return fail(400, { changeEmailForm: form });
+    }
 
-		if (!emailVerification) {
-			return fail(400, {
-				message: 'Impossibile cambiare la mail. Riprova più tardi.',
-				success: false
-			});
-		}
+    const email = form.data.email.toLowerCase().trim();
 
-		const sent = await new EmailService().changeEmail({
-			name: locals.user.data.name,
-			to: email,
-			link: `${BASE_URL}/profile?confirm-email-change=${emailVerification.id}`
-		});
+    const userService = UserService.get();
+    const existingUser = await userService.getByEmail(email);
 
-		if (sent.isErr()) {
-			await EmailVerificationService.get().delete(emailVerification.id);
+    if (existingUser && existingUser.data.verifiedEmail) {
+      return setError(form, "email", "Email non disponibile");
+    }
 
-			return fail(500, {
-				message: 'Impossibile cambiare email. Riprova più tardi',
-				success: false
-			});
-		}
+    const emailVerification = await EmailVerificationService.get().insert(
+      email,
+      locals.user.data.id,
+    );
 
-		return {
-			success: true
-		};
-	},
-	deleteAccount: async (event) => {
-		const user = event.locals.user;
-		const session = event.locals.session;
+    if (!emailVerification) {
+      return message(
+        form,
+        { success: false, text: "Impossibile cambiare la mail. Riprova più tardi." },
+        { status: 400 },
+      );
+    }
 
-		if (!user || !session) {
-			logger.warn('Cannot delete account');
-			return fail(403);
-		}
+    const sent = await new EmailService().changeEmail({
+      name: locals.user.data.name,
+      to: email,
+      link: `${BASE_URL.replace(/\/$/, "")}/account/confirm-email-change/${emailVerification.id}`,
+    });
 
-		const userService = UserService.get();
-		const sessionService = SessionService.get();
-		const passwordRecoverService = PasswordRecoverService.get();
-		const reservationService = ReservationService.get();
+    if (sent.isErr()) {
+      await EmailVerificationService.get().delete(emailVerification.id);
 
-		logger.warn('Deleting account of user: ' + user.data.email);
+      return message(
+        form,
+        { success: false, text: "Impossibile cambiare email. Riprova più tardi" },
+        { status: 500 },
+      );
+    }
 
-		// Delete all related data
-		await sessionService.deleteAllByUserID(user.data.id);
-		await reservationService.deleteAll(user.data.email);
-		await passwordRecoverService.deleteByUserID(user.data.id);
+    return message(form, {
+      success: true,
+      text: "Email inviata. Controlla la tua casella di posta.",
+    });
+  },
+  deleteAccount: async (event) => {
+    const user = event.locals.user;
+    const session = event.locals.session;
 
-		const res = await userService.delete(user.data.id);
+    if (!user || !session) {
+      logger.warn("Cannot delete account");
+      return fail(403);
+    }
 
-		if (res) {
-			logger.info('Successfully deleted account of user: ' + res.email);
-			auth.deleteSessionTokenCookie(event);
+    const userService = UserService.get();
+    const sessionService = SessionService.get();
+    const passwordRecoverService = PasswordRecoverService.get();
+    const publicTokenService = PublicTokenService.get();
+    const reservationService = ReservationService.get();
 
-			return redirect(302, '/');
-		} else {
-			logger.error('Error while deleting account of user: ' + user.data.email);
-			return fail(500);
-		}
-	},
-	changePassword: async (event) => {
-		const userService = UserService.get();
-		const user = event.locals.user;
-		const session = event.locals.session;
+    logger.warn("Deleting account of user: " + user.data.email);
 
-		if (!user || !session) {
-			return fail(400);
-		}
+    // Delete all related data
+    await sessionService.deleteAllByUserID(user.data.id);
+    await reservationService.deleteAll(user.data.email);
+    await passwordRecoverService.deleteByUserID(user.data.id);
+    await publicTokenService.deleteByUserID(user.data.id);
 
-		const formData = await event.request.formData();
-		const newPassword = getString(formData, 'new-pass');
-		const oldPassword = getString(formData, 'old-pass');
+    const res = await userService.delete(user.data.id);
 
-		const isPasswordSafe = passwordSchema.safeParse(newPassword);
+    if (res) {
+      logger.info("Successfully deleted account of user: " + res.email);
+      auth.deleteSessionTokenCookie(event);
 
-		if (!isPasswordSafe.success) {
-			return fail(404, { message: 'La password inserita non è sicura' });
-		}
+      return redirect(302, "/");
+    } else {
+      logger.error("Error while deleting account of user: " + user.data.email);
+      return fail(500);
+    }
+  },
+  changePassword: async (event) => {
+    const user = event.locals.user;
+    const session = event.locals.session;
 
-		const validPassword = await verify(user.data.passwordHash, oldPassword, {});
+    if (!user || !session) {
+      return fail(401);
+    }
 
-		if (!validPassword) {
-			return fail(404, {
-				message: 'La password attuale non è corretta'
-			});
-		}
+    const form = await superValidate(event, zod(profileChangePasswordSchema));
+    if (!form.valid) {
+      return fail(400, { changePasswordForm: form });
+    }
 
-		if (newPassword === oldPassword) {
-			return fail(404, {
-				message: 'Devi inserire una password diversa dalla precedente'
-			});
-		}
+    const { oldPassword, newPassword } = form.data;
 
-		const passwordHash = await hash(newPassword, {
-			memoryCost: 19456,
-			timeCost: 2,
-			parallelism: 1
-		});
+    const validPassword = await verify(user.data.passwordHash, oldPassword, {});
+    if (!validPassword) {
+      return message(
+        form,
+        { success: false, text: "La password attuale non è corretta." },
+        { status: 400 },
+      );
+    }
 
-		const response = await userService.updatePassword(passwordHash, user.data.id);
-		if (!response) {
-			return fail(404, {
-				message: 'Impossibile aggiornare la password. Riprova più tardi.'
-			});
-		}
-	}
+    if (newPassword === oldPassword) {
+      return message(
+        form,
+        {
+          success: false,
+          text: "La nuova password deve essere diversa da quella attuale.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const passwordHash = await hash(newPassword, {
+      memoryCost: 19456,
+      timeCost: 2,
+      parallelism: 1,
+    });
+
+    const response = await UserService.get().updatePassword(passwordHash, user.data.id);
+    if (!response) {
+      return message(
+        form,
+        {
+          success: false,
+          text: "Impossibile aggiornare la password. Riprova più tardi.",
+        },
+        { status: 500 },
+      );
+    }
+
+    return message(form, {
+      success: true,
+      text: "Password aggiornata con successo!",
+    });
+  },
 };

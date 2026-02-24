@@ -1,36 +1,42 @@
-import { Resend } from 'resend';
-import { MAILER } from '$env/static/private';
-import { BARBER_SHOP_DETAILS } from '$lib/constants';
-import { logger } from './logger';
-import { err, ok } from '$lib/modules/result';
+import { MAILER } from "$env/static/private";
+import { BARBER_SHOP_DETAILS } from "$lib/constants";
+import { err, ok } from "$lib/modules/result";
+import { Resend } from "resend";
 
-const resend = new Resend(MAILER);
+import { logger } from "./logger";
+
+function getResend() {
+  return new Resend(MAILER);
+}
 
 export class EmailService {
-	#from = 'Emi Hair Club <users@mailer.emihairclub.com>';
-	private async send(payload: { body: string; to: string; subject: string }) {
-		try {
-			const emailResponse = await resend.emails.send({
-				// from: mailer,
-				from: this.#from,
-				to: payload.to,
-				subject: payload.subject,
-				html: `${TEMPLATE(payload.body)}`
-			});
+  #from = "Emi Hair Club <users@mailer.emihairclub.com>";
+  private async send(payload: { body: string; to: string; subject: string }) {
+    try {
+      const emailResponse = await getResend().emails.send({
+        // from: mailer,
+        from: this.#from,
+        to: payload.to,
+        subject: payload.subject,
+        html: `${TEMPLATE(payload.body)}`,
+      });
 
-			if (emailResponse.data) {
-				return ok(emailResponse.data.id);
-			} else {
-				throw new Error('');
-			}
-		} catch {
-			logger.error({ payload }, `Could not send email with payload: `);
-			return err('generic-error');
-		}
-	}
+      if (emailResponse.data) {
+        return ok(emailResponse.data.id);
+      } else {
+        throw new Error("");
+      }
+    } catch (error) {
+      logger.error(
+        { err: error, recipient: payload.to, subject: payload.subject },
+        "Could not send email",
+      );
+      return err("generic-error");
+    }
+  }
 
-	async verifyEmail(data: { name: string; link: string; to: string }) {
-		const body = `
+  async verifyEmail(data: { name: string; link: string; to: string }) {
+    const body = `
 		<p>Verifica email</p>
 		<hr />
 
@@ -43,11 +49,11 @@ export class EmailService {
 
 		<p>Se l'email ti è stata inviata per sbaglio, ignorala</p>
 		`;
-		return await this.send({ body, to: data.to, subject: 'Verifica email' });
-	}
+    return await this.send({ body, to: data.to, subject: "Verifica email" });
+  }
 
-	async recoverPassword(data: { name: string; link: string; to: string }) {
-		const body = `
+  async recoverPassword(data: { name: string; link: string; to: string }) {
+    const body = `
 			<p>Cambio password</p>
 			<hr />
 
@@ -59,19 +65,19 @@ export class EmailService {
 			</div>
 			`;
 
-		return await this.send({ body, to: data.to, subject: 'Richiesta di cambio password' });
-	}
+    return await this.send({ body, to: data.to, subject: "Richiesta di cambio password" });
+  }
 
-	async newReservation(data: {
-		name: string;
-		date: string;
-		hour: string;
-		staffName: string;
-		serviceName: string;
-		link: string;
-		to: string;
-	}) {
-		const body = `
+  async newReservation(data: {
+    name: string;
+    date: string;
+    hour: string;
+    staffName: string;
+    serviceNames: string[];
+    link: string;
+    to: string;
+  }) {
+    const body = `
 		<p>Conferma prenotazione</p>
 		<hr />
 
@@ -83,7 +89,7 @@ export class EmailService {
 		<p><strong>Data: </strong> ${data.date}</p>
 		<p><strong>Ora: </strong> ${data.hour}</p>
 		<p><strong>Staff: </strong> ${data.staffName}</p>
-		<p><strong>Servizio: </strong> ${data.serviceName}</p>
+		<p><strong>Servizi: </strong> ${data.serviceNames.join(", ")}</p>
 		</div>
 
 		<div class="confirm-wrapper">
@@ -91,11 +97,11 @@ export class EmailService {
 		</div>
 		`;
 
-		return await this.send({ body, to: data.to, subject: 'Conferma prenotazione' });
-	}
+    return await this.send({ body, to: data.to, subject: "Conferma prenotazione" });
+  }
 
-	async changeEmail(data: { name: string; link: string; to: string }) {
-		const body = `
+  async changeEmail(data: { name: string; link: string; to: string }) {
+    const body = `
 			<p>Cambio mail</p>
 			<hr />
 
@@ -107,12 +113,12 @@ export class EmailService {
 			</div>
 		`;
 
-		return await this.send({ body, to: data.to, subject: 'Cambio mail' });
-	}
+    return await this.send({ body, to: data.to, subject: "Cambio mail" });
+  }
 }
 
 const TEMPLATE = (CONTENT: string) =>
-	`
+  `
 	<!doctype html>
 	<html lang="it">
 		<head>
@@ -212,8 +218,8 @@ const TEMPLATE = (CONTENT: string) =>
 				<p>
 					<strong>Emi Hair Club</strong>
 					<br />
-					${BARBER_SHOP_DETAILS.street ?? ''}<br />
-					${BARBER_SHOP_DETAILS.phone ?? ''}
+					${BARBER_SHOP_DETAILS.street ?? ""}<br />
+					${BARBER_SHOP_DETAILS.phone ?? ""}
 				</p>
 				<div class="footer">
 					<p>${new Date().getFullYear()} Emi Hair Club</p>

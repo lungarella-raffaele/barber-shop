@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["docs/**", "migrations/**"],
+  "trailingComma": "all",
+  "sortImports": true,
+  "svelte": true,
+  "tabWidth": 2
+}

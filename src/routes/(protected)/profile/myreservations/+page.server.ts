@@ -1,38 +1,67 @@
-import type { PageServerLoad } from './$types';
-import { error, fail, redirect, type Actions } from '@sveltejs/kit';
-import { logger } from '$lib/server/logger';
-import { ReservationService } from '@service/reservation.service';
+import { logger } from "$lib/server/logger";
+import { ReservationService } from "@service/reservation.service";
+import { error, fail, redirect, type Actions } from "@sveltejs/kit";
+
+import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) {
-		redirect(303, '/login');
-	}
+  if (!locals.user) {
+    redirect(303, "/login");
+  }
 
-	const reservations = await ReservationService.get().getByUser(locals.user.data.email);
+  const reservations = await ReservationService.get().getByUser(locals.user.data.email);
 
-	if (!reservations) {
-		return error(500);
-	}
+  if (!reservations) {
+    return error(500);
+  }
 
-	logger.info(`Retrieved ${reservations.length} reservations`);
+  logger.info(`Retrieved ${reservations.length} reservations`);
 
-	return { reservations, title: 'Prenotazioni -' };
+  return { reservations, title: "Prenotazioni -" };
 };
 
 export const actions: Actions = {
-	delete: async ({ request }) => {
-		const data = await request.formData();
+  delete: async ({ locals, request }) => {
+    if (!locals.user) {
+      redirect(303, "/login");
+    }
 
-		const id = data.get('id') as string;
+    const data = await request.formData();
+    const id = data.get("id")?.toString();
 
-		const res = await ReservationService.get().delete(id);
+    if (!id) {
+      return fail(400, { success: false });
+    }
 
-		if (res) {
-			return {
-				res
-			};
-		} else {
-			return fail(500, { success: false });
-		}
-	}
+    const res = await ReservationService.get().deleteByUser(id, locals.user.data.email);
+
+    if (res && res.length > 0) {
+      return { res };
+    }
+
+    return fail(404, { success: false });
+  },
+  deleteBatch: async ({ locals, request }) => {
+    if (!locals.user) {
+      redirect(303, "/login");
+    }
+
+    const data = await request.formData();
+    const ids = data
+      .getAll("ids")
+      .map((id) => id.toString())
+      .filter(Boolean);
+
+    if (ids.length === 0) {
+      return fail(400, { success: false });
+    }
+
+    const res = await ReservationService.get().deleteManyByUser(ids, locals.user.data.email);
+
+    if (res) {
+      return { res, deleted: res.length };
+    }
+
+    return fail(500, { success: false });
+  },
 };

@@ -1,364 +1,456 @@
-import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
-import { and, count, eq, gt, lt, sql } from 'drizzle-orm';
-import { logger } from '../logger';
-import { err, ok, type Result } from '$lib/modules/result';
-import { LOCK_DURATION } from '$lib/constants';
-import type { AnonymousData, DBUser, Reservation, StaffData, UsualData } from '@types';
-import { anonymousUserSchema, staffUserSchema, usualUserSchema } from '@schema';
-import { alias } from 'drizzle-orm/sqlite-core/alias';
-import { Service } from './service';
+import { LOCK_DURATION } from "$lib/constants";
+import { err, ok, type Result } from "$lib/modules/result";
+import { db } from "$lib/server/db";
+import * as table from "$lib/server/db/schema";
+import type { DBUser } from "$lib/server/db/schema";
+import type { AnonymousData, Reservation, StaffData, UsualData } from "@domain";
+import { anonymousUserSchema, staffUserSchema, usualUserSchema } from "@schema";
+import { and, asc, count, eq, gt, inArray, lt, sql, type SQL } from "drizzle-orm";
+import { alias } from "drizzle-orm/sqlite-core/alias";
 
-type InsertError = 'conflict' | 'invalid-data' | 'server-err';
+import { createLogger } from "../logger";
+import { Service } from "./service";
+
+const logger = createLogger("ReservationService");
+
+type InsertError = "conflict" | "invalid-data" | "server-err";
+type InsertReservation = typeof table.reservation.$inferInsert;
+type ReservationKind = Reservation["kinds"][number];
+
+type ReservationRow = Omit<Reservation, "kinds"> & {
+  kind: ReservationKind;
+  position: number;
+};
 
 export class ReservationService extends Service {
-	private getReservations() {
-		const staffUser = alias(table.user, 'staffUser');
-		const customerUser = alias(table.user, 'customerUser');
+  private getReservationRows() {
+    const staffUser = alias(table.user, "staffUser");
+    const customerUser = alias(table.user, "customerUser");
 
-		return db
-			.select({
-				id: table.reservation.id,
-				date: table.reservation.date,
-				hour: table.reservation.hour,
-				name: table.reservation.name,
-				email: table.reservation.email,
-				pending: table.reservation.pending,
-				expiresAt: table.reservation.expiresAt,
-				staff: {
-					id: staffUser.id,
-					name: staffUser.name
-				},
-				kind: {
-					duration: table.kind.duration,
-					name: table.kind.name,
-					price: table.kind.price
-				},
-				user: {
-					name: customerUser.name,
-					email: customerUser.email,
-					id: customerUser.id
-				}
-			})
-			.from(table.reservation)
-			.innerJoin(table.kind, eq(table.reservation.kindID, table.kind.id))
-			.innerJoin(table.staff, eq(table.reservation.staffID, table.staff.userID))
-			.innerJoin(staffUser, eq(table.staff.userID, staffUser.id))
-			.leftJoin(customerUser, eq(table.reservation.email, customerUser.email));
-	}
+    return db
+      .select({
+        id: table.reservation.id,
+        date: table.reservation.date,
+        hour: table.reservation.hour,
+        name: table.reservation.name,
+        email: table.reservation.email,
+        pending: table.reservation.pending,
+        expiresAt: table.reservation.expiresAt,
+        staff: {
+          id: staffUser.id,
+          name: staffUser.name,
+        },
+        kind: {
+          id: table.kind.id,
+          duration: table.kind.duration,
+          name: table.kind.name,
+          price: table.kind.price,
+        },
+        position: table.reservationKind.position,
+        user: {
+          name: customerUser.name,
+          email: customerUser.email,
+          id: customerUser.id,
+        },
+      })
+      .from(table.reservation)
+      .innerJoin(
+        table.reservationKind,
+        eq(table.reservation.id, table.reservationKind.reservationID),
+      )
+      .innerJoin(table.kind, eq(table.reservationKind.kindID, table.kind.id))
+      .innerJoin(table.staff, eq(table.reservation.staffID, table.staff.userID))
+      .innerJoin(staffUser, eq(table.staff.userID, staffUser.id))
+      .leftJoin(customerUser, eq(table.reservation.email, customerUser.email))
+      .orderBy(asc(table.reservation.id), asc(table.reservationKind.position));
+  }
 
-	async insertByUser(data: UsualData, user: DBUser): Promise<Result<Reservation, InsertError>> {
-		try {
-			const schema = usualUserSchema.safeParse({ ...data, date: data.date?.toString() });
+  private aggregateReservations(rows: ReservationRow[]): Reservation[] {
+    const reservations = new Map<string, Reservation>();
 
-			if (!schema.success) {
-				logger.error(schema.error.issues);
-				return err('invalid-data');
-			}
+    for (const { kind, position: _position, ...row } of rows) {
+      const existing = reservations.get(row.id);
+      if (existing) {
+        existing.kinds.push(kind);
+      } else {
+        reservations.set(row.id, { ...row, kinds: [kind] });
+      }
+    }
 
-			const { date, hour, kind, staff } = schema.data;
+    return [...reservations.values()];
+  }
 
-			const expiresAt = new Date(date);
-			expiresAt.setDate(expiresAt.getDate() + 1);
-			expiresAt.setHours(23, 59, 59, 999);
+  private async findReservations(where: SQL | undefined) {
+    const rows = await this.getReservationRows().where(where);
+    return this.aggregateReservations(rows as ReservationRow[]);
+  }
 
-			const reservation: table.DBReservation = {
-				date,
-				hour,
-				id: crypto.randomUUID(),
-				kindID: kind,
-				name: user.name,
-				phoneNumber: user.phoneNumber,
-				email: user.email,
-				pending: false,
-				expiresAt,
-				staffID: staff
-			};
+  private validateKindIDs(kinds: string[]): boolean {
+    return kinds.length > 0 && new Set(kinds).size === kinds.length;
+  }
 
-			const queryRes = await this.insertWithAvailabilityCheck(reservation);
+  private endOfReservationDay(date: string): Date {
+    const expiresAt = new Date(date);
+    expiresAt.setDate(expiresAt.getDate() + 1);
+    expiresAt.setHours(23, 59, 59, 999);
+    return expiresAt;
+  }
 
-			if (queryRes.isErr()) {
-				logger.error('Could not insert reservation');
-				return err(queryRes.error);
-			}
+  async insertByUser(data: UsualData, user: DBUser): Promise<Result<Reservation, InsertError>> {
+    try {
+      const schema = usualUserSchema.safeParse({ ...data, date: data.date?.toString() });
+      if (!schema.success || !this.validateKindIDs(schema.data.kinds)) {
+        logger.error(
+          { issues: schema.success ? "duplicate-kinds" : schema.error.issues, userId: user.id },
+          "insertByUser validation failed",
+        );
+        return err("invalid-data");
+      }
 
-			const fullReservation = await this.getByID(queryRes.unwrap().id);
-			if (!fullReservation) {
-				logger.error('Could not fetch inserted reservation');
-				return err('server-err');
-			}
+      const { date, hour, kinds, staff } = schema.data;
+      return await this.insertAndFetch(
+        {
+          date,
+          hour,
+          id: crypto.randomUUID(),
+          name: user.name,
+          phoneNumber: user.phoneNumber,
+          email: user.email,
+          pending: false,
+          expiresAt: this.endOfReservationDay(date),
+          staffID: staff,
+        },
+        kinds,
+        { userId: user.id, source: "insertByUser" },
+      );
+    } catch (e) {
+      logger.error({ err: e, userId: user.id }, "insertByUser failed");
+      return err("server-err");
+    }
+  }
 
-			return ok(fullReservation);
-		} catch (e) {
-			logger.error({ e }, 'Error while adding usual user');
-			return err('server-err');
-		}
-	}
+  async insertByAnonymous(data: AnonymousData): Promise<Result<Reservation, InsertError>> {
+    try {
+      const schema = anonymousUserSchema.safeParse({
+        ...data,
+        email: data.email.toLowerCase().trim(),
+        date: data.date?.toString(),
+      });
+      if (!schema.success || !this.validateKindIDs(schema.data.kinds)) {
+        logger.warn(
+          { reason: schema.success ? "duplicate-kinds" : schema.error.issues[0]?.path },
+          "insertByAnonymous validation failed",
+        );
+        return err("invalid-data");
+      }
 
-	async insertByAnonymous(data: AnonymousData): Promise<Result<Reservation, InsertError>> {
-		try {
-			const schema = anonymousUserSchema.safeParse({
-				name: data.name,
-				email: data.email.toLowerCase().trim(),
-				date: data.date?.toString(),
-				hour: data.hour,
-				kind: data.kind,
-				staff: data.staff
-			});
+      const reservation: InsertReservation = {
+        date: schema.data.date,
+        hour: schema.data.hour,
+        id: crypto.randomUUID(),
+        name: schema.data.name,
+        phoneNumber: schema.data.phone ?? null,
+        email: schema.data.email,
+        expiresAt: new Date(Date.now() + LOCK_DURATION),
+        pending: true,
+        staffID: schema.data.staff,
+      };
+      return await this.insertAndFetch(reservation, schema.data.kinds, {
+        email: schema.data.email,
+        source: "insertByAnonymous",
+      });
+    } catch (e) {
+      logger.error({ err: e }, "insertByAnonymous failed");
+      return err("server-err");
+    }
+  }
 
-			if (!schema.success) {
-				const { path } = schema.error.issues[0];
-				logger.warn({ reason: path }, 'Could not create reservation');
-				return err('invalid-data');
-			}
+  async insertByStaff(
+    data: StaffData,
+    user: DBUser,
+    alternativeName?: string,
+  ): Promise<Result<Reservation, InsertError>> {
+    try {
+      const schema = staffUserSchema.safeParse({
+        ...data,
+        name: alternativeName ?? "Inserito da staff",
+        date: data.date?.toString(),
+      });
+      if (!schema.success || !this.validateKindIDs(schema.data.kinds)) {
+        logger.error(
+          { issues: schema.success ? "duplicate-kinds" : schema.error.issues, staffId: user.id },
+          "insertByStaff validation failed",
+        );
+        return err("invalid-data");
+      }
 
-			const reservation: table.DBReservation = {
-				date: schema.data.date,
-				hour: schema.data.hour,
-				id: crypto.randomUUID(),
-				kindID: schema.data.kind,
-				name: schema.data.name,
-				phoneNumber: schema.data.phone ?? null,
-				email: schema.data.email,
-				expiresAt: new Date(Date.now() + LOCK_DURATION),
-				pending: true,
-				staffID: schema.data.staff
-			};
+      const { date, hour, kinds, staff, name, phone } = schema.data;
+      return await this.insertAndFetch(
+        {
+          date,
+          hour,
+          id: crypto.randomUUID(),
+          name,
+          email: user.email,
+          pending: false,
+          expiresAt: this.endOfReservationDay(date),
+          staffID: staff,
+          phoneNumber: phone ?? null,
+        },
+        kinds,
+        { staffId: user.id, source: "insertByStaff" },
+      );
+    } catch (e) {
+      logger.error({ err: e, staffId: user.id }, "insertByStaff failed");
+      return err("server-err");
+    }
+  }
 
-			const queryRes = await this.insertWithAvailabilityCheck(reservation);
+  private async insertAndFetch(
+    reservation: InsertReservation,
+    kindIDs: string[],
+    logContext: Record<string, unknown>,
+  ): Promise<Result<Reservation, InsertError>> {
+    const inserted = await this.insertWithAvailabilityCheck(reservation, kindIDs);
+    if (inserted.isErr()) {
+      logger.error({ ...logContext, reason: inserted.error }, `${logContext.source} failed`);
+      return err(inserted.error);
+    }
 
-			if (queryRes.isErr()) {
-				logger.error('Could not insert reservation');
-				return err(queryRes.error);
-			}
+    const fullReservation = await this.getByID(reservation.id);
+    if (!fullReservation) {
+      logger.error({ ...logContext, reservationId: reservation.id }, "post-insert fetch failed");
+      return err("server-err");
+    }
+    return ok(fullReservation);
+  }
 
-			const fullReservation = await this.getByID(queryRes.unwrap().id);
-			if (!fullReservation) {
-				logger.error('Could not fetch inserted reservation');
-				return err('server-err');
-			}
+  async getAll(): Promise<Reservation[] | null> {
+    try {
+      return await this.findReservations(gt(table.reservation.expiresAt, new Date()));
+    } catch (e) {
+      logger.error({ err: e }, "getAll failed");
+      return null;
+    }
+  }
 
-			return ok(fullReservation);
-		} catch (e) {
-			logger.error(e);
-			return err('server-err');
-		}
-	}
+  async getTodayReservations(date: string, staffID: string): Promise<Reservation[] | null> {
+    try {
+      return await this.findReservations(
+        and(
+          eq(table.reservation.date, date),
+          eq(table.reservation.pending, false),
+          eq(table.staff.userID, staffID),
+        ),
+      );
+    } catch (err) {
+      logger.error({ err, date, staffId: staffID }, "getTodayReservations failed");
+      return null;
+    }
+  }
 
-	async insertByStaff(
-		data: StaffData,
-		user: DBUser,
-		alternativeName?: string
-	): Promise<Result<Reservation, InsertError>> {
-		try {
-			const schema = staffUserSchema.safeParse({
-				...data,
-				name: alternativeName ?? 'Inserito da staff',
-				date: data.date?.toString()
-			});
+  async getByUser(email: string): Promise<Reservation[] | null> {
+    try {
+      return await this.findReservations(eq(table.reservation.email, email.toLowerCase().trim()));
+    } catch (e) {
+      logger.error({ err: e, email }, "getByUser failed");
+      return null;
+    }
+  }
 
-			if (!schema.success) {
-				logger.error(schema.error.issues);
-				return err('invalid-data');
-			}
+  async getByID(id: string): Promise<Reservation | null> {
+    try {
+      const reservations = await this.findReservations(eq(table.reservation.id, id));
+      return reservations[0] ?? null;
+    } catch (e) {
+      logger.error({ err: e, reservationId: id }, "getByID failed");
+      return null;
+    }
+  }
 
-			const { date, hour, kind, staff, name } = schema.data;
+  async delete(id: string) {
+    try {
+      return await db.delete(table.reservation).where(eq(table.reservation.id, id)).returning();
+    } catch (e) {
+      logger.error({ err: e, reservationId: id }, "delete failed");
+      return null;
+    }
+  }
 
-			const expiresAt = new Date(date);
-			expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
-			expiresAt.setHours(23, 59, 59, 999); // Set to end of the day
+  async deleteByUser(id: string, email: string) {
+    try {
+      return await db
+        .delete(table.reservation)
+        .where(
+          and(
+            eq(table.reservation.id, id),
+            eq(table.reservation.email, email.toLowerCase().trim()),
+          ),
+        )
+        .returning();
+    } catch (e) {
+      logger.error({ err: e, reservationId: id, email }, "deleteByUser failed");
+      return null;
+    }
+  }
 
-			const reservation: table.DBReservation = {
-				date,
-				hour,
-				id: crypto.randomUUID(),
-				kindID: kind,
-				name,
-				email: user.email,
-				pending: false,
-				expiresAt,
-				staffID: staff,
-				phoneNumber: null
-			};
+  async deleteManyByUser(ids: string[], email: string) {
+    try {
+      if (ids.length === 0) return [];
+      return await db
+        .delete(table.reservation)
+        .where(
+          and(
+            inArray(table.reservation.id, ids),
+            eq(table.reservation.email, email.toLowerCase().trim()),
+          ),
+        )
+        .returning();
+    } catch (e) {
+      logger.error({ err: e, reservationIds: ids, email }, "deleteManyByUser failed");
+      return null;
+    }
+  }
 
-			const queryRes = await this.insertWithAvailabilityCheck(reservation);
+  async deleteAll(email: string) {
+    try {
+      return await db
+        .delete(table.reservation)
+        .where(eq(table.reservation.email, email.toLowerCase().trim()));
+    } catch (e) {
+      logger.error({ err: e, email }, "deleteAll failed");
+      return null;
+    }
+  }
 
-			if (queryRes.isErr()) {
-				logger.error('Could not insert reservation');
-				return err(queryRes.error);
-			}
+  async deleteAllExpired() {
+    try {
+      return await db.delete(table.reservation).where(lt(table.reservation.expiresAt, new Date()));
+    } catch (err) {
+      logger.error({ err }, "deleteAllExpired failed");
+    }
+  }
 
-			const fullReservation = await this.getByID(queryRes.unwrap().id);
-			if (!fullReservation) {
-				logger.error('Could not fetch inserted reservation');
-				return err('server-err');
-			}
+  async updateExpiration(id: string): Promise<Reservation | null> {
+    try {
+      const updated = await db
+        .update(table.reservation)
+        .set({
+          pending: false,
+          expiresAt: sql`strftime('%s', datetime(${table.reservation.date}, '+1 day'))`,
+        })
+        .where(eq(table.reservation.id, id))
+        .returning()
+        .get();
+      const fullReservation = await this.getByID(updated.id);
+      if (!fullReservation) {
+        logger.error({ reservationId: id }, "updateExpiration post-update fetch failed");
+        return null;
+      }
+      return fullReservation;
+    } catch (e) {
+      logger.error({ err: e, reservationId: id }, "updateExpiration failed");
+      return null;
+    }
+  }
 
-			return ok(fullReservation);
-		} catch (e) {
-			logger.error({ e }, 'Error while adding usual user');
-			return err('server-err');
-		}
-	}
+  private minutesFromMidnight(hour: string): number {
+    const [hours, minutes] = hour.split(":").map(Number);
+    return hours * 60 + minutes;
+  }
 
-	async getAll(): Promise<Reservation[] | null> {
-		try {
-			return await this.getReservations().where(gt(table.reservation.expiresAt, new Date()));
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
+  private async insertWithAvailabilityCheck(
+    reservation: InsertReservation,
+    kindIDs: string[],
+  ): Promise<Result<table.DBReservation, InsertError>> {
+    try {
+      return ok(
+        await db.transaction(async (tx) => {
+          const requestedKinds = await tx
+            .select({
+              id: table.kind.id,
+              duration: table.kind.duration,
+            })
+            .from(table.kind)
+            .where(
+              and(
+                inArray(table.kind.id, kindIDs),
+                eq(table.kind.staffID, reservation.staffID),
+                eq(table.kind.active, true),
+              ),
+            );
 
-	async getTodayReservations(date: string, staffID: string): Promise<Reservation[] | null> {
-		try {
-			return await this.getReservations().where(
-				and(
-					and(eq(table.reservation.date, date), eq(table.reservation.pending, false)),
-					eq(table.staff.userID, staffID)
-				)
-			);
-		} catch (err) {
-			console.error(err);
-			return null;
-		}
-	}
+          if (requestedKinds.length !== kindIDs.length) throw new Error("INVALID_DATA");
 
-	async getByUser(email: string): Promise<Reservation[] | null> {
-		try {
-			return await this.getReservations().where(
-				eq(table.reservation.email, email.toLowerCase().trim())
-			);
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
+          const requestedDuration = requestedKinds.reduce((sum, kind) => sum + kind.duration, 0);
+          const requestedStart = this.minutesFromMidnight(reservation.hour);
+          const requestedEnd = requestedStart + requestedDuration;
 
-	async getByID(id: string): Promise<Reservation | null> {
-		try {
-			return (await this.getReservations().where(eq(table.reservation.id, id)).get()) ?? null;
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
+          const existingRows = await tx
+            .select({
+              id: table.reservation.id,
+              hour: table.reservation.hour,
+              duration: table.kind.duration,
+            })
+            .from(table.reservation)
+            .innerJoin(
+              table.reservationKind,
+              eq(table.reservation.id, table.reservationKind.reservationID),
+            )
+            .innerJoin(table.kind, eq(table.reservationKind.kindID, table.kind.id))
+            .where(
+              and(
+                eq(table.reservation.date, reservation.date),
+                eq(table.reservation.staffID, reservation.staffID),
+                gt(table.reservation.expiresAt, new Date()),
+              ),
+            );
 
-	async delete(id: string) {
-		try {
-			return await db
-				.delete(table.reservation)
-				.where(eq(table.reservation.id, id))
-				.returning();
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
+          const existing = new Map<string, { hour: string; duration: number }>();
+          for (const row of existingRows) {
+            const entry = existing.get(row.id);
+            if (entry) entry.duration += row.duration;
+            else existing.set(row.id, { hour: row.hour, duration: row.duration });
+          }
 
-	async deleteAll(email: string) {
-		try {
-			return await db
-				.delete(table.reservation)
-				.where(eq(table.reservation.email, email.toLowerCase().trim()));
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
+          for (const entry of existing.values()) {
+            const existingStart = this.minutesFromMidnight(entry.hour);
+            const existingEnd = existingStart + entry.duration;
+            if (requestedStart < existingEnd && existingStart < requestedEnd) {
+              throw new Error("CONFLICT");
+            }
+          }
 
-	async deleteAllExpired() {
-		try {
-			return await db
-				.delete(table.reservation)
-				.where(lt(table.reservation.expiresAt, new Date()));
-		} catch (err) {
-			logger.error('Error while removing expired reservations');
-			console.error(err);
-		}
-	}
+          const [inserted] = await tx.insert(table.reservation).values(reservation).returning();
+          await tx.insert(table.reservationKind).values(
+            kindIDs.map((kindID, position) => ({
+              reservationID: reservation.id,
+              kindID,
+              position,
+            })),
+          );
+          return inserted;
+        }),
+      );
+    } catch (e) {
+      if ((e as Error).message === "CONFLICT") return err("conflict");
+      if ((e as Error).message === "INVALID_DATA") return err("invalid-data");
+      logger.error({ err: e, reservationId: reservation.id }, "transactional insert failed");
+      return err("server-err");
+    }
+  }
 
-	/**
-	 * Updates the reservation to expire after the day of the reservation
-	 */
-	async updateExpiration(id: string): Promise<Reservation | null> {
-		try {
-			const updated = await db
-				.update(table.reservation)
-				.set({
-					pending: false,
-					expiresAt: sql`strftime('%s', datetime(${table.reservation.date}, '+1 day'))`
-				})
-				.where(eq(table.reservation.id, id))
-				.returning()
-				.get();
-
-			const fullReservation = await this.getByID(updated.id);
-			if (!fullReservation) {
-				logger.error('Could not fetch inserted reservation');
-				return null;
-			}
-			return fullReservation;
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
-
-	/**
-	 * Inserts a reservation after checking availability within a transaction.
-	 */
-	private async insertWithAvailabilityCheck(
-		reservation: table.DBReservation
-	): Promise<Result<table.DBReservation, InsertError>> {
-		try {
-			return ok(
-				await db.transaction(async (tx) => {
-					const existing = await tx
-						.select({ count: count() })
-						.from(table.reservation)
-						.where(
-							and(
-								eq(table.reservation.date, reservation.date),
-								eq(table.reservation.hour, reservation.hour),
-								eq(table.reservation.staffID, reservation.staffID),
-								gt(table.reservation.expiresAt, new Date())
-							)
-						);
-
-					if (existing[0].count > 0) {
-						throw new Error('CONFLICT');
-					}
-
-					// Insert reservation
-					const result = await tx
-						.insert(table.reservation)
-						.values(reservation)
-						.returning();
-					return result[0] ?? result;
-				})
-			);
-		} catch (e) {
-			if ((e as Error).message === 'CONFLICT') {
-				return err('conflict');
-			}
-
-			return err('server-err');
-		}
-	}
-
-	async countExpired() {
-		try {
-			const entries = await db
-				.select({ count: count() })
-				.from(table.reservation)
-				.where(lt(table.reservation.expiresAt, new Date()))
-				.get();
-
-			return entries?.count;
-		} catch (e) {
-			logger.error(e);
-			return null;
-		}
-	}
+  async countExpired() {
+    try {
+      const entries = await db
+        .select({ count: count() })
+        .from(table.reservation)
+        .where(lt(table.reservation.expiresAt, new Date()))
+        .get();
+      return entries?.count;
+    } catch (e) {
+      logger.error({ err: e }, "countExpired failed");
+      return null;
+    }
+  }
 }

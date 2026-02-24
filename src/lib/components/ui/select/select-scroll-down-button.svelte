@@ -1,19 +1,23 @@
 <script lang="ts">
-	import ChevronDown from '@lucide/svelte/icons/chevron-down';
-	import { Select as SelectPrimitive, type WithoutChildrenOrChild } from 'bits-ui';
-	import { cn } from '$lib/utils.js';
+  import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
+  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
+  import { Select as SelectPrimitive } from "bits-ui";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		...restProps
-	}: WithoutChildrenOrChild<SelectPrimitive.ScrollDownButtonProps> = $props();
+  let {
+    ref = $bindable(null),
+    class: className,
+    ...restProps
+  }: WithoutChildrenOrChild<SelectPrimitive.ScrollDownButtonProps> = $props();
 </script>
 
 <SelectPrimitive.ScrollDownButton
-	bind:ref
-	class={cn('flex cursor-default items-center justify-center py-1', className)}
-	{...restProps}
+  bind:ref
+  data-slot="select-scroll-down-button"
+  class={cn(
+    "bg-popover z-10 flex cursor-default items-center justify-center py-1 [&_svg:not([class*='size-'])]:size-4 bottom-0 w-full",
+    className,
+  )}
+  {...restProps}
 >
-	<ChevronDown class="size-4" />
+  <ChevronDownIcon />
 </SelectPrimitive.ScrollDownButton>

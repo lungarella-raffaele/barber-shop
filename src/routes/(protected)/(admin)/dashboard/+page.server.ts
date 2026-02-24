@@ -1,42 +1,45 @@
-import { getLocalTimeZone, today } from '@internationalized/date';
-import { fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
-import { ReservationService } from '@service/reservation.service';
+import { getLocalTimeZone, today } from "@internationalized/date";
+import { ReservationService } from "@service/reservation.service";
+import { fail, redirect } from "@sveltejs/kit";
 
-export const load: PageServerLoad = async ({ url, locals }) => {
-	const date = url.searchParams.get('date');
+import type { Actions, PageServerLoad } from "./$types";
 
-	if (!locals.user) {
-		redirect(302, '/login');
-	}
+export const load: PageServerLoad = async ({ depends, url, locals }) => {
+  depends("app:dashboard-reservations");
 
-	const reservations = ReservationService.get().getTodayReservations(
-		date ?? today(getLocalTimeZone()).toString(),
-		locals.user?.data.id
-	);
+  const date = url.searchParams.get("date");
 
-	return {
-		reservations,
-		date,
-		title: 'Admin -'
-	};
+  if (!locals.user) {
+    redirect(302, "/login");
+  }
+
+  const reservations = await ReservationService.get().getTodayReservations(
+    date ?? today(getLocalTimeZone()).toString(),
+    locals.user?.data.id,
+  );
+
+  return {
+    reservations,
+    date,
+    title: "Admin -",
+  };
 };
 
 export const actions: Actions = {
-	delete: async ({ request }) => {
-		const resService = ReservationService.get();
-		const data = await request.formData();
+  delete: async ({ request }) => {
+    const resService = ReservationService.get();
+    const data = await request.formData();
 
-		const id = data.get('id') as string;
+    const id = data.get("id") as string;
 
-		const res = await resService.delete(id);
+    const res = await resService.delete(id);
 
-		if (res) {
-			return {
-				res
-			};
-		} else {
-			return fail(500, { success: false });
-		}
-	}
+    if (res) {
+      return {
+        res,
+      };
+    } else {
+      return fail(500, { success: false });
+    }
+  },
 };

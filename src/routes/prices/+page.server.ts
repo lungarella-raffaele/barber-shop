@@ -1,12 +1,20 @@
-import type { PageServerLoad } from './$types.js';
-import { KindService } from '@service/kind.service.js';
-import { StaffService } from '@service/staff.service.js';
+import { KindService } from "@service/kind.service.js";
+import { ScheduleService } from "@service/schedule.service.js";
+import { StaffService } from "@service/staff.service.js";
+
+import type { PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async () => {
-	return {
-		kinds: KindService.get().getAll(),
-		staff: StaffService.get().getAll(),
-		title: 'Listino Prezzi -',
-		header: 'Listino Prezzi'
-	};
+  const [kinds, schedule, staff] = await Promise.all([
+    KindService.get().getAll(),
+    ScheduleService.get().getAll(),
+    StaffService.get().getAll(),
+  ]);
+  return {
+    kinds,
+    schedule,
+    staff,
+    title: "Listino Prezzi -",
+    header: "Listino Prezzi",
+  };
 };

@@ -1,18 +1,26 @@
 <script lang="ts">
-	import { Avatar as AvatarPrimitive } from 'bits-ui';
-	import { cn } from '$lib/utils.js';
+  import { cn } from "$lib/utils.js";
+  import { Avatar as AvatarPrimitive } from "bits-ui";
 
-	let {
-		class: className,
-		ref = $bindable(null),
-		loadingStatus = $bindable('loading'),
-		...restProps
-	}: AvatarPrimitive.RootProps = $props();
+  let {
+    ref = $bindable(null),
+    loadingStatus = $bindable("loading"),
+    size = "default",
+    class: className,
+    ...restProps
+  }: AvatarPrimitive.RootProps & {
+    size?: "default" | "sm" | "lg";
+  } = $props();
 </script>
 
 <AvatarPrimitive.Root
-	bind:loadingStatus
-	bind:ref
-	class={cn('relative flex size-10 shrink-0 overflow-hidden rounded-full', className)}
-	{...restProps}
+  bind:ref
+  bind:loadingStatus
+  data-slot="avatar"
+  data-size={size}
+  class={cn(
+    "size-8 ring-1 ring-foreground rounded-full data-[size=lg]:size-10 data-[size=sm]:size-6 group/avatar relative flex shrink-0 select-none border-2 border-gray-2",
+    className,
+  )}
+  {...restProps}
 />

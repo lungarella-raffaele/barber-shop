@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { Pencil, X } from '$lib/components/icons';
-	import { Toggle } from '$lib/components/ui/toggle/index.js';
+  import Button from "$lib/components/ui/button/button.svelte";
 
-	let { pressed = $bindable(), onclick }: { pressed: boolean; onclick?: () => void } = $props();
+  let { pressed = $bindable(), onclick }: { pressed: boolean; onclick?: () => void } = $props();
 </script>
 
-<Toggle
-	{onclick}
-	bind:pressed
-	aria-label="toggle edit"
-	class="bold border data-[state=on]:bg-primary data-[state=on]:text-background"
+<Button
+  type="button"
+  variant="outline"
+  aria-label="toggle edit"
+  onclick={() => {
+    pressed = !pressed;
+    onclick?.();
+  }}
 >
-	{#if pressed}
-		<X />
-		Annulla
-	{:else}
-		<Pencil />
-		Modifica
-	{/if}
-</Toggle>
+  {#if pressed}
+    Annulla
+  {:else}
+    Modifica
+  {/if}
+</Button>
