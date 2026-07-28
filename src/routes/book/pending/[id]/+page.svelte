@@ -2,8 +2,8 @@
   import EphemeralPage from "$lib/components/app/ephemeral-page.svelte";
   import ReservationSummary from "$lib/components/app/reservation-summary.svelte";
   import { Progress } from "$lib/components/ui/progress";
-  import Timer from "$lib/composables/timer.svelte";
   import { BARBER_SHOP_DETAILS, LOCK_DURATION } from "$lib/constants";
+  import Timer from "$lib/timer.svelte";
   import { onMount } from "svelte";
 
   import type { PageData } from "./$types";

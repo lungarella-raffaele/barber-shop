@@ -1,4 +1,5 @@
-import { db } from "$lib/server/db";
+import type { Database } from "$lib/server/db/client";
+import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
 import { eq, lt } from "drizzle-orm";
 
@@ -8,12 +9,16 @@ import { Service } from "./service";
 const logger = createLogger("PasswordRecoverService");
 
 export class PasswordRecoverService extends Service {
+  constructor(private readonly database: Database = getProductionDatabase()) {
+    super();
+  }
+
   async insert(userID: string) {
     try {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 1); // Add one day
 
-      return await db
+      return await this.database
         .insert(table.passwordRecover)
         .values({
           id: crypto.randomUUID(),
@@ -30,7 +35,7 @@ export class PasswordRecoverService extends Service {
 
   async getByID(id: string) {
     try {
-      return await db
+      return await this.database
         .select()
         .from(table.passwordRecover)
         .where(eq(table.passwordRecover.id, id))
@@ -43,7 +48,7 @@ export class PasswordRecoverService extends Service {
 
   async expire(id: string) {
     try {
-      return await db
+      return await this.database
         .update(table.passwordRecover)
         .set({ expiresAt: null })
         .where(eq(table.passwordRecover.id, id))
@@ -57,7 +62,9 @@ export class PasswordRecoverService extends Service {
 
   async deleteByUserID(userID: string) {
     try {
-      return await db.delete(table.passwordRecover).where(eq(table.passwordRecover.userID, userID));
+      return await this.database
+        .delete(table.passwordRecover)
+        .where(eq(table.passwordRecover.userID, userID));
     } catch (e) {
       logger.error({ err: e, userId: userID }, "deleteByUserID failed");
       return null;
@@ -66,7 +73,7 @@ export class PasswordRecoverService extends Service {
 
   async deleteAllExpired() {
     try {
-      return await db
+      return await this.database
         .delete(table.passwordRecover)
         .where(lt(table.passwordRecover.expiresAt, new Date()));
     } catch (err) {

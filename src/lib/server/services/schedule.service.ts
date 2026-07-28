@@ -1,4 +1,5 @@
-import { db } from "$lib/server/db";
+import type { Database } from "$lib/server/db/client";
+import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
 import type { DBSchedule, Schedule } from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
@@ -9,9 +10,13 @@ import { Service } from "./service";
 const logger = createLogger("ScheduleService");
 
 export class ScheduleService extends Service {
+  constructor(private readonly database: Database = getProductionDatabase()) {
+    super();
+  }
+
   async getAll(): Promise<DBSchedule[] | null> {
     try {
-      return db.select().from(table.schedule);
+      return this.database.select().from(table.schedule);
     } catch (e) {
       logger.error({ err: e }, "getAll failed");
       return null;
@@ -20,7 +25,7 @@ export class ScheduleService extends Service {
 
   async update(schedules: Schedule[], staffID: string): Promise<boolean> {
     try {
-      const result = await db.transaction(async (tx) => {
+      const result = await this.database.transaction(async (tx) => {
         await tx.delete(table.schedule).where(eq(table.schedule.staffID, staffID));
         return await tx.insert(table.schedule).values(schedules).returning();
       });
@@ -33,7 +38,7 @@ export class ScheduleService extends Service {
 
   async delete(id: number): Promise<boolean> {
     try {
-      await db.delete(table.schedule).where(eq(table.schedule.id, id));
+      await this.database.delete(table.schedule).where(eq(table.schedule.id, id));
       return true;
     } catch (e) {
       logger.error({ err: e, scheduleId: id }, "delete failed");

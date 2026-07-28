@@ -44,17 +44,16 @@ pnpm db:migrate
 
 Useful database commands:
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm db:generate` | Generate a SQL migration from schema changes. |
-| `pnpm db:migrate` | Apply pending migrations to the configured database. |
-| `pnpm db:push` | Push the schema directly without generating a migration; useful for local prototyping. |
-| `pnpm db:studio` | Open Drizzle Studio for the configured database. |
+| Command            | Purpose                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `pnpm db:generate` | Generate a SQL migration from schema changes.                                          |
+| `pnpm db:migrate`  | Apply pending migrations to the configured database.                                   |
+| `pnpm db:push`     | Push the schema directly without generating a migration; useful for local prototyping. |
+| `pnpm db:studio`   | Open Drizzle Studio for the configured database.                                       |
 
 The Drizzle configuration reads `.env`. A `DATABASE_CONNECTION_URL` beginning with `file:` uses local SQLite; any other URL is treated as a remote Turso database and also requires `DATABASE_AUTH_TOKEN`.
 
 The `pnpm release` command applies pending migrations before creating a production build.
-
 
 CI runs formatting, linting, diagnostics, the production build, unit tests, and the dependency audit.
 

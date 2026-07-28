@@ -1,5 +1,6 @@
 import { err, ok, type Result } from "$lib/modules/result";
-import { db } from "$lib/server/db";
+import type { Database } from "$lib/server/db/client";
+import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
 import { createLogger } from "$lib/server/logger";
 import { sha256 } from "@oslojs/crypto/sha2";
@@ -53,13 +54,17 @@ export function generatePublicToken(purpose: PublicTokenPurpose) {
 }
 
 export class PublicTokenService extends Service {
+  constructor(private readonly database: Database = getProductionDatabase()) {
+    super();
+  }
+
   async issue(input: IssueToken): Promise<Result<string, "storage-error">> {
     const rawToken = generatePublicToken(input.purpose);
     const tokenHash = hashPublicToken(rawToken);
 
     try {
       if (input.userID) {
-        await db
+        await this.database
           .delete(table.publicToken)
           .where(
             and(
@@ -70,7 +75,7 @@ export class PublicTokenService extends Service {
           );
       }
 
-      await db.insert(table.publicToken).values({
+      await this.database.insert(table.publicToken).values({
         tokenHash,
         purpose: input.purpose,
         userID: input.userID,
@@ -90,7 +95,7 @@ export class PublicTokenService extends Service {
     const tokenHash = hashPublicToken(rawToken);
 
     try {
-      const token = await db
+      const token = await this.database
         .select()
         .from(table.publicToken)
         .where(
@@ -113,7 +118,7 @@ export class PublicTokenService extends Service {
     const tokenHash = hashPublicToken(rawToken);
 
     try {
-      const consumed = await db
+      const consumed = await this.database
         .update(table.publicToken)
         .set({ consumedAt: new Date() })
         .where(
@@ -137,7 +142,7 @@ export class PublicTokenService extends Service {
   async revoke(rawToken: string, purpose: PublicTokenPurpose) {
     const tokenHash = hashPublicToken(rawToken);
     try {
-      await db
+      await this.database
         .delete(table.publicToken)
         .where(
           and(eq(table.publicToken.tokenHash, tokenHash), eq(table.publicToken.purpose, purpose)),
@@ -151,7 +156,7 @@ export class PublicTokenService extends Service {
 
   async deleteByUserID(userID: string) {
     try {
-      await db.delete(table.publicToken).where(eq(table.publicToken.userID, userID));
+      await this.database.delete(table.publicToken).where(eq(table.publicToken.userID, userID));
     } catch (error) {
       logger.error({ err: error, userId: userID }, "deleteByUserID failed");
     }
@@ -159,7 +164,9 @@ export class PublicTokenService extends Service {
 
   async deleteAllExpired() {
     try {
-      await db.delete(table.publicToken).where(lt(table.publicToken.expiresAt, new Date()));
+      await this.database
+        .delete(table.publicToken)
+        .where(lt(table.publicToken.expiresAt, new Date()));
     } catch (error) {
       logger.error({ err: error }, "deleteAllExpired failed");
     }

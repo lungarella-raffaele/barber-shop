@@ -7,7 +7,6 @@
     "audit": "pnpm audit --audit-level high",
     "build": "vite build",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
@@ -19,12 +18,12 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "pnpm db:migrate && pnpm build",
-    "test": "pnpm test:unit",
-    "test:codegen": "pnpm exec playwright codegen http://localhost:5173",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
     "test:e2e": "pnpm exec playwright test",
-    "test:report": "pnpm exec playwright show-report",
-    "test:unit": "vitest run",
-    "test:unit:watch": "vitest"
+    "test:codegen": "pnpm exec playwright codegen http://localhost:5173",
+    "test:report": "pnpm exec playwright show-report"
   },
   "dependencies": {
     "@libsql/client": "^0.15.4",

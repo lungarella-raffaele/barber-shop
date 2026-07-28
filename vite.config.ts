@@ -23,7 +23,27 @@ export default defineConfig(({ mode }) => ({
     : undefined,
 
   test: {
-    environment: "jsdom",
-    include: ["src/**/*.{test,spec}.{js,ts}"],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          environment: "jsdom",
+          include: ["src/**/*.{test,spec}.{js,ts}"],
+          clearMocks: true,
+          restoreMocks: true,
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "integration",
+          environment: "node",
+          include: ["tests/integration/**/*.{test,spec}.{js,ts}"],
+          setupFiles: ["tests/support/integration.setup.ts"],
+          testTimeout: 10_000,
+        },
+      },
+    ],
   },
 }));

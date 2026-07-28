@@ -1,19 +1,19 @@
 import { dev } from "$app/environment";
 import pino from "pino";
 
-let options: pino.LoggerOptions = {};
+const isTest = Boolean(process.env.VITEST);
+const level = process.env.LOG_LEVEL ?? (isTest ? "silent" : dev ? "debug" : "info");
 
-if (dev) {
-  options = {
-    level: "debug",
-    transport: {
-      target: "pino-pretty",
-      options: {
-        colorize: true,
-      },
+const options: pino.LoggerOptions = { level };
+
+if (dev && level !== "silent") {
+  options.transport = {
+    target: "pino-pretty",
+    options: {
+      colorize: true,
     },
-    redact: [],
   };
+  options.redact = [];
 }
 
 export const logger = pino(options);

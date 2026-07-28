@@ -1,5 +1,6 @@
 import { avatarOriginalSchema, avatarSchema } from "$lib/modules/zod-schemas";
-import { db } from "$lib/server/db";
+import type { Database } from "$lib/server/db/client";
+import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
 import type { Staff } from "@domain";
 import { eq } from "drizzle-orm";
@@ -10,9 +11,17 @@ import { Service } from "./service";
 const logger = createLogger("StaffService");
 
 export class StaffService extends Service {
+  constructor(private readonly database: Database = getProductionDatabase()) {
+    super();
+  }
+
   async getByUserID(userID: string) {
     try {
-      return await db.select().from(table.staff).where(eq(table.staff.userID, userID)).get();
+      return await this.database
+        .select()
+        .from(table.staff)
+        .where(eq(table.staff.userID, userID))
+        .get();
     } catch (e) {
       logger.error({ err: e, userId: userID }, "getByUserID failed");
       return null;
@@ -21,7 +30,7 @@ export class StaffService extends Service {
 
   async getAll(): Promise<Staff[] | null> {
     try {
-      const result = await db
+      const result = await this.database
         .select({
           name: table.user.name,
           id: table.staff.userID,
@@ -40,7 +49,7 @@ export class StaffService extends Service {
 
   async toggleActive(isActive: boolean, userID: string): Promise<boolean> {
     try {
-      return !!(await db
+      return !!(await this.database
         .update(table.staff)
         .set({ isActive })
         .where(eq(table.staff.userID, userID)));
@@ -52,7 +61,7 @@ export class StaffService extends Service {
 
   async deleteAvatar(userID: string) {
     try {
-      return await db
+      return await this.database
         .update(table.staff)
         .set({
           avatar: null,
@@ -97,7 +106,7 @@ export class StaffService extends Service {
     }
 
     try {
-      return await db
+      return await this.database
         .update(table.staff)
         .set({
           avatar: parsedAvatar.data,
