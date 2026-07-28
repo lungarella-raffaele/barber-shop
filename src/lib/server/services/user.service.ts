@@ -1,7 +1,8 @@
 import { DAY_IN_MS } from "$lib/constants";
 import { err, ok, type Result } from "$lib/modules/result";
 import { emailSchema, passwordSchema } from "$lib/modules/zod-schemas";
-import { db } from "$lib/server/db";
+import type { Database } from "$lib/server/db/client";
+import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
 import type { DBUser } from "$lib/server/db/schema";
 import type { User } from "@domain";
@@ -18,6 +19,13 @@ type InsertError = "already-existing" | "invalid-email" | "invalid-pass" | "gene
 const logger = createLogger("UserService");
 
 export class UserService extends Service {
+  constructor(
+    private readonly database: Database = getProductionDatabase(),
+    private readonly staffService: StaffService = new StaffService(database),
+  ) {
+    super();
+  }
+
   async insert(data: {
     email: string;
     password: string;
@@ -52,7 +60,7 @@ export class UserService extends Service {
       const userID = this.generateUserId();
 
       return ok(
-        await db
+        await this.database
           .insert(table.user)
           .values({
             id: userID,
@@ -74,7 +82,7 @@ export class UserService extends Service {
   async getByEmail(email: string): Promise<User | null> {
     try {
       const lowercaseEmail = email.toLowerCase().trim();
-      const user = await db
+      const user = await this.database
         .select()
         .from(table.user)
         .where(eq(table.user.email, lowercaseEmail))
@@ -84,7 +92,7 @@ export class UserService extends Service {
         return null;
       }
 
-      const staff = await StaffService.get().getByUserID(user.id);
+      const staff = await this.staffService.getByUserID(user.id);
 
       if (!staff) {
         return {
@@ -105,7 +113,7 @@ export class UserService extends Service {
 
   async getByID(id: string): Promise<User | null> {
     try {
-      const result = await db
+      const result = await this.database
         .select()
         .from(table.user)
         .leftJoin(table.staff, eq(table.staff.userID, table.user.id))
@@ -135,7 +143,7 @@ export class UserService extends Service {
 
   async verifyEmail(id: string) {
     try {
-      return await db
+      return await this.database
         .update(table.user)
         .set({
           verifiedEmail: true,
@@ -152,7 +160,7 @@ export class UserService extends Service {
 
   async updatePassword(passwordHash: string, id: string) {
     try {
-      return await db
+      return await this.database
         .update(table.user)
         .set({ passwordHash })
         .where(eq(table.user.id, id))
@@ -167,7 +175,7 @@ export class UserService extends Service {
   async updateEmail(id: string, _email: string): Promise<Result<DBUser, "server-err">> {
     const email = _email.toLowerCase().trim();
     try {
-      const updated = await db
+      const updated = await this.database
         .update(table.user)
         .set({ email })
         .where(eq(table.user.id, id))
@@ -183,7 +191,7 @@ export class UserService extends Service {
 
   async updatePhoneNumber(id: string, phoneNumber: string) {
     try {
-      return await db
+      return await this.database
         .update(table.user)
         .set({ phoneNumber: phoneNumber.trim() })
         .where(eq(table.user.id, id))
@@ -197,7 +205,7 @@ export class UserService extends Service {
 
   async updateName(id: string, name: string) {
     try {
-      return await db
+      return await this.database
         .update(table.user)
         .set({ name: name.trim() })
         .where(eq(table.user.id, id))
@@ -225,7 +233,7 @@ export class UserService extends Service {
         // Nothing to update
         return;
       }
-      return await db
+      return await this.database
         .update(table.user)
         .set(updateData)
         .where(eq(table.user.id, id))
@@ -239,7 +247,7 @@ export class UserService extends Service {
 
   async delete(id: string) {
     try {
-      return await db.delete(table.user).where(eq(table.user.id, id)).returning().get();
+      return await this.database.delete(table.user).where(eq(table.user.id, id)).returning().get();
     } catch (e) {
       logger.error({ err: e, userId: id }, "delete failed");
       return null;
@@ -248,7 +256,7 @@ export class UserService extends Service {
 
   async countExpired() {
     try {
-      const entries = await db
+      const entries = await this.database
         .select({ count: count() })
         .from(table.user)
         .where(and(eq(table.user.verifiedEmail, false), lt(table.user.expiresAt, new Date())))
@@ -263,7 +271,7 @@ export class UserService extends Service {
 
   async deleteAllExpired() {
     try {
-      return await db
+      return await this.database
         .delete(table.user)
         .where(
           and(

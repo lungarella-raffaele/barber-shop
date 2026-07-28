@@ -2,14 +2,19 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main, dev, refactor]
   push:
-    branches: [main, dev]
+    branches: [main, dev, refactor]
   workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  BASE_URL: http://localhost:5173
+  MAILER: ci-placeholder
+  DATABASE_CONNECTION_URL: file:/tmp/barber-shop-ci.sqlite
 
 permissions:
   contents: read

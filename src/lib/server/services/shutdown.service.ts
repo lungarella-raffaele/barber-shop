@@ -1,5 +1,6 @@
 import { shutdownSchema } from "$lib/modules/zod-schemas";
-import { db } from "$lib/server/db";
+import type { Database } from "$lib/server/db/client";
+import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
 import type { DBShutdown } from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
@@ -10,9 +11,13 @@ import { Service } from "./service";
 const logger = createLogger("ShutdownService");
 
 export class ShutdownService extends Service {
+  constructor(private readonly database: Database = getProductionDatabase()) {
+    super();
+  }
+
   async getAll(): Promise<DBShutdown[] | null> {
     try {
-      return await db.select().from(table.shutdowns);
+      return await this.database.select().from(table.shutdowns);
     } catch (e) {
       logger.error({ err: e }, "getAll failed");
       return null;
@@ -21,7 +26,10 @@ export class ShutdownService extends Service {
 
   async getStaffShutdown(staffID: string): Promise<DBShutdown[] | null> {
     try {
-      return await db.select().from(table.shutdowns).where(eq(table.shutdowns.staffID, staffID));
+      return await this.database
+        .select()
+        .from(table.shutdowns)
+        .where(eq(table.shutdowns.staffID, staffID));
     } catch (e) {
       logger.error({ err: e, staffId: staffID }, "getStaffShutdown failed");
       return null;
@@ -36,7 +44,7 @@ export class ShutdownService extends Service {
     }
 
     try {
-      return await db
+      return await this.database
         .insert(table.shutdowns)
         .values({
           id: crypto.randomUUID(),
@@ -57,7 +65,7 @@ export class ShutdownService extends Service {
 
   async delete(id: string) {
     try {
-      return await db
+      return await this.database
         .delete(table.shutdowns)
         .where(eq(table.shutdowns.id, id))
         .returning({ id: table.shutdowns.id });

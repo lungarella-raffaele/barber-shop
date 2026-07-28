@@ -1,6 +1,7 @@
 import { LOCK_DURATION } from "$lib/constants";
 import { err, ok, type Result } from "$lib/modules/result";
-import { db } from "$lib/server/db";
+import type { Database } from "$lib/server/db/client";
+import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
 import type { DBUser } from "$lib/server/db/schema";
 import type { AnonymousData, Reservation, StaffData, UsualData } from "@domain";
@@ -23,11 +24,15 @@ type ReservationRow = Omit<Reservation, "kinds"> & {
 };
 
 export class ReservationService extends Service {
+  constructor(private readonly database: Database = getProductionDatabase()) {
+    super();
+  }
+
   private getReservationRows() {
     const staffUser = alias(table.user, "staffUser");
     const customerUser = alias(table.user, "customerUser");
 
-    return db
+    return this.database
       .select({
         id: table.reservation.id,
         date: table.reservation.date,
@@ -270,7 +275,10 @@ export class ReservationService extends Service {
 
   async delete(id: string) {
     try {
-      return await db.delete(table.reservation).where(eq(table.reservation.id, id)).returning();
+      return await this.database
+        .delete(table.reservation)
+        .where(eq(table.reservation.id, id))
+        .returning();
     } catch (e) {
       logger.error({ err: e, reservationId: id }, "delete failed");
       return null;
@@ -279,7 +287,7 @@ export class ReservationService extends Service {
 
   async deleteByUser(id: string, email: string) {
     try {
-      return await db
+      return await this.database
         .delete(table.reservation)
         .where(
           and(
@@ -297,7 +305,7 @@ export class ReservationService extends Service {
   async deleteManyByUser(ids: string[], email: string) {
     try {
       if (ids.length === 0) return [];
-      return await db
+      return await this.database
         .delete(table.reservation)
         .where(
           and(
@@ -314,7 +322,7 @@ export class ReservationService extends Service {
 
   async deleteAll(email: string) {
     try {
-      return await db
+      return await this.database
         .delete(table.reservation)
         .where(eq(table.reservation.email, email.toLowerCase().trim()));
     } catch (e) {
@@ -325,7 +333,9 @@ export class ReservationService extends Service {
 
   async deleteAllExpired() {
     try {
-      return await db.delete(table.reservation).where(lt(table.reservation.expiresAt, new Date()));
+      return await this.database
+        .delete(table.reservation)
+        .where(lt(table.reservation.expiresAt, new Date()));
     } catch (err) {
       logger.error({ err }, "deleteAllExpired failed");
     }
@@ -333,7 +343,7 @@ export class ReservationService extends Service {
 
   async updateExpiration(id: string): Promise<Reservation | null> {
     try {
-      const updated = await db
+      const updated = await this.database
         .update(table.reservation)
         .set({
           pending: false,
@@ -365,7 +375,7 @@ export class ReservationService extends Service {
   ): Promise<Result<table.DBReservation, InsertError>> {
     try {
       return ok(
-        await db.transaction(async (tx) => {
+        await this.database.transaction(async (tx) => {
           const requestedKinds = await tx
             .select({
               id: table.kind.id,
@@ -442,7 +452,7 @@ export class ReservationService extends Service {
 
   async countExpired() {
     try {
-      const entries = await db
+      const entries = await this.database
         .select({ count: count() })
         .from(table.reservation)
         .where(lt(table.reservation.expiresAt, new Date()))

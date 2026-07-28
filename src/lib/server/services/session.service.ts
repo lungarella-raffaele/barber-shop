@@ -1,4 +1,5 @@
-import { db } from "$lib/server/db";
+import type { Database } from "$lib/server/db/client";
+import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -8,9 +9,13 @@ import { Service } from "./service";
 const logger = createLogger("SessionService");
 
 export class SessionService extends Service {
+  constructor(private readonly database: Database = getProductionDatabase()) {
+    super();
+  }
+
   async insert(session: table.NewSession) {
     try {
-      return await db.insert(table.session).values(session);
+      return await this.database.insert(table.session).values(session);
     } catch (e) {
       logger.error({ err: e, sessionId: session.id }, "insert failed");
       return null;
@@ -19,7 +24,11 @@ export class SessionService extends Service {
 
   async getByID(sessionID: string) {
     try {
-      return await db.select().from(table.session).where(eq(table.session.id, sessionID)).get();
+      return await this.database
+        .select()
+        .from(table.session)
+        .where(eq(table.session.id, sessionID))
+        .get();
     } catch (e) {
       logger.error({ err: e, sessionId: sessionID }, "getByID failed");
       return null;
@@ -28,7 +37,7 @@ export class SessionService extends Service {
 
   async delete(sessionID: string) {
     try {
-      return await db.delete(table.session).where(eq(table.session.id, sessionID));
+      return await this.database.delete(table.session).where(eq(table.session.id, sessionID));
     } catch (e) {
       logger.error({ err: e, sessionId: sessionID }, "delete failed");
       return null;
@@ -37,7 +46,7 @@ export class SessionService extends Service {
 
   async deleteAllByUserID(userID: string) {
     try {
-      return await db.delete(table.session).where(eq(table.session.userID, userID));
+      return await this.database.delete(table.session).where(eq(table.session.userID, userID));
     } catch (e) {
       logger.error({ err: e, userId: userID }, "deleteAllByUserID failed");
       return null;
