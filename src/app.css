@@ -307,11 +307,19 @@
   html {
     --scrollbar-size: 6px;
 
+    max-width: 100%;
+    overflow-x: clip;
     background-color: var(--color-background);
     color: var(--color-foreground);
     scrollbar-gutter: stable;
     scrollbar-width: thin;
     scrollbar-color: var(--gray-6) transparent;
+  }
+
+  body {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   *::-webkit-scrollbar:vertical {

@@ -4,6 +4,7 @@ import { logger } from "$lib/server/logger.js";
 import { EmailService } from "$lib/server/mailer.js";
 import { formatDate, formatTime } from "$lib/utils.js";
 import { KindService } from "@service/kind.service.js";
+import { PublicTokenService } from "@service/public-token.service.js";
 import { ReservationService } from "@service/reservation.service.js";
 import { ScheduleService } from "@service/schedule.service.js";
 import { ShutdownService } from "@service/shutdown.service.js";
@@ -102,9 +103,28 @@ export const actions: Actions = {
           return fail(400, { form });
         }
 
+        const tokenService = PublicTokenService.get();
+        const [accessToken, confirmationToken] = await Promise.all([
+          tokenService.issue({
+            purpose: "reservation_access",
+            reservationID: result.value.id,
+            expiresAt: result.value.expiresAt,
+          }),
+          tokenService.issue({
+            purpose: "reservation_confirmation",
+            reservationID: result.value.id,
+            expiresAt: result.value.expiresAt,
+          }),
+        ]);
+
+        if (accessToken.isErr() || confirmationToken.isErr()) {
+          await reservationService.delete(result.value.id);
+          return fail(500, { form });
+        }
+
         const sent = await new EmailService().newReservation({
           name,
-          link: `${BASE_URL.replace(/\/$/, "")}/book/confirm/${result.value.id}`,
+          link: `${BASE_URL.replace(/\/$/, "")}/book/confirm/${confirmationToken.value}`,
           staffName: result.value.staff.name,
           serviceNames: result.value.kinds.map((kind) => kind.name),
           date: formatDate(result.value.date),
@@ -116,8 +136,11 @@ export const actions: Actions = {
 
         if (sent.isErr()) {
           logger.error("Could not send email");
+          await reservationService.delete(result.value.id);
           return fail(500, { form, email: true });
         }
+
+        return { ...result.value, accessToken: accessToken.value };
       }
 
       return result.value;

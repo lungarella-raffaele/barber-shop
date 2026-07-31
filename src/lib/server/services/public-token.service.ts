@@ -5,7 +5,7 @@ import * as table from "$lib/server/db/schema";
 import { createLogger } from "$lib/server/logger";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
-import { and, eq, gt, isNull, lt } from "drizzle-orm";
+import { and, eq, gt, isNull, lt, sql } from "drizzle-orm";
 
 import { Service } from "./service";
 
@@ -136,6 +136,53 @@ export class PublicTokenService extends Service {
     } catch (error) {
       logger.error({ err: error, tokenHash, purpose }, "consume failed");
       return false;
+    }
+  }
+
+  async confirmReservation(rawToken: string) {
+    const tokenHash = hashPublicToken(rawToken);
+
+    try {
+      const reservationID = await this.database.transaction(async (tx) => {
+        const token = await tx
+          .update(table.publicToken)
+          .set({ consumedAt: new Date() })
+          .where(
+            and(
+              eq(table.publicToken.tokenHash, tokenHash),
+              eq(table.publicToken.purpose, "reservation_confirmation"),
+              isNull(table.publicToken.consumedAt),
+              gt(table.publicToken.expiresAt, new Date()),
+            ),
+          )
+          .returning({ reservationID: table.publicToken.reservationID })
+          .get();
+
+        if (!token?.reservationID) return null;
+
+        const reservation = await tx
+          .update(table.reservation)
+          .set({
+            pending: false,
+            expiresAt: sql`strftime('%s', datetime(${table.reservation.date}, '+1 day'))`,
+          })
+          .where(
+            and(eq(table.reservation.id, token.reservationID), eq(table.reservation.pending, true)),
+          )
+          .returning({ id: table.reservation.id })
+          .get();
+
+        if (!reservation) {
+          throw new Error("Reservation is missing or already confirmed");
+        }
+
+        return reservation.id;
+      });
+
+      return reservationID;
+    } catch (error) {
+      logger.error({ err: error, tokenHash }, "confirmReservation failed");
+      return null;
     }
   }
 

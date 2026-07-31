@@ -28,6 +28,7 @@ export type Reservation = {
 export type BookingResult = {
   id: string;
   pending: boolean;
+  accessToken?: string;
 };
 
 export type ReservationTableRow = {

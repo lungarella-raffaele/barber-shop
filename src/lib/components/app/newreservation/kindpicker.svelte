@@ -33,7 +33,7 @@
         aria-label={`Scegli ${kind.name}`}
         class="selection-item min-h-16 w-full items-center justify-start gap-2 rounded-xl px-4 py-3 text-left"
       >
-        <Checkbox checked={selected} tabindex={-1} aria-hidden="true" class="pointer-events-none" />
+        <Checkbox checked={selected} tabindex={-1} aria-hidden="true" />
         <div class="min-w-0 flex-1 text-left">
           <div class="truncate typo-label">{kind.name}</div>
           <Duration amount={kind.duration} class="text-muted-foreground" />

@@ -11,10 +11,13 @@ const handleLogging: Handle = async ({ event, resolve }) => {
 
   const response = await resolve(event);
 
+  const routeID = event.route.id;
+  const containsPublicToken = routeID?.includes("[token]") || routeID === "/book/pending/[id]";
+
   logger.info({
     requestId,
     method: event.request.method,
-    path: event.url.pathname,
+    path: containsPublicToken ? routeID : event.url.pathname,
     status: response.status,
     durationMs: Date.now() - start,
     userId: event.locals.user?.data.id ?? null,
