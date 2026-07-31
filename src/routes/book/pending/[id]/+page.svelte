@@ -18,19 +18,26 @@
   });
 
   const isExpired = $derived(data.error === "expired" || timer.isEnded);
+  const isConfirmed = $derived(
+    Boolean(data.success && data.reservation && !data.reservation.pending),
+  );
   const title = $derived(
-    data.success && data.reservation && !isExpired
-      ? "Prenotazione in attesa"
-      : isExpired
-        ? "Tempo scaduto"
-        : "Prenotazione non disponibile",
+    isConfirmed
+      ? "Prenotazione confermata"
+      : data.success && data.reservation && !isExpired
+        ? "Prenotazione in attesa"
+        : isExpired
+          ? "Tempo scaduto"
+          : "Prenotazione non disponibile",
   );
   const description = $derived(
-    data.success && data.reservation && !isExpired
-      ? `Abbiamo inviato un link di conferma a ${data.reservation.email}. Controlla la tua casella di posta.`
-      : isExpired
-        ? "La prenotazione non è più riservata. Effettua una nuova prenotazione per scegliere un nuovo orario."
-        : `Riprova oppure chiama il numero ${BARBER_SHOP_DETAILS.phone}.`,
+    isConfirmed
+      ? "La tua prenotazione è stata registrata correttamente."
+      : data.success && data.reservation && !isExpired
+        ? `Abbiamo inviato un link di conferma a ${data.reservation.email}. Controlla la tua casella di posta.`
+        : isExpired
+          ? "La prenotazione non è più riservata. Effettua una nuova prenotazione per scegliere un nuovo orario."
+          : `Riprova oppure chiama il numero ${BARBER_SHOP_DETAILS.phone}.`,
   );
 </script>
 
@@ -41,7 +48,7 @@
 
 <EphemeralPage {title} {description}>
   {#if data.success && data.reservation}
-    {#if !isExpired}
+    {#if !isExpired && data.reservation.pending}
       <div class="space-y-2 text-center">
         <p class="text-muted-foreground typo-body-sm">Hai a disposizione</p>
         <p class="typo-heading">{timer.show()}</p>

@@ -50,15 +50,15 @@
   <Progress class="fixed top-0 z-50 h-1 w-full rounded-none" value={navigationProgress} />
 {/if}
 
-<div class="flex min-h-dvh w-full flex-col">
+<div class="flex min-h-dvh w-full min-w-0 flex-col">
   {#if data.banner?.visible}
     <Banner message={data.banner.message} />
   {/if}
   <div class="sticky top-0 z-40">
     <MenuBar user={data.user} />
   </div>
-  <main class="app-padding relative flex min-h-dvh flex-col">
-    <div class="grow px-2 py-16 sm:px-8">
+  <main class="app-padding relative flex min-h-dvh min-w-0 flex-col">
+    <div class="min-w-0 grow px-2 py-16 sm:px-8">
       {@render children()}
     </div>
   </main>

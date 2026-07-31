@@ -35,10 +35,10 @@
       onResult: ({ result }) => {
         if (result.type === "success" && result.data) {
           const res = result.data as BookingResult;
-          if (res?.pending) {
-            goto(`/book/pending/${res.id}`);
+          if (res?.accessToken) {
+            goto(`/book/pending/${res.accessToken}`);
           } else if (res) {
-            goto(`/book/confirm/${res.id}`);
+            goto(`/${res.id}`);
           }
         } else if (result.type === "failure") {
           if (result.status === 500 && result.data?.email) {
@@ -364,7 +364,9 @@
                         {index + 1}
                       </span>
                       <div class="min-w-0">
-                        <p class="wrap-break-word typo-label leading-5">{kind.name}</p>
+                        <p class="wrap-break-word typo-label leading-5">
+                          {kind.name}
+                        </p>
                         <div
                           class="mt-1.5 flex items-center justify-between gap-3 text-muted-foreground typo-caption"
                         >

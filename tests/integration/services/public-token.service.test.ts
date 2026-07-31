@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createTestDatabase, type TestDatabase } from "../../support/database";
-import { seedUser } from "../../support/fixtures";
+import { seedStaff, seedUser } from "../../support/fixtures";
 
 describe("PublicTokenService", () => {
   let testDatabase: TestDatabase;
@@ -43,7 +43,9 @@ describe("PublicTokenService", () => {
       status: "valid",
       token: { tokenHash: hashPublicToken(issued.value) },
     });
-    expect(await service.inspect(issued.value, "email_change")).toEqual({ status: "invalid" });
+    expect(await service.inspect(issued.value, "email_change")).toEqual({
+      status: "invalid",
+    });
   });
 
   it("consumes a valid token only once", async () => {
@@ -61,6 +63,39 @@ describe("PublicTokenService", () => {
     });
   });
 
+  it("atomically confirms a reservation and consumes its token only once", async () => {
+    await seedStaff(testDatabase.database);
+    await testDatabase.database.insert(table.reservation).values({
+      id: "reservation-1",
+      date: "2099-06-15",
+      hour: "10:00",
+      name: "Guest",
+      email: "guest@example.com",
+      expiresAt: new Date("2099-06-15T09:00:00.000Z"),
+      pending: true,
+      staffID: "staff-1",
+    });
+    const issued = await service.issue({
+      purpose: "reservation_confirmation",
+      reservationID: "reservation-1",
+      expiresAt: new Date("2099-06-15T09:00:00.000Z"),
+    });
+    if (issued.isErr()) throw new Error(`Token issuance failed: ${issued.error}`);
+
+    expect(await service.confirmReservation(issued.value)).toBe("reservation-1");
+    expect(await service.confirmReservation(issued.value)).toBeNull();
+    expect(await service.inspect(issued.value, "reservation_confirmation")).toEqual({
+      status: "consumed",
+    });
+
+    const reservation = await testDatabase.database
+      .select()
+      .from(table.reservation)
+      .where(eq(table.reservation.id, "reservation-1"))
+      .get();
+    expect(reservation).toMatchObject({ pending: false });
+  });
+
   it("replaces an unconsumed token for the same user and purpose", async () => {
     const first = await service.issue({
       purpose: "email_change",
@@ -76,7 +111,9 @@ describe("PublicTokenService", () => {
     });
     if (first.isErr() || second.isErr()) throw new Error("Expected both issuances to succeed");
 
-    expect(await service.inspect(first.value, "email_change")).toEqual({ status: "invalid" });
+    expect(await service.inspect(first.value, "email_change")).toEqual({
+      status: "invalid",
+    });
     expect(await service.inspect(second.value, "email_change")).toMatchObject({
       status: "valid",
       token: { pendingEmail: "second@example.com" },
@@ -114,7 +151,9 @@ describe("PublicTokenService", () => {
     });
     if (expired.isErr()) throw new Error(`Token issuance failed: ${expired.error}`);
 
-    expect(await service.inspect(expired.value, "password_reset")).toEqual({ status: "expired" });
+    expect(await service.inspect(expired.value, "password_reset")).toEqual({
+      status: "expired",
+    });
     expect(await service.consume(expired.value, "password_reset")).toBe(false);
 
     await service.deleteAllExpired();
