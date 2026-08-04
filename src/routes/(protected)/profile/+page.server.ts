@@ -18,31 +18,13 @@ import { zod4 as zod } from "sveltekit-superforms/adapters";
 
 import type { Actions, PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ locals, url }) => {
+export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.user) {
     redirect(301, "/login");
   }
 
-  const confirmID = url.searchParams.get("confirm-email-change"); // Coming from an email
-
   const changeEmailForm = await superValidate(zod(profileChangeEmailSchema));
   const changePasswordForm = await superValidate(zod(profileChangePasswordSchema));
-
-  if (confirmID) {
-    const userService = UserService.get();
-    const verified = await EmailVerificationService.get().getByID(confirmID);
-
-    if (verified) {
-      const updatedEmail = await userService.updateEmail(verified.userID, verified.email);
-      return {
-        user: locals.user,
-        title: "Profilo -",
-        updatedEmail,
-        changeEmailForm,
-        changePasswordForm,
-      };
-    }
-  }
 
   return {
     user: locals.user,
@@ -191,7 +173,7 @@ export const actions: Actions = {
 
     // Delete all related data
     await sessionService.deleteAllByUserID(user.data.id);
-    await reservationService.deleteAll(user.data.email);
+    await reservationService.deleteAllByUser(user.data.id, user.data.email);
     await passwordRecoverService.deleteByUserID(user.data.id);
     await publicTokenService.deleteByUserID(user.data.id);
 

@@ -52,7 +52,7 @@
       <Form.Field form={sForm} name="email">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Email*</Form.Label>
+            <Form.Label required>Email</Form.Label>
             <Input
               autocomplete="email"
               {...props}
@@ -67,7 +67,7 @@
       <Form.Field form={sForm} name="password">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Password*</Form.Label>
+            <Form.Label required>Password</Form.Label>
             <PasswordInput {...props} bind:value={$formData.password} />
           {/snippet}
         </Form.Control>
@@ -77,7 +77,7 @@
       <Form.Field form={sForm} name="confirmPassword">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Conferma password*</Form.Label>
+            <Form.Label required>Conferma password</Form.Label>
             <PasswordInput {...props} bind:value={$formData.confirmPassword} />
           {/snippet}
         </Form.Control>
@@ -89,7 +89,7 @@
       <Form.Field form={sForm} name="name">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Nome*</Form.Label>
+            <Form.Label required>Nome</Form.Label>
             <Input
               {...props}
               bind:value={$formData.name}

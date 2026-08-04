@@ -9,7 +9,10 @@ export const load: PageServerLoad = async ({ locals }) => {
     redirect(303, "/login");
   }
 
-  const reservations = await ReservationService.get().getByUser(locals.user.data.email);
+  const reservations = await ReservationService.get().getByUser(
+    locals.user.data.id,
+    locals.user.data.email,
+  );
 
   if (!reservations) {
     return error(500);
@@ -33,7 +36,11 @@ export const actions: Actions = {
       return fail(400, { success: false });
     }
 
-    const res = await ReservationService.get().deleteByUser(id, locals.user.data.email);
+    const res = await ReservationService.get().deleteByUser(
+      id,
+      locals.user.data.id,
+      locals.user.data.email,
+    );
 
     if (res && res.length > 0) {
       return { res };
@@ -56,7 +63,11 @@ export const actions: Actions = {
       return fail(400, { success: false });
     }
 
-    const res = await ReservationService.get().deleteManyByUser(ids, locals.user.data.email);
+    const res = await ReservationService.get().deleteManyByUser(
+      ids,
+      locals.user.data.id,
+      locals.user.data.email,
+    );
 
     if (res) {
       return { res, deleted: res.length };

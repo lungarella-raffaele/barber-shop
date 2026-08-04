@@ -3,10 +3,8 @@
   import { invalidateAll } from "$app/navigation";
   import PageHeader from "$lib/components/app/pageheader.svelte";
   import ReservationDetailsSheet from "$lib/components/app/reservation-details-sheet.svelte";
-  import ReservationStatusBadge from "$lib/components/app/reservationstatusbadge.svelte";
   import {
     CalendarIcon,
-    Eye,
     ChevronLeft,
     ChevronRight,
     CirclePlus,
@@ -38,7 +36,7 @@
   };
 
   const { data }: { data: PageData } = $props();
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 5;
 
   let searchQuery = $state("");
   let sortKey = $state<SortKey>("date");
@@ -250,7 +248,7 @@
   </button>
 {/snippet}
 
-<div class="mx-auto w-full max-w-6xl">
+<div class="mx-auto w-full max-w-4xl">
   <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <PageHeader
       title="Le tue prenotazioni"
@@ -263,8 +261,8 @@
     </Button>
   </div>
 
-  <div class="mb-6 flex items-center gap-2 md:max-w-md">
-    <div class="relative min-w-0 flex-1">
+  <div class="mb-6 flex items-center gap-2">
+    <div class="relative min-w-0 flex-1 md:max-w-md">
       <Search class="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
       <Input
         bind:value={searchQuery}
@@ -300,11 +298,11 @@
               onclick={(event) => event.stopPropagation()}
             />
           </Table.Head>
-          <Table.Head>{@render sortButton("name")}</Table.Head>
+          {#if data.user?.role === "staff"}
+            <Table.Head>{@render sortButton("name")}</Table.Head>
+          {/if}
           <Table.Head>{@render sortButton("date")}</Table.Head>
           <Table.Head>{@render sortButton("kind")}</Table.Head>
-          <Table.Head>{@render sortButton("status")}</Table.Head>
-          <Table.Head class="w-16 text-right"></Table.Head>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -317,7 +315,19 @@
             selectedIds.has(paginatedReservations[index + 1].id)}
           <Table.Row
             data-state={isSelected ? "selected" : undefined}
-            class="group data-[state=selected]:bg-transparent"
+            class="group cursor-pointer rounded-xl outline-none transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50 data-[state=selected]:bg-transparent"
+            role="button"
+            tabindex={0}
+            onclick={() => openDetails(reservation)}
+            onkeydown={(event) => {
+              if (
+                event.target === event.currentTarget &&
+                (event.key === "Enter" || event.key === " ")
+              ) {
+                event.preventDefault();
+                openDetails(reservation);
+              }
+            }}
           >
             <Table.Cell
               class={cn(
@@ -335,67 +345,43 @@
                 onclick={(event) => event.stopPropagation()}
               />
             </Table.Cell>
+
+            {#if data.user?.role === "staff"}
+              <Table.Cell
+                class="transition-all duration-150 ease-in-out group-hover:bg-muted/30 group-data-[state=selected]:bg-muted/80 group-data-[state=selected]:group-hover:bg-muted/90"
+              >
+                <div class="typo-label">
+                  {reservation.name}
+                </div>
+                <div class="text-muted-foreground typo-caption">
+                  {reservation.email}
+                </div>
+              </Table.Cell>
+            {/if}
             <Table.Cell
               class="transition-all duration-150 ease-in-out group-hover:bg-muted/30 group-data-[state=selected]:bg-muted/80 group-data-[state=selected]:group-hover:bg-muted/90"
             >
               <div class="typo-label">
-                {reservation.name}
-              </div>
-              <div class="text-muted-foreground typo-caption">
-                {reservation.email}
-              </div>
-            </Table.Cell>
-            <Table.Cell
-              class="transition-all duration-150 ease-in-out group-hover:bg-muted/30 group-data-[state=selected]:bg-muted/80 group-data-[state=selected]:group-hover:bg-muted/90"
-            >
-              <div class="typo-label">
-                {formatShortDate(reservation.date)}
+                {safeFormatDate(reservation.date)}
               </div>
               <div class="typo-caption text-muted-foreground">
                 {displayTime(reservation.hour)}
               </div>
             </Table.Cell>
             <Table.Cell
-              class="transition-all duration-150 ease-in-out group-hover:bg-muted/30 group-data-[state=selected]:bg-muted/80 group-data-[state=selected]:group-hover:bg-muted/90"
-            >
-              <div class="typo-label">
-                {reservation.kinds.map((kind) => kind.name).join(", ")}
-              </div>
-              <div class="typo-caption text-muted-foreground">
-                {reservation.staff?.name}
-              </div>
-            </Table.Cell>
-            <Table.Cell
-              class="transition-all duration-150 ease-in-out group-hover:bg-muted/30 group-data-[state=selected]:bg-muted/80 group-data-[state=selected]:group-hover:bg-muted/90"
-            >
-              <ReservationStatusBadge pending={reservation.pending} />
-            </Table.Cell>
-            <Table.Cell
               class={cn(
                 "transition-all duration-150 ease-in-out group-not-data-[state=selected]:group-hover:rounded-r-xl group-hover:bg-muted/30 group-data-[state=selected]:bg-muted/80 group-data-[state=selected]:group-hover:bg-muted/90",
                 isSelected && selectedRowEdgeClass("right", hasSelectedBefore, hasSelectedAfter),
               )}
-              onclick={(event) => event.stopPropagation()}
             >
-              <div class="flex items-center justify-end gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="size-8"
-                  onclick={() => openDetails(reservation)}
-                >
-                  <span class="sr-only">Vedi dettaglio</span>
-                  <Eye class="size-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="size-8 text-destructive hover:text-destructive"
-                  onclick={() => openDelete(reservation)}
-                >
-                  <span class="sr-only">Elimina</span>
-                  <Trash class="size-4" />
-                </Button>
+              <div
+                class="typo-label w-32 truncate"
+                title={reservation.kinds.map((kind) => kind.name).join(", ")}
+              >
+                {reservation.kinds.map((kind) => kind.name).join(", ")}
+              </div>
+              <div class="typo-caption text-muted-foreground">
+                {reservation.staff?.name}
               </div>
             </Table.Cell>
           </Table.Row>
@@ -412,37 +398,30 @@
       </Table.Body>
     </Table.Root>
   {:else if searchQuery}
-    Ricerca non ha portato a nulla
+    Nessun risultato per la ricerca inserita
   {:else}
     Nessuna prenotazione precedente
   {/if}
-</div>
-
-<div
-  class="mt-4 flex flex-col gap-3 typo-body-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between md:px-6 sm:px-4 px-0 lg:px-12"
->
-  <div>
-    {filteredReservations.length} risultati
-  </div>
-
-  <div class="flex items-center justify-end gap-2">
-    <Button
-      variant="outline"
-      size="icon"
-      disabled={currentPage === 1}
-      onclick={() => (currentPage = Math.max(1, currentPage - 1))}
-    >
-      <ChevronLeft class="size-5" />
-    </Button>
-    <span>Pagina {currentPage} di {pageCount}</span>
-    <Button
-      variant="outline"
-      size="icon"
-      disabled={currentPage === pageCount}
-      onclick={() => (currentPage = Math.min(pageCount, currentPage + 1))}
-    >
-      <ChevronRight class="size-5" />
-    </Button>
+  <div
+    class="mt-6 flex flex-col gap-3 typo-body-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between md:px-6 sm:px-4 px-0 lg:px-12"
+  >
+    <div class="flex w-full items-center gap-2 align-middle justify-center">
+      <Button
+        variant="outline"
+        disabled={currentPage === 1}
+        onclick={() => (currentPage = Math.max(1, currentPage - 1))}
+      >
+        <ChevronLeft class="size-5" />
+      </Button>
+      <span>Pagina {currentPage} di {pageCount}</span>
+      <Button
+        variant="outline"
+        disabled={currentPage === pageCount}
+        onclick={() => (currentPage = Math.min(pageCount, currentPage + 1))}
+      >
+        <ChevronRight class="size-5" />
+      </Button>
+    </div>
   </div>
 </div>
 
@@ -450,6 +429,10 @@
   bind:reservation={selectedReservation}
   reservations={filteredReservations}
   bind:open={isDetailsOpen}
+  onDelete={(reservation) => {
+    isDetailsOpen = false;
+    openDelete(reservation);
+  }}
 />
 
 <Dialog.Root bind:open={isDeleteOpen}>

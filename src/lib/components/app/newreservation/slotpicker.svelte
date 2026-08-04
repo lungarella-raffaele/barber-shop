@@ -1,56 +1,50 @@
 <script lang="ts">
-  import * as RadioGroup from "$lib/components/ui/radio-group/index.js";
-  import { formatDate, formatTime } from "$lib/utils";
+  import * as Select from "$lib/components/ui/select/index.js";
+  import { formatTime } from "$lib/utils";
   import type { Slot } from "@domain";
 
   let {
     availableSlots,
     date,
     value = $bindable(),
-  }: { availableSlots: Slot[]; date: string; value: string } = $props();
+    onHourChange,
+  }: {
+    availableSlots: Slot[];
+    date: string;
+    value: string;
+    onHourChange?: (value: string) => void;
+  } = $props();
 
   const selectableSlots = $derived(
     availableSlots.filter((slot) => slot.available && !slot.invalid && !slot.past),
+  );
+  const selectedSlot = $derived(selectableSlots.find((slot) => slot.start.toString() === value));
+  const placeholder = $derived(
+    date && selectableSlots.length === 0 ? "Nessun orario disponibile" : "Seleziona un orario",
   );
 </script>
 
 <div>
   <h2 class="sr-only">Seleziona un orario</h2>
 
-  {#if date && selectableSlots.length > 0}
-    <RadioGroup.Root bind:value class="flex w-full flex-col gap-2">
-      {#each selectableSlots as s (s.start.toString())}
-        {@render SlotEntry(s)}
-      {/each}
-    </RadioGroup.Root>
-  {:else if date}
-    <div class="selection-group px-6! py-5!">
-      <p>Nessun orario disponibile per il {formatDate(date.toString())}</p>
-      <p class="text-muted-foreground typo-body-sm">Scegli un altro giorno</p>
-    </div>
-  {:else}
-    <div
-      class="text-muted-foreground flex h-20 items-center justify-center bg-transparent! px-6 py-5"
-    >
-      <span>Nessuna data selezionata</span>
-    </div>
-  {/if}
-</div>
-
-{#snippet SlotEntry(s: Slot)}
-  {@const slotValue = s.start.toString()}
-  {@const slotId = `slot-${slotValue}`}
-
-  <label
-    for={slotId}
-    class="selection-item min-h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-2 text-left"
-    data-state={value === slotValue ? "on" : "off"}
+  <Select.Root
+    type="single"
+    bind:value
+    disabled={selectableSlots.length === 0}
+    onValueChange={onHourChange}
   >
-    <RadioGroup.Item
-      id={slotId}
-      value={slotValue}
-      aria-label={`Scegli le ${formatTime(s.start)}`}
-    />
-    <span class="typo-label tabular-nums">{formatTime(s.start)}</span>
-  </label>
-{/snippet}
+    <Select.Trigger class="h-12 w-full" aria-label="Seleziona un orario">
+      <span data-slot="select-value" class:tabular-nums={selectedSlot}>
+        {selectedSlot ? formatTime(selectedSlot.start) : placeholder}
+      </span>
+    </Select.Trigger>
+    <Select.Content class="max-h-64">
+      {#each selectableSlots as slot (slot.start.toString())}
+        {@const slotValue = slot.start.toString()}
+        <Select.Item value={slotValue} label={formatTime(slot.start)}>
+          <span class="tabular-nums">{formatTime(slot.start)}</span>
+        </Select.Item>
+      {/each}
+    </Select.Content>
+  </Select.Root>
+</div>

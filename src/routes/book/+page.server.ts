@@ -19,7 +19,20 @@ export const load: PageServerLoad = async ({ locals }) => {
   const who = !locals.user ? "anonymous" : locals.user.role === "staff" ? "staff" : "usual";
 
   const [form, currentReservations, shutdown, schedule] = await Promise.all([
-    superValidate({ who }, zod(bookSchema), { errors: false }),
+    superValidate(
+      {
+        who,
+        staff: "",
+        kinds: [],
+        date: "",
+        hour: "",
+        name: "",
+        email: "",
+        phone: "",
+      },
+      zod(bookSchema),
+      { errors: false },
+    ),
     ReservationService.get().getAll(),
     ShutdownService.get().getAll(),
     ScheduleService.get().getAll(),
@@ -98,28 +111,20 @@ export const actions: Actions = {
     }
 
     if (result.isOk()) {
+      const confirmationToken = await PublicTokenService.get().issue({
+        purpose: "reservation_confirmation",
+        reservationID: result.value.id,
+        expiresAt: result.value.expiresAt,
+      });
+
+      if (confirmationToken.isErr()) {
+        await reservationService.delete(result.value.id);
+        return fail(500, { form });
+      }
+
       if (!user) {
         if (!name || !email) {
           return fail(400, { form });
-        }
-
-        const tokenService = PublicTokenService.get();
-        const [accessToken, confirmationToken] = await Promise.all([
-          tokenService.issue({
-            purpose: "reservation_access",
-            reservationID: result.value.id,
-            expiresAt: result.value.expiresAt,
-          }),
-          tokenService.issue({
-            purpose: "reservation_confirmation",
-            reservationID: result.value.id,
-            expiresAt: result.value.expiresAt,
-          }),
-        ]);
-
-        if (accessToken.isErr() || confirmationToken.isErr()) {
-          await reservationService.delete(result.value.id);
-          return fail(500, { form });
         }
 
         const sent = await new EmailService().newReservation({
@@ -139,11 +144,9 @@ export const actions: Actions = {
           await reservationService.delete(result.value.id);
           return fail(500, { form, email: true });
         }
-
-        return { ...result.value, accessToken: accessToken.value };
       }
 
-      return result.value;
+      return { ...result.value, confirmationToken: confirmationToken.value };
     } else {
       logger.error(result.error);
       switch (result.error) {

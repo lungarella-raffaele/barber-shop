@@ -15,11 +15,14 @@ export const load: PageServerLoad = async ({ params }) => {
   }
 
   const reservation = await ReservationService.get().getByID(token.token.reservationID);
-  if (!reservation || !reservation.pending) {
+  if (!reservation) {
     return { status: "invalid" as const, reservation: null };
   }
 
-  return { status: "ready" as const, reservation };
+  return {
+    status: reservation.pending ? ("ready" as const) : ("confirmed" as const),
+    reservation,
+  };
 };
 
 export const actions: Actions = {

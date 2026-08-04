@@ -169,7 +169,7 @@
   <Card.Content>
     <div class="flex flex-col gap-1">
       {#each tabs as t}
-        <div class="flex items-center gap-2 border-b py-2">
+        <div class="flex items-center gap-2 border-b border-border py-2">
           <!-- Day label -->
           <p class="text-muted-foreground w-12 shrink-0 typo-subtitle">
             {dayLabels[t]}
@@ -187,7 +187,7 @@
                       <button
                         {...props}
                         class={[
-                          "hover:bg-muted/50 cursor-pointer rounded-md border px-2 py-1 transition-colors",
+                          "cursor-pointer px-2 py-1 group border-border flex items-center justify-between border transition-colors rounded-xl hover:bg-gray-4/80 bg-gray-3",
                           !s.id && "border-yellow-400/60",
                         ]}
                       >
@@ -218,7 +218,7 @@
             <Tooltip.Root delayDuration={TOOLTIP_DELAY}>
               <Tooltip.Trigger>
                 {#snippet child({ props })}
-                  <Button {...props} variant="outline" onclick={() => openAdd(t)}>
+                  <Button {...props} variant="outline" onclick={() => openAdd(t)} size="icon">
                     <CirclePlus class="size-3.5" />
                   </Button>
                 {/snippet}

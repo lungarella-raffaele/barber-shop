@@ -26,9 +26,7 @@
       : "w-fit max-w-full flex-row items-center overflow-x-auto",
   );
 
-  const itemOrientationClass = $derived(
-    orientation === "vertical" ? "w-full" : "min-w-40 shrink-0",
-  );
+  const itemOrientationClass = $derived(orientation === "vertical" ? "w-full" : "min-w-40 flex-1");
 
   function getInitials(name: string) {
     return name
@@ -55,8 +53,8 @@
         {orientation}
         bind:value
         onValueChange={onStaffChange}
-        class={cn("selection-group", className, rootOrientationClass)}
-        spacing={3}
+        class={cn("selection-group", rootOrientationClass, className)}
+        spacing={2}
       >
         {#each data as member (member.id)}
           <ToggleGroup.Item
@@ -64,7 +62,7 @@
             aria-label={`Scegli ${member.name}`}
             disabled={data.length === 1}
             class={cn(
-              "selection-item min-h-16 justify-start gap-2 rounded-xl px-4 py-3 text-left",
+              "selection-item min-h-16 justify-start gap-2 rounded-xl px-3 py-2 text-left",
               itemOrientationClass,
             )}
           >

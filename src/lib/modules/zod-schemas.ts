@@ -66,7 +66,9 @@ export const signupSchema = z
 const nameSchema = z.string().min(1);
 const dateSchema = z.iso.date();
 const hourSchema = z.string().min(1);
-const kindsFieldSchema = z.array(z.string().min(1)).min(1);
+export const kindsFieldSchema = z
+  .array(z.string().min(1))
+  .min(1, { error: "Scegli almeno un servizio" });
 const staffSchema = z.string().min(1);
 const phoneSchema = z.string().optional();
 
@@ -92,41 +94,40 @@ export const staffUserSchema = baseUserSchema.extend({
   phone: phoneSchema,
 });
 
-export const bookSchema = z
-  .object({
-    who: z.enum(["anonymous", "usual", "staff"]),
-    staff: z.string().min(1, { error: "Scegli uno staff" }),
-    kinds: z.array(z.string().min(1)).min(1, { error: "Scegli almeno un servizio" }),
-    date: z.iso.date({ error: "Scegli una data" }),
-    hour: z.string().min(1, { error: "Scegli un orario" }),
+const bookingFields = {
+  staff: z.string().min(1, { error: "Scegli uno staff" }),
+  kinds: kindsFieldSchema,
+  date: z.iso.date({ error: "Scegli una data" }),
+  hour: z.string().min(1, { error: "Scegli un orario" }),
+};
+
+export const bookSchema = z.discriminatedUnion("who", [
+  z.object({
+    who: z.literal("anonymous"),
+    ...bookingFields,
+    name: z.string().trim().min(1, { error: "Il nome è obbligatorio" }),
+    email: z
+      .string()
+      .trim()
+      .min(1, { error: "L'email è obbligatoria" })
+      .pipe(z.email({ error: "Inserisci una mail valida" })),
+    phone: z.string().optional(),
+  }),
+  z.object({
+    who: z.literal("usual"),
+    ...bookingFields,
     name: z.string().optional(),
     email: z.string().optional(),
     phone: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.who === "anonymous") {
-      if (!data.name?.trim()) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["name"],
-          message: "Il nome è obbligatorio",
-        });
-      }
-      if (!data.email?.trim()) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["email"],
-          message: "L'email è obbligatoria",
-        });
-      } else if (!z.email().safeParse(data.email).success) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["email"],
-          message: "Inserisci una mail valida",
-        });
-      }
-    }
-  });
+  }),
+  z.object({
+    who: z.literal("staff"),
+    ...bookingFields,
+    name: z.string().optional(),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+  }),
+]);
 
 export const kindSchema = z.object({
   name: z.string().min(1, { error: "Il nome è obbligatorio" }),

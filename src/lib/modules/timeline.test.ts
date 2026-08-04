@@ -25,6 +25,7 @@ function reservation(id: string, hour: string, duration: number): Reservation {
     hour,
     name: id,
     email: `${id}@example.com`,
+    phoneNumber: null,
     pending: false,
     expiresAt: new Date(),
     staff: { id: "staff", name: "Staff" },

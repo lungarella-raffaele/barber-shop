@@ -3,11 +3,11 @@ import {
   Calendar,
   CirclePlus,
   CircleUser,
-  Citrus,
   Euro,
   Library,
   LogOut,
   Puzzle,
+  Settings,
 } from "$lib/components/icons/index";
 import type { User } from "$lib/domain";
 import type { Component } from "@lucide/svelte";
@@ -72,15 +72,15 @@ const navigation = [
     visibility: "logged-in",
   },
   {
-    title: "Dashboard",
+    title: "Agenda",
     url: ROUTES.dashboard,
-    icon: Citrus,
+    icon: Calendar,
     visibility: "admin",
   },
   {
     title: "Impostazioni",
     url: ROUTES.settings,
-    icon: Citrus,
+    icon: Settings,
     visibility: "admin",
   },
   {
@@ -108,5 +108,7 @@ export function getNavigationItems(user: User | null): NavigationItem[] {
     }
   });
 }
+
+export const reservationDetailRoute = (id: string) => `/reservations/${id}`;
 
 export const isNavigationItemActive = (pathname: string, url: string) => pathname === url;

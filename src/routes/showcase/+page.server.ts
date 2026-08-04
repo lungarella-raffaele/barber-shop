@@ -252,15 +252,15 @@ export const load: PageServerLoad = async () => {
     },
     {
       label: "Reservation detail",
-      href: anyReservation ? `/${anyReservation.id}` : null,
-      route: "/[reservation=uuid]",
+      href: anyReservation ? `/reservations/${anyReservation.id}` : null,
+      route: "/reservations/[reservation=uuid]",
       group: "Protected",
       category: "Reservation lifecycle",
       ephemeral: true,
       state: anyReservation
         ? `Using reservation ${anyReservation.id.slice(0, 8)}`
         : "No reservation found",
-      note: "Requires staff or a user matching the reservation email.",
+      note: "Requires staff or the account that owns the reservation.",
     },
     {
       label: "Pending booking",

@@ -31,21 +31,26 @@ export const session = sqliteTable("session", {
   ...timestamps,
 });
 
-export const reservation = sqliteTable("reservation", {
-  id: text("id").primaryKey(),
-  date: text("date").notNull(),
-  hour: text("hour").notNull(),
-  phoneNumber: text("phone_number"),
+export const reservation = sqliteTable(
+  "reservation",
+  {
+    id: text("id").primaryKey(),
+    date: text("date").notNull(),
+    hour: text("hour").notNull(),
+    phoneNumber: text("phone_number"),
 
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  pending: integer("pending", { mode: "boolean" }).notNull().default(false),
-  staffID: text("staff_id")
-    .notNull()
-    .references(() => staff.userID, { onDelete: "restrict" }),
-  ...timestamps,
-});
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    ownerUserID: text("owner_user_id").references(() => user.id, { onDelete: "set null" }),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+    pending: integer("pending", { mode: "boolean" }).notNull().default(false),
+    staffID: text("staff_id")
+      .notNull()
+      .references(() => staff.userID, { onDelete: "restrict" }),
+    ...timestamps,
+  },
+  (entry) => [index("reservation_owner_user_idx").on(entry.ownerUserID)],
+);
 
 export const kind = sqliteTable("kind", {
   id: text("id").primaryKey(),

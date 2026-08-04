@@ -6,6 +6,7 @@ export type Reservation = {
   hour: string;
   name: string;
   email: string;
+  phoneNumber: string | null;
   pending: boolean;
   expiresAt: Date;
   staff: {
@@ -28,7 +29,7 @@ export type Reservation = {
 export type BookingResult = {
   id: string;
   pending: boolean;
-  accessToken?: string;
+  confirmationToken?: string;
 };
 
 export type ReservationTableRow = {

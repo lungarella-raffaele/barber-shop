@@ -52,7 +52,9 @@
       <Separator />
       <div class="flex justify-between gap-4">
         <span class="text-muted-foreground">Durata</span>
-        <span class="text-right typo-label"><Duration amount={totalDuration} /></span>
+        <span class="text-right typo-label text-foreground text-base"
+          ><Duration amount={totalDuration} /></span
+        >
       </div>
       <Separator />
       <div class="flex justify-between gap-4">

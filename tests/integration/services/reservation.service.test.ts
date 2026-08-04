@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createTestDatabase, type TestDatabase } from "../../support/database";
-import { seedKind, seedStaff } from "../../support/fixtures";
+import { seedKind, seedStaff, seedUser } from "../../support/fixtures";
 
 describe("ReservationService", () => {
   let testDatabase: TestDatabase;
@@ -123,7 +123,60 @@ describe("ReservationService", () => {
     expect(await testDatabase.database.select().from(table.reservation)).toHaveLength(2);
   });
 
+  it("keeps stable ownership across email changes and email reuse", async () => {
+    await seedUser(testDatabase.database, {
+      id: "customer-user",
+      name: "Original Customer",
+      email: "customer@example.com",
+    });
+    const [customer] = await testDatabase.database
+      .select()
+      .from(table.user)
+      .where(eq(table.user.id, "customer-user"));
+
+    const inserted = await service.insertByUser(
+      {
+        who: "usual",
+        date: "2099-06-15",
+        hour: "10:00",
+        kinds: ["haircut"],
+        staff: "staff-1",
+      },
+      customer,
+    );
+    if (inserted.isErr()) throw new Error(`Insertion failed: ${inserted.error}`);
+
+    await testDatabase.database
+      .update(table.user)
+      .set({ email: "new@example.com" })
+      .where(eq(table.user.id, customer.id));
+    await seedUser(testDatabase.database, {
+      id: "replacement-user",
+      email: "customer@example.com",
+    });
+
+    const originalOwner = await service.getByIDForUser(
+      inserted.value.id,
+      customer.id,
+      "new@example.com",
+    );
+    const replacementOwner = await service.getByIDForUser(
+      inserted.value.id,
+      "replacement-user",
+      "customer@example.com",
+    );
+
+    expect(originalOwner?.id).toBe(inserted.value.id);
+    expect(originalOwner?.email).toBe("customer@example.com");
+    expect(replacementOwner).toBeNull();
+  });
+
   it("normalizes ownership checks and cascades reservation-kind deletion", async () => {
+    await seedUser(testDatabase.database, {
+      id: "customer-user",
+      email: "customer@example.com",
+    });
+
     const inserted = await service.insertByAnonymous({
       who: "anonymous",
       name: "Customer",
@@ -135,10 +188,16 @@ describe("ReservationService", () => {
     });
     if (inserted.isErr()) throw new Error(`Insertion failed: ${inserted.error}`);
 
-    expect(await service.deleteByUser(inserted.value.id, "wrong@example.com")).toEqual([]);
+    expect(
+      await service.deleteByUser(inserted.value.id, "wrong-user", "wrong@example.com"),
+    ).toEqual([]);
     expect(await service.getByID(inserted.value.id)).not.toBeNull();
 
-    const deleted = await service.deleteByUser(inserted.value.id, "  CUSTOMER@EXAMPLE.COM ");
+    const deleted = await service.deleteByUser(
+      inserted.value.id,
+      "customer-user",
+      "  CUSTOMER@EXAMPLE.COM ",
+    );
     expect(deleted).toHaveLength(1);
     expect(await service.getByID(inserted.value.id)).toBeNull();
     expect(await testDatabase.database.select().from(table.reservationKind)).toEqual([]);

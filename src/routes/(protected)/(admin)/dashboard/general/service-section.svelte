@@ -163,7 +163,7 @@
       <Form.Field form={addForm} name="name">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Nome*</Form.Label>
+            <Form.Label required>Nome</Form.Label>
             <Input {...props} bind:value={$addData.name} placeholder="Taglio di capelli" />
           {/snippet}
         </Form.Control>
@@ -184,7 +184,7 @@
         <Form.Field form={addForm} name="duration">
           <Form.Control>
             {#snippet children({ props })}
-              <Form.Label>Durata*</Form.Label>
+              <Form.Label required>Durata</Form.Label>
               <InputGroup.Root>
                 <InputGroup.Input
                   {...props}
@@ -204,7 +204,7 @@
         <Form.Field form={addForm} name="price">
           <Form.Control>
             {#snippet children({ props })}
-              <Form.Label>Prezzo*</Form.Label>
+              <Form.Label required>Prezzo</Form.Label>
               <InputGroup.Root>
                 <InputGroup.Addon align="inline-start">€</InputGroup.Addon>
                 <InputGroup.Input
@@ -268,7 +268,7 @@
       <Form.Field form={editForm} name="name">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Nome*</Form.Label>
+            <Form.Label required>Nome</Form.Label>
             <Input {...props} bind:value={$editData.name} />
           {/snippet}
         </Form.Control>
@@ -289,7 +289,7 @@
         <Form.Field form={editForm} name="duration">
           <Form.Control>
             {#snippet children({ props })}
-              <Form.Label>Durata*</Form.Label>
+              <Form.Label required>Durata</Form.Label>
               <InputGroup.Root>
                 <InputGroup.Input
                   {...props}
@@ -308,7 +308,7 @@
         <Form.Field form={editForm} name="price">
           <Form.Control>
             {#snippet children({ props })}
-              <Form.Label>Prezzo*</Form.Label>
+              <Form.Label required>Prezzo</Form.Label>
               <InputGroup.Root>
                 <InputGroup.Addon align="inline-start">€</InputGroup.Addon>
                 <InputGroup.Input

@@ -72,6 +72,10 @@
         item.visibility === "logged-in" || item.visibility === "admin" || item.action === "logout",
     ),
   );
+  const mobileNavigationItems = $derived(
+    navigationItems.filter((item) => item.action !== "logout"),
+  );
+  const mobileLogoutItem = $derived(navigationItems.find((item) => item.action === "logout"));
   const dashboardNavigationItem = $derived(
     navigationItems.find((item) => item.url === ROUTES.dashboard),
   );
@@ -99,7 +103,22 @@
 
             <Sheet.Body>
               <nav class="flex flex-col gap-2">
-                {#each navigationItems as item (item.title)}
+                {#if mobileLogoutItem}
+                  <Button
+                    variant="destructive"
+                    class="mb-2 w-full justify-between"
+                    onclick={() => {
+                      mobileMenuOpen = false;
+                      logoutForm?.requestSubmit();
+                    }}
+                  >
+                    <span>{mobileLogoutItem.title}</span>
+                    <ChevronRight class="size-4 opacity-60" />
+                  </Button>
+                  <Separator class="mb-2" />
+                {/if}
+
+                {#each mobileNavigationItems as item (item.title)}
                   {@render MobileMenuItem(item)}
                 {/each}
                 <Separator />
@@ -184,27 +203,15 @@
 {/snippet}
 
 {#snippet MobileMenuItem(item: NavigationItem)}
-  {#if item.action === "logout"}
-    <!-- <div class="border-border my-2 border-t"></div>
-        <Button
-            variant="destructive"
-            class="w-full justify-between"
-            onclick={() => logoutForm?.requestSubmit()}
-        >
-            <span>{item.title}</span>
-            <ChevronRight class="size-4 opacity-60" />
-        </Button> -->
-  {:else}
-    <Button
-      href={item.url}
-      variant={isNavigationItemActive(page.url.pathname, item.url) ? "secondary" : "ghost"}
-      class="w-full justify-between"
-      onclick={() => (mobileMenuOpen = false)}
-    >
-      <span>{item.title}</span>
-      <ChevronRight class="size-4 opacity-60" />
-    </Button>
-  {/if}
+  <Button
+    href={item.url}
+    variant={isNavigationItemActive(page.url.pathname, item.url) ? "secondary" : "ghost"}
+    class="w-full justify-between"
+    onclick={() => (mobileMenuOpen = false)}
+  >
+    <span>{item.title}</span>
+    <ChevronRight class="size-4 opacity-60" />
+  </Button>
 {/snippet}
 
 {#snippet MenuItem(item: NavigationItem)}

@@ -63,7 +63,7 @@ export class CleanupService extends Service {
             sessionService.deleteAllByUserID(user.id),
             passwordRecoverService.deleteByUserID(user.id),
             publicTokenService.deleteByUserID(user.id),
-            reservationService.deleteAll(user.email),
+            reservationService.deleteAllByUser(user.id, user.email),
           ]),
         ),
       );

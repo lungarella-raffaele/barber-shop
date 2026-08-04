@@ -27,16 +27,6 @@
 
   const { data }: PageProps = $props();
 
-  $effect(() => {
-    if (data.updatedEmail) {
-      if (data.updatedEmail.isOk()) {
-        toast.success("Email aggiornata con successo!");
-      } else {
-        toast.error("Impossibile aggiornare la tua email. Riprova più tardi.");
-      }
-    }
-  });
-
   const infoBackup = $derived({
     name: data.user.data.name,
     phoneNumber: data.user.data.phoneNumber,

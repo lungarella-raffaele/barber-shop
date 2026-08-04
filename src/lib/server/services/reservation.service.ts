@@ -6,7 +6,7 @@ import * as table from "$lib/server/db/schema";
 import type { DBUser } from "$lib/server/db/schema";
 import type { AnonymousData, Reservation, StaffData, UsualData } from "@domain";
 import { anonymousUserSchema, staffUserSchema, usualUserSchema } from "@schema";
-import { and, asc, count, eq, gt, inArray, lt, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, gt, inArray, isNull, lt, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core/alias";
 
 import { createLogger } from "../logger";
@@ -39,6 +39,7 @@ export class ReservationService extends Service {
         hour: table.reservation.hour,
         name: table.reservation.name,
         email: table.reservation.email,
+        phoneNumber: table.reservation.phoneNumber,
         pending: table.reservation.pending,
         expiresAt: table.reservation.expiresAt,
         staff: {
@@ -66,7 +67,7 @@ export class ReservationService extends Service {
       .innerJoin(table.kind, eq(table.reservationKind.kindID, table.kind.id))
       .innerJoin(table.staff, eq(table.reservation.staffID, table.staff.userID))
       .innerJoin(staffUser, eq(table.staff.userID, staffUser.id))
-      .leftJoin(customerUser, eq(table.reservation.email, customerUser.email))
+      .leftJoin(customerUser, eq(table.reservation.ownerUserID, customerUser.id))
       .orderBy(asc(table.reservation.id), asc(table.reservationKind.position));
   }
 
@@ -121,6 +122,7 @@ export class ReservationService extends Service {
           name: user.name,
           phoneNumber: user.phoneNumber,
           email: user.email,
+          ownerUserID: user.id,
           pending: false,
           expiresAt: this.endOfReservationDay(date),
           staffID: staff,
@@ -254,11 +256,48 @@ export class ReservationService extends Service {
     }
   }
 
-  async getByUser(email: string): Promise<Reservation[] | null> {
+  private visibleToCustomerCondition() {
+    return or(eq(table.reservation.pending, false), gt(table.reservation.expiresAt, new Date()));
+  }
+
+  private async claimLegacyReservations(userID: string, email: string, id?: string) {
+    const conditions = [
+      isNull(table.reservation.ownerUserID),
+      eq(table.reservation.email, email.toLowerCase().trim()),
+    ];
+    if (id) conditions.push(eq(table.reservation.id, id));
+
+    await this.database
+      .update(table.reservation)
+      .set({ ownerUserID: userID })
+      .where(and(...conditions));
+  }
+
+  async getByUser(userID: string, email: string): Promise<Reservation[] | null> {
     try {
-      return await this.findReservations(eq(table.reservation.email, email.toLowerCase().trim()));
+      await this.claimLegacyReservations(userID, email);
+      return await this.findReservations(
+        and(eq(table.reservation.ownerUserID, userID), this.visibleToCustomerCondition()),
+      );
     } catch (e) {
-      logger.error({ err: e, email }, "getByUser failed");
+      logger.error({ err: e, userId: userID }, "getByUser failed");
+      return null;
+    }
+  }
+
+  async getByIDForUser(id: string, userID: string, email: string): Promise<Reservation | null> {
+    try {
+      await this.claimLegacyReservations(userID, email, id);
+      const reservations = await this.findReservations(
+        and(
+          eq(table.reservation.id, id),
+          eq(table.reservation.ownerUserID, userID),
+          this.visibleToCustomerCondition(),
+        ),
+      );
+      return reservations[0] ?? null;
+    } catch (e) {
+      logger.error({ err: e, reservationId: id, userId: userID }, "getByIDForUser failed");
       return null;
     }
   }
@@ -285,48 +324,41 @@ export class ReservationService extends Service {
     }
   }
 
-  async deleteByUser(id: string, email: string) {
+  async deleteByUser(id: string, userID: string, email: string) {
     try {
+      await this.claimLegacyReservations(userID, email, id);
       return await this.database
         .delete(table.reservation)
-        .where(
-          and(
-            eq(table.reservation.id, id),
-            eq(table.reservation.email, email.toLowerCase().trim()),
-          ),
-        )
+        .where(and(eq(table.reservation.id, id), eq(table.reservation.ownerUserID, userID)))
         .returning();
     } catch (e) {
-      logger.error({ err: e, reservationId: id, email }, "deleteByUser failed");
+      logger.error({ err: e, reservationId: id, userId: userID }, "deleteByUser failed");
       return null;
     }
   }
 
-  async deleteManyByUser(ids: string[], email: string) {
+  async deleteManyByUser(ids: string[], userID: string, email: string) {
     try {
       if (ids.length === 0) return [];
+      await this.claimLegacyReservations(userID, email);
       return await this.database
         .delete(table.reservation)
-        .where(
-          and(
-            inArray(table.reservation.id, ids),
-            eq(table.reservation.email, email.toLowerCase().trim()),
-          ),
-        )
+        .where(and(inArray(table.reservation.id, ids), eq(table.reservation.ownerUserID, userID)))
         .returning();
     } catch (e) {
-      logger.error({ err: e, reservationIds: ids, email }, "deleteManyByUser failed");
+      logger.error({ err: e, reservationIds: ids, userId: userID }, "deleteManyByUser failed");
       return null;
     }
   }
 
-  async deleteAll(email: string) {
+  async deleteAllByUser(userID: string, email: string) {
     try {
+      await this.claimLegacyReservations(userID, email);
       return await this.database
         .delete(table.reservation)
-        .where(eq(table.reservation.email, email.toLowerCase().trim()));
+        .where(eq(table.reservation.ownerUserID, userID));
     } catch (e) {
-      logger.error({ err: e, email }, "deleteAll failed");
+      logger.error({ err: e, userId: userID }, "deleteAllByUser failed");
       return null;
     }
   }
@@ -374,77 +406,68 @@ export class ReservationService extends Service {
     kindIDs: string[],
   ): Promise<Result<table.DBReservation, InsertError>> {
     try {
-      return ok(
-        await this.database.transaction(async (tx) => {
-          const requestedKinds = await tx
-            .select({
-              id: table.kind.id,
-              duration: table.kind.duration,
-            })
-            .from(table.kind)
-            .where(
-              and(
-                inArray(table.kind.id, kindIDs),
-                eq(table.kind.staffID, reservation.staffID),
-                eq(table.kind.active, true),
-              ),
-            );
-
-          if (requestedKinds.length !== kindIDs.length) throw new Error("INVALID_DATA");
-
-          const requestedDuration = requestedKinds.reduce((sum, kind) => sum + kind.duration, 0);
-          const requestedStart = this.minutesFromMidnight(reservation.hour);
-          const requestedEnd = requestedStart + requestedDuration;
-
-          const existingRows = await tx
-            .select({
-              id: table.reservation.id,
-              hour: table.reservation.hour,
-              duration: table.kind.duration,
-            })
-            .from(table.reservation)
-            .innerJoin(
-              table.reservationKind,
-              eq(table.reservation.id, table.reservationKind.reservationID),
-            )
-            .innerJoin(table.kind, eq(table.reservationKind.kindID, table.kind.id))
-            .where(
-              and(
-                eq(table.reservation.date, reservation.date),
-                eq(table.reservation.staffID, reservation.staffID),
-                gt(table.reservation.expiresAt, new Date()),
-              ),
-            );
-
-          const existing = new Map<string, { hour: string; duration: number }>();
-          for (const row of existingRows) {
-            const entry = existing.get(row.id);
-            if (entry) entry.duration += row.duration;
-            else existing.set(row.id, { hour: row.hour, duration: row.duration });
-          }
-
-          for (const entry of existing.values()) {
-            const existingStart = this.minutesFromMidnight(entry.hour);
-            const existingEnd = existingStart + entry.duration;
-            if (requestedStart < existingEnd && existingStart < requestedEnd) {
-              throw new Error("CONFLICT");
-            }
-          }
-
-          const [inserted] = await tx.insert(table.reservation).values(reservation).returning();
-          await tx.insert(table.reservationKind).values(
-            kindIDs.map((kindID, position) => ({
-              reservationID: reservation.id,
-              kindID,
-              position,
-            })),
+      return await this.database.transaction(async (tx) => {
+        const requestedKinds = await tx
+          .select({
+            id: table.kind.id,
+            duration: table.kind.duration,
+          })
+          .from(table.kind)
+          .where(
+            and(
+              inArray(table.kind.id, kindIDs),
+              eq(table.kind.staffID, reservation.staffID),
+              eq(table.kind.active, true),
+            ),
           );
-          return inserted;
-        }),
-      );
+
+        if (requestedKinds.length !== kindIDs.length) return err("invalid-data");
+
+        const requestedDuration = requestedKinds.reduce((sum, kind) => sum + kind.duration, 0);
+        const requestedStart = this.minutesFromMidnight(reservation.hour);
+        const requestedEnd = requestedStart + requestedDuration;
+
+        const existingStart = sql<number>`
+          cast(substr(${table.reservation.hour}, 1, 2) as integer) * 60
+          + cast(substr(${table.reservation.hour}, 4, 2) as integer)
+        `;
+        const [conflict] = await tx
+          .select({ id: table.reservation.id })
+          .from(table.reservation)
+          .innerJoin(
+            table.reservationKind,
+            eq(table.reservation.id, table.reservationKind.reservationID),
+          )
+          .innerJoin(table.kind, eq(table.reservationKind.kindID, table.kind.id))
+          .where(
+            and(
+              eq(table.reservation.date, reservation.date),
+              eq(table.reservation.staffID, reservation.staffID),
+              gt(table.reservation.expiresAt, new Date()),
+            ),
+          )
+          .groupBy(table.reservation.id, table.reservation.hour)
+          .having(
+            and(
+              sql`${requestedStart} < ${existingStart} + sum(${table.kind.duration})`,
+              sql`${existingStart} < ${requestedEnd}`,
+            ),
+          )
+          .limit(1);
+
+        if (conflict) return err("conflict");
+
+        const [inserted] = await tx.insert(table.reservation).values(reservation).returning();
+        await tx.insert(table.reservationKind).values(
+          kindIDs.map((kindID, position) => ({
+            reservationID: reservation.id,
+            kindID,
+            position,
+          })),
+        );
+        return ok(inserted);
+      });
     } catch (e) {
-      if ((e as Error).message === "CONFLICT") return err("conflict");
-      if ((e as Error).message === "INVALID_DATA") return err("invalid-data");
       logger.error({ err: e, reservationId: reservation.id }, "transactional insert failed");
       return err("server-err");
     }

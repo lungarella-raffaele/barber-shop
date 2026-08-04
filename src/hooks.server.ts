@@ -17,7 +17,8 @@ const handleLogging: Handle = async ({ event, resolve }) => {
   logger.info({
     requestId,
     method: event.request.method,
-    path: containsPublicToken ? routeID : event.url.pathname,
+    path:
+      containsPublicToken || routeID?.includes("[reservation=uuid]") ? routeID : event.url.pathname,
     status: response.status,
     durationMs: Date.now() - start,
     userId: event.locals.user?.data.id ?? null,
@@ -27,6 +28,9 @@ const handleLogging: Handle = async ({ event, resolve }) => {
 };
 
 const handleAuth: Handle = async ({ event, resolve }) => {
+  const routeID = event.route.id;
+  const isProtected = routeID?.startsWith("/(protected)") ?? false;
+  const isAdmin = routeID?.startsWith("/(admin)") || routeID?.startsWith("/(protected)/(admin)");
   const sessionToken = event.cookies.get(auth.sessionCookieName);
 
   if (!sessionToken) {
@@ -34,7 +38,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
     event.locals.session = null;
 
     // Check if route requires authentication
-    if (event.route.id?.startsWith("/(protected)") || event.route.id?.startsWith("/(admin)")) {
+    if (isProtected || isAdmin) {
       redirect(303, "/login");
     }
 
@@ -53,14 +57,12 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   event.locals.user = user;
   event.locals.session = session;
 
-  // Check admin access after validating session
-  if (event.route.id?.startsWith("/(admin)")) {
-    if (!user) {
-      redirect(303, "/login");
-    }
-    if (user.role !== "staff") {
-      redirect(303, "/");
-    }
+  if ((isProtected || isAdmin) && !user) {
+    redirect(303, "/login");
+  }
+
+  if (isAdmin && user?.role !== "staff") {
+    redirect(303, "/");
   }
 
   return resolve(event);
