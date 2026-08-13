@@ -1,6 +1,6 @@
 import type { DateValue, Time } from "@internationalized/date";
 
-export type Reservation = {
+export type ReservationDTO = {
   id: string;
   date: string;
   hour: string;
@@ -13,7 +13,7 @@ export type Reservation = {
     id: string;
     name: string;
   };
-  kinds: {
+  offerings: {
     id: string;
     duration: number;
     name: string;
@@ -26,39 +26,14 @@ export type Reservation = {
   } | null;
 };
 
-export type BookingResult = {
+export type CreatedReservationDTO = {
   id: string;
   pending: boolean;
   confirmationToken?: string;
 };
 
-export type ReservationTableRow = {
-  id: string;
-  date: string;
-  hour: string;
-  name: string;
-  email: string;
-  kindNames: string[];
-  duration: number;
-  price: number;
-};
-
-export type ReservedSlot = {
+export type ReservedSlotDTO = {
   date: DateValue;
   start: Time;
   duration: Time;
-};
-
-export type Slot = {
-  start: Time;
-  available: boolean;
-  invalid: boolean;
-  past: boolean;
-};
-
-export type ShutdownPeriod = {
-  id: string;
-  staffID: string;
-  start: string;
-  end: string;
 };

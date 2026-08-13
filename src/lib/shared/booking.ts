@@ -6,7 +6,7 @@ export type AnonymousData = {
   email: string;
   date: string;
   hour: string;
-  kinds: string[];
+  offerings: string[];
   staff: string;
   phone?: string;
 };
@@ -15,7 +15,7 @@ export type UsualData = {
   who: "usual";
   date: string;
   hour: string;
-  kinds: string[];
+  offerings: string[];
   staff: string;
 };
 
@@ -25,8 +25,8 @@ export type StaffData = {
   phone?: string;
   date: string;
   hour: string;
-  kinds: string[];
+  offerings: string[];
   staff: string;
 };
 
-export type Tab = "date" | "kind" | "info";
+export type Tab = "date" | "offering" | "info";

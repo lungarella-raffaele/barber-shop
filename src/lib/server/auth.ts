@@ -1,8 +1,8 @@
 import { DAY_IN_MS } from "$lib/constants";
 import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
+import type { UserSession } from "$lib/server/domain";
 import { createLogger } from "$lib/server/logger";
-import type { UserSession } from "@domain";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
 import { SessionService } from "@service/session.service";
@@ -22,12 +22,17 @@ export function generateSessionToken() {
 
 export async function createSession(token: string, userID: string) {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-  const session: table.NewSession = {
+  const session: table.NewSessionRow = {
     id: sessionId,
     userID,
     expiresAt: new Date(Date.now() + DAY_IN_MS * 30),
   };
-  await SessionService.get().insert(session);
+  const inserted = await SessionService.get().insert(session);
+  if (!inserted) {
+    log.error({ sessionId, userID }, "session creation failed");
+    throw new Error("Could not create session");
+  }
+
   log.info({ sessionId, userID }, "session created");
   return session;
 }
@@ -60,8 +65,8 @@ export async function validateSessionToken(
 
   const sessionExpired = Date.now() >= session.expiresAt.getTime();
   if (sessionExpired) {
-    log.info({ sessionID, userID: userData.data.id }, "session expired, deleting");
-    await db.delete(table.session).where(eq(table.session.id, session.id));
+    log.info({ sessionID, userID: userData.account.id }, "session expired, deleting");
+    await SessionService.get().delete(session.id);
     return { session: null, user: null };
   }
 
@@ -69,7 +74,7 @@ export async function validateSessionToken(
   if (renewSession) {
     session.expiresAt = new Date(Date.now() + DAY_IN_MS * 30);
     log.info(
-      { sessionID, userID: userData.data.id, expiresAt: session.expiresAt },
+      { sessionID, userID: userData.account.id, expiresAt: session.expiresAt },
       "session renewed",
     );
     await db
@@ -78,12 +83,12 @@ export async function validateSessionToken(
       .where(eq(table.session.id, session.id));
   }
 
-  log.debug({ sessionID, userID: userData.data.id }, "session valid");
+  log.debug({ sessionID, userID: userData.account.id }, "session valid");
   return result;
 }
 
 export async function invalidateSession(sessionId: string) {
-  await db.delete(table.session).where(eq(table.session.id, sessionId));
+  await SessionService.get().delete(sessionId);
   log.info({ sessionId }, "session invalidated");
 }
 

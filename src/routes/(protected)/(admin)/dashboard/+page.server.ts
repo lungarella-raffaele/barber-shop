@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ depends, url, locals }) => {
 
   const reservations = await ReservationService.get().getTodayReservations(
     date ?? today(getLocalTimeZone()).toString(),
-    locals.user?.data.id,
+    locals.user?.account.id,
   );
 
   return {
@@ -26,20 +26,19 @@ export const load: PageServerLoad = async ({ depends, url, locals }) => {
 };
 
 export const actions: Actions = {
-  delete: async ({ request }) => {
-    const resService = ReservationService.get();
-    const data = await request.formData();
-
-    const id = data.get("id") as string;
-
-    const res = await resService.delete(id);
-
-    if (res) {
-      return {
-        res,
-      };
-    } else {
-      return fail(500, { success: false });
+  delete: async ({ request, locals }) => {
+    if (!locals.user || locals.user.role !== "staff") {
+      return fail(401, { success: false });
     }
+
+    const data = await request.formData();
+    const value = data.get("id");
+    const id = typeof value === "string" ? value.trim() : "";
+    if (!id) return fail(400, { success: false });
+
+    const res = await ReservationService.get().deleteByStaff(id, locals.user.account.id);
+    if (!res?.length) return fail(404, { success: false });
+
+    return { res };
   },
 };

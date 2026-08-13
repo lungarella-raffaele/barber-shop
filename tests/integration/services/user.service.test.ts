@@ -70,20 +70,20 @@ describe("UserService", () => {
     await seedStaff(testDatabase.database);
 
     expect(await service.getByID("customer-1")).toMatchObject({
-      role: "user",
-      data: { id: "customer-1" },
+      role: "customer",
+      account: { id: "customer-1" },
     });
     expect(await service.getByEmail(" CUSTOMER@EXAMPLE.COM ")).toMatchObject({
-      role: "user",
-      data: { id: "customer-1" },
+      role: "customer",
+      account: { id: "customer-1" },
     });
     expect(await service.getByID("staff-1")).toMatchObject({
       role: "staff",
-      data: { id: "staff-1", userID: "staff-1" },
+      account: { id: "staff-1" },
     });
     expect(await service.getByEmail("barber@example.com")).toMatchObject({
       role: "staff",
-      data: { id: "staff-1", userID: "staff-1" },
+      account: { id: "staff-1" },
     });
   });
 
@@ -100,6 +100,12 @@ describe("UserService", () => {
     expect(await service.updatePhoneNumber("user-1", "  555123  ")).toMatchObject({
       phoneNumber: "555123",
     });
+    expect(await service.updateInfo("user-1", "  Profile Name  ", "  123  ")).toBe(true);
+    expect(await service.getByID("user-1")).toMatchObject({
+      account: { name: "Profile Name", phoneNumber: "123" },
+    });
+    expect(await service.updateInfo("user-1", "   ", "456")).toBe(false);
+    expect(await service.updateInfo("missing-user", "Name", "456")).toBe(false);
 
     const emailResult = await service.updateEmail("user-1", "  UPDATED@EXAMPLE.COM ");
     expect(emailResult.isOk()).toBe(true);

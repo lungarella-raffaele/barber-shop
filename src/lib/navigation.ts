@@ -9,7 +9,7 @@ import {
   Puzzle,
   Settings,
 } from "$lib/components/icons/index";
-import type { User } from "$lib/domain";
+import type { SessionUserDTO } from "$lib/dto";
 import type { Component } from "@lucide/svelte";
 
 export const ROUTES = {
@@ -92,7 +92,7 @@ const navigation = [
   },
 ] as const satisfies readonly NavigationItem[];
 
-export function getNavigationItems(user: User | null): NavigationItem[] {
+export function getNavigationItems(user: SessionUserDTO | null): NavigationItem[] {
   return navigation.filter((item) => {
     switch (item.visibility) {
       case "public":

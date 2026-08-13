@@ -121,13 +121,13 @@ export const load: PageServerLoad = async () => {
     },
     {
       label: "Verify account email",
-      href: pendingUser ? `/account/verify-email/${pendingUser.data.id}` : null,
+      href: pendingUser ? `/account/verify-email/${pendingUser.account.id}` : null,
       route: "/account/verify-email/[token]",
       group: "Public",
       category: "User lifecycle",
       ephemeral: true,
       state: pendingUser
-        ? `Using pending user ${pendingUser.data.id}`
+        ? `Using pending user ${pendingUser.account.id}`
         : "Run `pnpm db:seed` to create seed-pending-user-sofia.",
       note: "Side effect: opening this verifies the user and sets a session cookie.",
     },
@@ -173,7 +173,7 @@ export const load: PageServerLoad = async () => {
     },
     {
       label: "Legacy home / verify account",
-      href: pendingUser ? `/?user=${pendingUser.data.id}` : null,
+      href: pendingUser ? `/?user=${pendingUser.account.id}` : null,
       route: "/?user=:id",
       group: "Legacy",
       category: "Legacy redirects",

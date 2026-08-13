@@ -3,17 +3,17 @@
   import { checkShutdown } from "$lib/components/app/newreservation/check-shutdown";
   import ConfirmDialog from "$lib/components/app/newreservation/confirm.svelte";
   import DatePicker from "$lib/components/app/newreservation/datepicker.svelte";
-  import KindPicker from "$lib/components/app/newreservation/kindpicker.svelte";
+  import OfferingPicker from "$lib/components/app/newreservation/offering-picker.svelte";
   import SlotPicker from "$lib/components/app/newreservation/slotpicker.svelte";
   import StaffPicker from "$lib/components/app/newreservation/staffpicker.svelte";
   import PageHeader from "$lib/components/app/pageheader.svelte";
   import { Button } from "$lib/components/ui/button/index";
   import * as Form from "$lib/components/ui/form";
   import { Input } from "$lib/components/ui/input";
+  import type { CreatedReservationDTO } from "$lib/dto";
   import { findFirstAvailableDate } from "$lib/modules/find-first-available-date";
   import { getSlots } from "$lib/modules/get-slots";
   import { minutesToTime } from "$lib/utils";
-  import type { BookingResult } from "@domain";
   import {
     getLocalTimeZone,
     parseDate,
@@ -21,7 +21,7 @@
     today,
     type CalendarDate,
   } from "@internationalized/date";
-  import { bookSchema, kindsFieldSchema } from "@schema";
+  import { bookSchema, offeringsFieldSchema } from "@schema";
   import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { superForm } from "sveltekit-superforms";
@@ -40,7 +40,7 @@
       scrollToError: "off",
       onResult: ({ result }) => {
         if (result.type === "success" && result.data) {
-          const res = result.data as BookingResult;
+          const res = result.data as CreatedReservationDTO;
           if (res?.confirmationToken) {
             goto(`/book/confirm/${res.confirmationToken}`);
           } else if (res) {
@@ -76,11 +76,13 @@
   const schedule = $derived(mapToUI(data.schedule ?? [], $formData.staff));
 
   let isDialogOpen = $state(false);
-  let selectedKindIds = $state<string[]>($formData.kinds ?? []);
+  let selectedOfferingIds = $state<string[]>($formData.offerings ?? []);
   const selectedStaff = $derived(data.staff.find((staff) => staff.id === $formData.staff));
-  const selectedKinds = $derived(data.kinds.filter((el) => selectedKindIds.includes(el.id)));
-  const selectedKindDuration = $derived(
-    selectedKinds.reduce((duration, current) => duration + current.duration, 0),
+  const selectedOfferings = $derived(
+    data.offerings.filter((el) => selectedOfferingIds.includes(el.id)),
+  );
+  const selectedOfferingDuration = $derived(
+    selectedOfferings.reduce((duration, current) => duration + current.duration, 0),
   );
 
   function getAvailableSlots(date: CalendarDate) {
@@ -96,10 +98,12 @@
         .map((entry) => ({
           date: parseDate(entry.date),
           start: parseTime(entry.hour),
-          duration: minutesToTime(entry.kinds.reduce((total, kind) => total + kind.duration, 0)),
+          duration: minutesToTime(
+            entry.offerings.reduce((total, offering) => total + offering.duration, 0),
+          ),
         })),
       schedule,
-      selectedKindDuration > 0 ? minutesToTime(selectedKindDuration) : undefined,
+      selectedOfferingDuration > 0 ? minutesToTime(selectedOfferingDuration) : undefined,
     );
   }
 
@@ -109,7 +113,7 @@
   });
 
   const firstAvailableDate = $derived.by(() => {
-    if (!$formData.staff || selectedKindDuration <= 0) return undefined;
+    if (!$formData.staff || selectedOfferingDuration <= 0) return undefined;
 
     return findFirstAvailableDate(today(getLocalTimeZone()), (date) => {
       if (checkShutdown(date, data.shutdown, $formData.staff)) return false;
@@ -131,21 +135,21 @@
     if ($formData.staff === value) return;
 
     $formData.staff = value;
-    selectedKindIds = [];
-    $formData.kinds = [];
+    selectedOfferingIds = [];
+    $formData.offerings = [];
     clearDateAndHour();
     void validate("staff");
   }
 
-  function handleKindChange(value: string[]) {
-    if (selectedKindIds.join("|") === value.join("|")) return;
+  function handleOfferingChange(value: string[]) {
+    if (selectedOfferingIds.join("|") === value.join("|")) return;
 
-    selectedKindIds = value;
-    $formData.kinds = value;
+    selectedOfferingIds = value;
+    $formData.offerings = value;
     clearDateAndHour();
 
-    const result = kindsFieldSchema.safeParse(value);
-    $errors.kinds = result.success
+    const result = offeringsFieldSchema.safeParse(value);
+    $errors.offerings = result.success
       ? undefined
       : { _errors: result.error.issues.map((issue) => issue.message) };
   }
@@ -174,10 +178,10 @@
   bind:isOpen={isDialogOpen}
   loading={$submitting}
   staff={selectedStaff}
-  kinds={selectedKinds}
+  offerings={selectedOfferings}
   date={$formData.date}
   hour={$formData.hour}
-  duration={selectedKindDuration}
+  duration={selectedOfferingDuration}
 />
 <div class="mx-auto w-full max-w-xl">
   <PageHeader title="Prenotazione" />
@@ -251,11 +255,11 @@
       {/if}
 
       <section class={stepClass}>
-        <h2 class="px-2 typo-subheading">Staff</h2>
+        <h2 class="px-2 typo-subheading">StaffDTO</h2>
         <Form.Field form={sForm} name="staff">
           <Form.Control>
             {#snippet children({ props })}
-              <Form.Label class="sr-only">Staff</Form.Label>
+              <Form.Label class="sr-only">StaffDTO</Form.Label>
               <input type="hidden" name={props.name} value={$formData.staff} />
               <StaffPicker
                 class="w-full"
@@ -276,16 +280,16 @@
           class="transition-opacity duration-300"
           class:opacity-35={!$formData.staff}
         >
-          <Form.Field form={sForm} name="kinds">
+          <Form.Field form={sForm} name="offerings">
             <Form.Control>
               <Form.Label class="sr-only">Servizi</Form.Label>
-              {#each $formData.kinds as kindID (kindID)}
-                <input type="hidden" name="kinds" value={kindID} />
+              {#each $formData.offerings as offeringID (offeringID)}
+                <input type="hidden" name="offerings" value={offeringID} />
               {/each}
-              <KindPicker
-                kinds={data.kinds?.filter((el) => el.staffID === $formData.staff) ?? []}
-                value={selectedKindIds}
-                onKindChange={handleKindChange}
+              <OfferingPicker
+                offerings={data.offerings?.filter((el) => el.staffID === $formData.staff) ?? []}
+                value={selectedOfferingIds}
+                onOfferingChange={handleOfferingChange}
               />
             </Form.Control>
             <Form.FieldErrors />
@@ -304,9 +308,9 @@
       <section class="relative {stepClass}">
         <h2 class="px-2 typo-subheading">Data</h2>
         <fieldset
-          disabled={!$formData.staff || $formData.kinds.length === 0}
+          disabled={!$formData.staff || $formData.offerings.length === 0}
           class="transition-opacity duration-300"
-          class:opacity-35={!$formData.staff || $formData.kinds.length === 0}
+          class:opacity-35={!$formData.staff || $formData.offerings.length === 0}
         >
           <Form.Field form={sForm} name="date">
             <Form.Control>
@@ -328,10 +332,10 @@
         <div
           aria-hidden="true"
           class="absolute inset-0 z-10 rounded-2xl bg-background/35 transition-[opacity,backdrop-filter] duration-300"
-          class:pointer-events-none={$formData.staff && $formData.kinds.length > 0}
-          class:opacity-0={$formData.staff && $formData.kinds.length > 0}
-          class:backdrop-blur-0={$formData.staff && $formData.kinds.length > 0}
-          class:backdrop-blur-[2px]={!$formData.staff || $formData.kinds.length === 0}
+          class:pointer-events-none={$formData.staff && $formData.offerings.length > 0}
+          class:opacity-0={$formData.staff && $formData.offerings.length > 0}
+          class:backdrop-blur-0={$formData.staff && $formData.offerings.length > 0}
+          class:backdrop-blur-[2px]={!$formData.staff || $formData.offerings.length === 0}
         ></div>
       </section>
 

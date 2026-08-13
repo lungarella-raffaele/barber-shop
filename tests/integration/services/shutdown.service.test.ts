@@ -75,8 +75,9 @@ describe("ShutdownService", () => {
     const inserted = await service.insert("2099-06-15", "2099-06-20", "staff-1");
     if (!inserted) throw new Error("Expected shutdown insertion to succeed");
 
-    expect(await service.delete("missing-shutdown")).toEqual([]);
-    expect(await service.delete(inserted.id)).toEqual([{ id: inserted.id }]);
+    expect(await service.delete("missing-shutdown", "staff-1")).toEqual([]);
+    expect(await service.delete(inserted.id, "staff-2")).toEqual([]);
+    expect(await service.delete(inserted.id, "staff-1")).toEqual([{ id: inserted.id }]);
     expect(await service.getAll()).toEqual([]);
   });
 

@@ -4,30 +4,30 @@
   import { Button } from "$lib/components/ui/button";
   import { Checkbox } from "$lib/components/ui/checkbox";
   import * as Popover from "$lib/components/ui/popover";
-  import type { Kind } from "@domain";
+  import type { OfferingDTO } from "$lib/dto";
   import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
 
   let {
-    kinds,
+    offerings,
     value = $bindable(),
-    onKindChange,
+    onOfferingChange,
   }: {
-    kinds: Kind[];
+    offerings: OfferingDTO[];
     value: string[];
-    onKindChange?: (value: string[]) => void;
+    onOfferingChange?: (value: string[]) => void;
   } = $props();
 
-  const selectedKinds = $derived(kinds.filter((kind) => value.includes(kind.id)));
+  const selectedOfferings = $derived(offerings.filter((offering) => value.includes(offering.id)));
 
-  function toggleKind(kindId: string, checked: boolean) {
+  function toggleOffering(offeringId: string, checked: boolean) {
     const nextValue = checked
-      ? value.includes(kindId)
+      ? value.includes(offeringId)
         ? value
-        : [...value, kindId]
-      : value.filter((id) => id !== kindId);
+        : [...value, offeringId]
+      : value.filter((id) => id !== offeringId);
 
     value = nextValue;
-    onKindChange?.(nextValue);
+    onOfferingChange?.(nextValue);
   }
 </script>
 
@@ -41,13 +41,13 @@
         aria-label="Seleziona i servizi"
       >
         <span class="flex min-w-0 flex-1 flex-wrap gap-1.5">
-          {#if selectedKinds.length === 0}
+          {#if selectedOfferings.length === 0}
             <span class="text-muted-foreground py-0.5 font-normal">Seleziona uno o più servizi</span
             >
           {:else}
-            {#each selectedKinds as kind (kind.id)}
+            {#each selectedOfferings as offering (offering.id)}
               <Badge variant="secondary" class="max-w-full border-gray-6 border bg-gray-5">
-                <span class="truncate">{kind.name}</span>
+                <span class="truncate">{offering.name}</span>
               </Badge>
             {/each}
           {/if}
@@ -62,9 +62,9 @@
     class="w-(--bits-popover-anchor-width) max-w-[calc(100vw-2rem)] gap-1 p-1.5"
   >
     <div class="max-h-72 overflow-y-auto overscroll-contain pr-1">
-      {#each kinds as kind (kind.id)}
-        {@const selected = value.includes(kind.id)}
-        {@const checkboxId = `kind-${kind.id}`}
+      {#each offerings as offering (offering.id)}
+        {@const selected = value.includes(offering.id)}
+        {@const checkboxId = `offering-${offering.id}`}
         <label
           for={checkboxId}
           class="hover:bg-muted flex min-h-12 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors"
@@ -72,11 +72,11 @@
           <Checkbox
             id={checkboxId}
             checked={selected}
-            onCheckedChange={(checked) => toggleKind(kind.id, checked)}
+            onCheckedChange={(checked) => toggleOffering(offering.id, checked)}
           />
           <span class="flex min-w-0 flex-1 flex-col">
-            <span class="truncate typo-label">{kind.name}</span>
-            <Duration amount={kind.duration} class="text-muted-foreground" />
+            <span class="truncate typo-label">{offering.name}</span>
+            <Duration amount={offering.duration} class="text-muted-foreground" />
           </span>
         </label>
       {/each}

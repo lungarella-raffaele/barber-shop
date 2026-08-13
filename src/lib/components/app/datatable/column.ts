@@ -1,12 +1,12 @@
 import { renderComponent, renderSnippet } from "$lib/components/ui/data-table";
+import type { ReservationDTO } from "$lib/dto";
 import { formatDate, formatTime } from "$lib/utils";
-import type { ReservationTableRow } from "@domain";
 import type { ColumnDef } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
 
 import DatatableActions from "./datatableactions.svelte";
 
-export const columns: ColumnDef<ReservationTableRow>[] = [
+export const columns: ColumnDef<ReservationDTO>[] = [
   {
     accessorKey: "name",
     header: "Nome",

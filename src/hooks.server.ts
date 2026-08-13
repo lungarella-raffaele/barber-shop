@@ -1,7 +1,9 @@
 import { building } from "$app/environment";
+import { env } from "$env/dynamic/private";
 import * as auth from "$lib/server/auth.js";
 import { getLegacyRedirect } from "$lib/server/legacy-redirects";
 import { logger } from "$lib/server/logger";
+import { consumeRateLimit, getRateLimitPolicy } from "$lib/server/rate-limit";
 import { redirect, type Handle } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 
@@ -21,7 +23,7 @@ const handleLogging: Handle = async ({ event, resolve }) => {
       containsPublicToken || routeID?.includes("[reservation=uuid]") ? routeID : event.url.pathname,
     status: response.status,
     durationMs: Date.now() - start,
-    userId: event.locals.user?.data.id ?? null,
+    userId: event.locals.user?.account.id ?? null,
   });
 
   return response;
@@ -68,6 +70,41 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
+const handleRateLimit: Handle = async ({ event, resolve }) => {
+  if (event.request.method !== "POST") return resolve(event);
+
+  const policy = getRateLimitPolicy(event.request.method, event.route.id, event.url.searchParams);
+  if (!policy) return resolve(event);
+
+  try {
+    // getClientAddress() relies on the deployed SvelteKit adapter/proxy being configured to trust
+    // only the platform's forwarding headers. Do not derive identity from user-supplied headers here.
+    const result = await consumeRateLimit(event.getClientAddress(), policy, {
+      hashSecret: env.RATE_LIMIT_HASH_SECRET ?? "",
+    });
+    if (!result.allowed) {
+      return new Response("Too many requests", {
+        status: 429,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Retry-After": String(result.retryAfterSeconds),
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+  } catch (error) {
+    // Fail closed for account and booking mutations: temporary unavailability is safer than
+    // silently disabling abuse protection when Turso/SQLite or client-address resolution fails.
+    logger.error({ err: error, policy: policy.id }, "Rate limiter unavailable");
+    return new Response("Service temporarily unavailable", {
+      status: 503,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+
+  return resolve(event);
+};
+
 const handleOldRoutes: Handle = async ({ event, resolve }) => {
   const legacyRedirect = getLegacyRedirect(event.url, !building);
   if (legacyRedirect) {
@@ -77,4 +114,4 @@ const handleOldRoutes: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle: Handle = sequence(handleOldRoutes, handleAuth, handleLogging);
+export const handle: Handle = sequence(handleOldRoutes, handleRateLimit, handleAuth, handleLogging);

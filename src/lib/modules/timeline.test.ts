@@ -1,4 +1,4 @@
-import type { Reservation } from "@domain";
+import type { ReservationDTO } from "$lib/dto";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -18,7 +18,7 @@ const config: TimelineConfig = {
   pixelsPerMinute: 2,
 };
 
-function reservation(id: string, hour: string, duration: number): Reservation {
+function reservation(id: string, hour: string, duration: number): ReservationDTO {
   return {
     id,
     date: "2026-07-21",
@@ -28,8 +28,8 @@ function reservation(id: string, hour: string, duration: number): Reservation {
     phoneNumber: null,
     pending: false,
     expiresAt: new Date(),
-    staff: { id: "staff", name: "Staff" },
-    kinds: [{ id: `kind-${id}`, duration, name: "Taglio", price: 20 }],
+    staff: { id: "staff", name: "StaffDTO" },
+    offerings: [{ id: `offering-${id}`, duration, name: "Taglio", price: 20 }],
     user: null,
   };
 }
@@ -104,8 +104,8 @@ describe("reservation layout", () => {
 
   it("uses the combined duration of all reservation services", () => {
     const multiServiceReservation = reservation("multi", "10:00", 25);
-    multiServiceReservation.kinds.push({
-      id: "kind-multi-2",
+    multiServiceReservation.offerings.push({
+      id: "offering-multi-2",
       duration: 15,
       name: "Barba",
       price: 10,

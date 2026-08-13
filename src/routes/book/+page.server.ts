@@ -2,8 +2,9 @@ import { BASE_URL } from "$env/static/private";
 import { bookSchema } from "$lib/modules/zod-schemas.js";
 import { logger } from "$lib/server/logger.js";
 import { EmailService } from "$lib/server/mailer.js";
+import { toSessionUserDTO } from "$lib/server/mappers/session-user.mapper.js";
 import { formatDate, formatTime } from "$lib/utils.js";
-import { KindService } from "@service/kind.service.js";
+import { OfferingService } from "@service/offering.service.js";
 import { PublicTokenService } from "@service/public-token.service.js";
 import { ReservationService } from "@service/reservation.service.js";
 import { ScheduleService } from "@service/schedule.service.js";
@@ -23,7 +24,7 @@ export const load: PageServerLoad = async ({ locals }) => {
       {
         who,
         staff: "",
-        kinds: [],
+        offerings: [],
         date: "",
         hour: "",
         name: "",
@@ -33,7 +34,7 @@ export const load: PageServerLoad = async ({ locals }) => {
       zod(bookSchema),
       { errors: false },
     ),
-    ReservationService.get().getAll(),
+    ReservationService.get().getOccupiedSlots(),
     ShutdownService.get().getAll(),
     ScheduleService.get().getAll(),
   ]);
@@ -42,12 +43,12 @@ export const load: PageServerLoad = async ({ locals }) => {
     return error(500);
   }
 
-  const [kinds, staff] = await Promise.all([
-    KindService.get().getAll(),
+  const [offerings, staff] = await Promise.all([
+    OfferingService.get().getAll(),
     StaffService.get().getAll(),
   ]);
 
-  if (!kinds || !staff) {
+  if (!offerings || !staff) {
     return error(500);
   }
 
@@ -56,9 +57,9 @@ export const load: PageServerLoad = async ({ locals }) => {
     currentReservations,
     shutdown,
     schedule,
-    kinds,
+    offerings,
     staff,
-    user: locals.user,
+    user: locals.user ? toSessionUserDTO(locals.user) : null,
     title: "Nuova prenotazione -",
   };
 };
@@ -73,7 +74,7 @@ export const actions: Actions = {
       return fail(400, { form });
     }
 
-    const { staff, kinds, date, hour, name, email, phone } = form.data;
+    const { staff, offerings, date, hour, name, email, phone } = form.data;
     const reservationService = ReservationService.get();
 
     let result: Awaited<ReturnType<typeof reservationService.insertByUser>> | undefined = undefined;
@@ -85,23 +86,23 @@ export const actions: Actions = {
       result = await reservationService.insertByAnonymous({
         who: "anonymous",
         staff,
-        kinds,
+        offerings,
         date,
         hour,
         name,
         email,
         phone,
       });
-    } else if (user.role === "user") {
+    } else if (user.role === "customer") {
       result = await reservationService.insertByUser(
-        { who: "usual", staff, kinds, date, hour },
-        user.data,
+        { who: "usual", staff, offerings, date, hour },
+        user.account,
       );
     } else {
       // staff
       result = await reservationService.insertByStaff(
-        { who: "staff", staff, kinds, date, hour, name, phone },
-        user.data,
+        { who: "staff", staff, offerings, date, hour, name, phone },
+        user.account,
         name,
       );
     }
@@ -131,7 +132,7 @@ export const actions: Actions = {
           name,
           link: `${BASE_URL.replace(/\/$/, "")}/book/confirm/${confirmationToken.value}`,
           staffName: result.value.staff.name,
-          serviceNames: result.value.kinds.map((kind) => kind.name),
+          serviceNames: result.value.offerings.map((offering) => offering.name),
           date: formatDate(result.value.date),
           hour: formatTime(result.value.hour),
           to: email,
@@ -146,7 +147,14 @@ export const actions: Actions = {
         }
       }
 
-      return { ...result.value, confirmationToken: confirmationToken.value };
+      // Anonymous confirmation credentials are delivered only by email, never serialized publicly.
+      return user
+        ? {
+            id: result.value.id,
+            pending: result.value.pending,
+            confirmationToken: confirmationToken.value,
+          }
+        : { id: result.value.id, pending: result.value.pending };
     } else {
       logger.error(result.error);
       switch (result.error) {

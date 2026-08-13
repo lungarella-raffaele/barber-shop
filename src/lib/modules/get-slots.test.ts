@@ -1,10 +1,11 @@
+import type { ReservedSlotDTO } from "$lib/dto";
 import { Day } from "$lib/enums/days";
 import { isEqualTime } from "$lib/utils";
-import type { ReservedSlot, Slot } from "@domain";
 import { CalendarDate, parseDate, parseTime, Time } from "@internationalized/date";
 import { expect } from "@playwright/test";
 import { describe, it } from "vitest";
 
+import type { Slot } from "./get-slots";
 import { getSlots } from "./get-slots";
 import { monday, normalDay, saturday, schedule } from "./get-slots.stub";
 
@@ -12,7 +13,7 @@ describe("Get slots", () => {
   describe("should disable occupied slots", () => {
     it("monday", () => {
       const date = new CalendarDate(2022, 1, 3);
-      const currentReservations: ReservedSlot[] = [
+      const currentReservations: ReservedSlotDTO[] = [
         {
           date: parseDate("2022-01-03"),
           start: parseTime("14:00:00"),
@@ -36,7 +37,7 @@ describe("Get slots", () => {
 
     it("normal day", () => {
       const date = new CalendarDate(2022, 1, 4);
-      const currentReservations: ReservedSlot[] = [
+      const currentReservations: ReservedSlotDTO[] = [
         {
           date: parseDate("2022-02-03"),
           start: parseTime("09:00:00"),
@@ -64,7 +65,7 @@ describe("Get slots", () => {
     });
     it("saturday", () => {
       const date = new CalendarDate(2022, 1, 8);
-      const currentReservations: ReservedSlot[] = [
+      const currentReservations: ReservedSlotDTO[] = [
         {
           date: parseDate("2022-07-03"),
           start: parseTime("11:30:00"),
@@ -131,9 +132,9 @@ describe("Get slots", () => {
     });
   });
 
-  it("should work for long duration kinds", () => {
+  it("should work for long duration offerings", () => {
     const date = new CalendarDate(2022, 2, 3);
-    const currentReservations: ReservedSlot[] = [
+    const currentReservations: ReservedSlotDTO[] = [
       {
         date: parseDate("2022-02-03"),
         start: parseTime("09:00:00"),
@@ -196,7 +197,7 @@ describe("Get slots", () => {
   describe("should handle invalid slots correctly", () => {
     it("first scenario", () => {
       const date = new CalendarDate(2022, 2, 3);
-      const currentReservations: ReservedSlot[] = [
+      const currentReservations: ReservedSlotDTO[] = [
         {
           date: parseDate("2022-02-03"),
           start: parseTime("09:00:00"),

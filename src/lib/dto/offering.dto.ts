@@ -1,4 +1,4 @@
-export type Kind = {
+export type OfferingDTO = {
   id: string;
   staffID: string;
   name: string;
@@ -6,15 +6,6 @@ export type Kind = {
   price: number;
   description: string | null;
   active: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type Shutdown = {
-  id: string;
-  staffID: string;
-  start: string;
-  end: string;
   createdAt: Date;
   updatedAt: Date;
 };

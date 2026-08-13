@@ -1,4 +1,4 @@
-import type { Reservation } from "@domain";
+import type { ReservationDTO } from "$lib/dto";
 
 export type TimelineConfig = {
   startMinute: number;
@@ -16,7 +16,7 @@ export type TimelineTick = {
 };
 
 export type TimelineReservationLayout = {
-  reservation: Reservation;
+  reservation: ReservationDTO;
   startMinute: number;
   endMinute: number;
   top: number;
@@ -102,14 +102,17 @@ export function createTimelineTicks(config: TimelineConfig): TimelineTick[] {
 }
 
 export function layoutReservations(
-  reservations: Reservation[],
+  reservations: ReservationDTO[],
   config: TimelineConfig,
 ): TimelineReservationLayout[] {
   const scale = createTimelineScale(config);
   const visible = reservations
     .map((reservation) => {
       const startMinute = parseTimeToMinute(reservation.hour);
-      const duration = reservation.kinds.reduce((total, kind) => total + kind.duration, 0);
+      const duration = reservation.offerings.reduce(
+        (total, offering) => total + offering.duration,
+        0,
+      );
       const endMinute = startMinute + duration;
       if (duration <= 0 || endMinute <= config.startMinute || startMinute >= config.endMinute) {
         return null;

@@ -64,6 +64,20 @@ describe("SessionService", () => {
     expect(await service.getByID("user-2-a")).toBeDefined();
   });
 
+  it("updates a password and revokes every session except the current one", async () => {
+    const expiresAt = new Date("2099-06-15T12:00:00.000Z");
+    await service.insert({ id: "current", userID: "user-1", expiresAt });
+    await service.insert({ id: "other", userID: "user-1", expiresAt });
+    await service.insert({ id: "unrelated", userID: "user-2", expiresAt });
+
+    expect(
+      await service.updatePasswordAndRevokeOtherSessions("user-1", "new-hash", "current"),
+    ).toMatchObject({ id: "user-1", passwordHash: "new-hash" });
+    expect(await service.getByID("current")).toBeDefined();
+    expect(await service.getByID("other")).toBeUndefined();
+    expect(await service.getByID("unrelated")).toBeDefined();
+  });
+
   it("returns null when foreign-key validation rejects a session", async () => {
     const result = await service.insert({
       id: "orphan-session",

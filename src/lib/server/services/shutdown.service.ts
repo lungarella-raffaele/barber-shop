@@ -1,9 +1,9 @@
+import type { ShutdownDTO } from "$lib/dto";
 import { shutdownSchema } from "$lib/modules/zod-schemas";
 import type { Database } from "$lib/server/db/client";
 import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
-import type { DBShutdown } from "$lib/server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { createLogger } from "../logger";
 import { Service } from "./service";
@@ -15,19 +15,31 @@ export class ShutdownService extends Service {
     super();
   }
 
-  async getAll(): Promise<DBShutdown[] | null> {
+  async getAll(): Promise<ShutdownDTO[] | null> {
     try {
-      return await this.database.select().from(table.shutdowns);
+      return await this.database
+        .select({
+          id: table.shutdowns.id,
+          staffID: table.shutdowns.staffID,
+          start: table.shutdowns.start,
+          end: table.shutdowns.end,
+        })
+        .from(table.shutdowns);
     } catch (e) {
       logger.error({ err: e }, "getAll failed");
       return null;
     }
   }
 
-  async getStaffShutdown(staffID: string): Promise<DBShutdown[] | null> {
+  async getStaffShutdown(staffID: string): Promise<ShutdownDTO[] | null> {
     try {
       return await this.database
-        .select()
+        .select({
+          id: table.shutdowns.id,
+          staffID: table.shutdowns.staffID,
+          start: table.shutdowns.start,
+          end: table.shutdowns.end,
+        })
         .from(table.shutdowns)
         .where(eq(table.shutdowns.staffID, staffID));
     } catch (e) {
@@ -63,14 +75,14 @@ export class ShutdownService extends Service {
     }
   }
 
-  async delete(id: string) {
+  async delete(id: string, staffID: string) {
     try {
       return await this.database
         .delete(table.shutdowns)
-        .where(eq(table.shutdowns.id, id))
+        .where(and(eq(table.shutdowns.id, id), eq(table.shutdowns.staffID, staffID)))
         .returning({ id: table.shutdowns.id });
     } catch (e) {
-      logger.error({ err: e, shutdownId: id }, "delete failed");
+      logger.error({ err: e, shutdownId: id, staffID }, "delete failed");
       return null;
     }
   }

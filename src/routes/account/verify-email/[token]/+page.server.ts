@@ -1,28 +1,40 @@
 import * as auth from "$lib/server/auth";
-import { UserService } from "@service/user.service";
-import { redirect } from "@sveltejs/kit";
+import { PublicTokenService } from "@service/public-token.service";
 
-import type { PageServerLoad } from "./$types";
+import type { Actions, PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async (event) => {
-  const user = await UserService.get().getByID(event.params.token);
+export const load: PageServerLoad = async ({ params }) => {
+  const token = await PublicTokenService.get().inspect(params.token, "account_verification");
 
-  if (!user) {
-    return { status: "invalid" as const };
+  if (token.status === "valid" && token.token.userID) {
+    return { status: "ready" as const };
   }
 
-  if (user.data.verifiedEmail) {
+  return {
+    status:
+      token.status === "expired" || token.status === "consumed"
+        ? ("already-verified" as const)
+        : token.status === "error"
+          ? ("error" as const)
+          : ("invalid" as const),
+  };
+};
+
+export const actions: Actions = {
+  default: async (event) => {
+    const verifiedUser = await PublicTokenService.get().verifyAccount(event.params.token);
+    if (!verifiedUser) {
+      return { status: "error" as const };
+    }
+
+    const sessionToken = auth.generateSessionToken();
+    try {
+      const session = await auth.createSession(sessionToken, verifiedUser.id);
+      auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+    } catch {
+      return { status: "error" as const };
+    }
+
     return { status: "already-verified" as const };
-  }
-
-  const verifiedUser = await UserService.get().verifyEmail(user.data.id);
-  if (!verifiedUser) {
-    return { status: "error" as const };
-  }
-
-  const sessionToken = auth.generateSessionToken();
-  const session = await auth.createSession(sessionToken, verifiedUser.id);
-  auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-
-  redirect(303, event.url.pathname);
+  },
 };

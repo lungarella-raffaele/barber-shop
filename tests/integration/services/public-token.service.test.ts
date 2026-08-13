@@ -63,6 +63,75 @@ describe("PublicTokenService", () => {
     });
   });
 
+  it("atomically verifies an account and consumes its purpose-bound token", async () => {
+    const issued = await service.issue({
+      purpose: "account_verification",
+      userID: "user-1",
+      expiresAt: new Date("2099-06-15T12:00:00.000Z"),
+    });
+    if (issued.isErr()) throw new Error(`Token issuance failed: ${issued.error}`);
+
+    expect(await service.verifyAccount(issued.value)).toMatchObject({
+      id: "user-1",
+      verifiedEmail: true,
+      expiresAt: null,
+    });
+    expect(await service.verifyAccount(issued.value)).toBeNull();
+    expect(await service.inspect(issued.value, "account_verification")).toEqual({
+      status: "consumed",
+    });
+  });
+
+  it("atomically resets a password, consumes the token, and revokes every session", async () => {
+    const expiresAt = new Date("2099-06-15T12:00:00.000Z");
+    await testDatabase.database.insert(table.session).values([
+      { id: "session-1", userID: "user-1", expiresAt },
+      { id: "session-2", userID: "user-1", expiresAt },
+    ]);
+    const issued = await service.issue({
+      purpose: "password_reset",
+      userID: "user-1",
+      expiresAt,
+    });
+    if (issued.isErr()) throw new Error(`Token issuance failed: ${issued.error}`);
+
+    expect(await service.resetPassword(issued.value, "replacement-hash")).toBe("user-1");
+    expect(await service.resetPassword(issued.value, "replayed-hash")).toBeNull();
+
+    const user = await testDatabase.database
+      .select()
+      .from(table.user)
+      .where(eq(table.user.id, "user-1"))
+      .get();
+    expect(user?.passwordHash).toBe("replacement-hash");
+    expect(await testDatabase.database.select().from(table.session)).toEqual([]);
+  });
+
+  it("confirms an email change only for its owning user and preserves the current session", async () => {
+    const expiresAt = new Date("2099-06-15T12:00:00.000Z");
+    await testDatabase.database.insert(table.session).values([
+      { id: "current-session", userID: "user-1", expiresAt },
+      { id: "other-session", userID: "user-1", expiresAt },
+    ]);
+    const issued = await service.issue({
+      purpose: "email_change",
+      userID: "user-1",
+      pendingEmail: "new@example.com",
+      expiresAt,
+    });
+    if (issued.isErr()) throw new Error(`Token issuance failed: ${issued.error}`);
+
+    expect(
+      await service.confirmEmailChange(issued.value, "wrong-user", "current-session"),
+    ).toBeNull();
+    expect(
+      await service.confirmEmailChange(issued.value, "user-1", "current-session"),
+    ).toMatchObject({ email: "new@example.com" });
+    expect(await testDatabase.database.select().from(table.session)).toMatchObject([
+      { id: "current-session" },
+    ]);
+  });
+
   it("atomically confirms a reservation and consumes its token only once", async () => {
     await seedStaff(testDatabase.database);
     await testDatabase.database.insert(table.reservation).values({

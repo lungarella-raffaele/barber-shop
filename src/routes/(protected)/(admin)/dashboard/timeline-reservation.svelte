@@ -1,7 +1,7 @@
 <script lang="ts">
+  import type { ReservationDTO } from "$lib/dto";
   import { formatMinute, parseTimeToMinute } from "$lib/modules/timeline";
   import { formatDuration, formatTime } from "$lib/utils";
-  import type { Reservation } from "@domain";
 
   const {
     reservation,
@@ -15,7 +15,7 @@
     clippedAtEnd,
     onselect,
   }: {
-    reservation: Reservation;
+    reservation: ReservationDTO;
     top: number;
     height: number;
     column: number;
@@ -24,12 +24,12 @@
     timing: "past" | "current" | "upcoming";
     clippedAtStart: boolean;
     clippedAtEnd: boolean;
-    onselect: (reservation: Reservation) => void;
+    onselect: (reservation: ReservationDTO) => void;
   } = $props();
 
   const width = $derived(100 / columnCount);
   const totalDuration = $derived(
-    reservation.kinds.reduce((total, kind) => total + kind.duration, 0),
+    reservation.offerings.reduce((total, offering) => total + offering.duration, 0),
   );
   const endTime = $derived(formatMinute(parseTimeToMinute(reservation.hour) + totalDuration));
   const durationLabel = $derived(formatDuration(totalDuration));
@@ -60,7 +60,7 @@
   <span class="min-w-0 truncate typo-body-sm">
     <b>{reservation.name}</b>
     <span class="text-muted-foreground">
-      · {reservation.kinds.map((kind) => kind.name).join(", ")}</span
+      · {reservation.offerings.map((offering) => offering.name).join(", ")}</span
     >
   </span>
 

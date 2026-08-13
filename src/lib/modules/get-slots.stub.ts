@@ -1,6 +1,8 @@
 import { Day } from "$lib/enums/days";
-import type { ScheduleRange, Slot } from "@domain";
+import type { ScheduleRange } from "$lib/shared";
 import { parseTime, Time } from "@internationalized/date";
+
+import type { Slot } from "./get-slots";
 
 // The following days have plain 15 minutes slots
 export const monday: Slot[] = [

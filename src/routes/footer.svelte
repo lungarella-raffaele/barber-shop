@@ -1,10 +1,10 @@
 <script lang="ts">
   import Logo from "$lib/components/app/logo.svelte";
   import { BARBER_SHOP_DETAILS, SOCIAL_LINKS } from "$lib/constants";
+  import type { SessionUserDTO } from "$lib/dto";
   import { getNavigationItems, ROUTES } from "$lib/navigation";
-  import type { User } from "@domain";
 
-  const { user }: { user: User | null } = $props();
+  const { user }: { user: SessionUserDTO | null } = $props();
 
   type FooterLink = {
     label: string;

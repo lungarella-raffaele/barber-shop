@@ -2,8 +2,8 @@
   import * as Avatar from "$lib/components/ui/avatar";
   import { Skeleton } from "$lib/components/ui/skeleton";
   import * as ToggleGroup from "$lib/components/ui/toggle-group";
+  import type { StaffDTO } from "$lib/dto";
   import { cn } from "$lib/utils";
-  import type { Staff } from "@domain";
 
   type Orientation = "horizontal" | "vertical";
   let {
@@ -13,7 +13,7 @@
     class: className,
     onStaffChange,
   }: {
-    staff: Staff[] | Promise<Staff[] | null> | null;
+    staff: StaffDTO[] | Promise<StaffDTO[] | null> | null;
     value: string;
     class?: string;
     orientation?: Orientation;

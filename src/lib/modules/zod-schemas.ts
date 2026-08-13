@@ -66,7 +66,7 @@ export const signupSchema = z
 const nameSchema = z.string().min(1);
 const dateSchema = z.iso.date();
 const hourSchema = z.string().min(1);
-export const kindsFieldSchema = z
+export const offeringsFieldSchema = z
   .array(z.string().min(1))
   .min(1, { error: "Scegli almeno un servizio" });
 const staffSchema = z.string().min(1);
@@ -76,7 +76,7 @@ const phoneSchema = z.string().optional();
 const baseUserSchema = z.object({
   date: dateSchema,
   hour: hourSchema,
-  kinds: kindsFieldSchema,
+  offerings: offeringsFieldSchema,
   staff: staffSchema,
 });
 
@@ -96,7 +96,7 @@ export const staffUserSchema = baseUserSchema.extend({
 
 const bookingFields = {
   staff: z.string().min(1, { error: "Scegli uno staff" }),
-  kinds: kindsFieldSchema,
+  offerings: offeringsFieldSchema,
   date: z.iso.date({ error: "Scegli una data" }),
   hour: z.string().min(1, { error: "Scegli un orario" }),
 };
@@ -129,7 +129,7 @@ export const bookSchema = z.discriminatedUnion("who", [
   }),
 ]);
 
-export const kindSchema = z.object({
+export const offeringSchema = z.object({
   name: z.string().min(1, { error: "Il nome è obbligatorio" }),
   description: z.string().default(""),
   duration: z.coerce
@@ -141,7 +141,7 @@ export const kindSchema = z.object({
   active: z.boolean().default(false),
 });
 
-export const updateKindSchema = kindSchema.extend({
+export const updateOfferingSchema = offeringSchema.extend({
   id: z.string().min(1),
 });
 

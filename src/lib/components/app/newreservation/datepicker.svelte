@@ -3,7 +3,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Calendar } from "$lib/components/ui/calendar/";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import type { Shutdown } from "@domain";
+  import type { ShutdownDTO } from "$lib/dto";
   import {
     DateFormatter,
     getDayOfWeek,
@@ -24,7 +24,7 @@
     onDateChange,
   }: {
     value: string;
-    shutdown: Shutdown[];
+    shutdown: ShutdownDTO[];
     staffID?: string;
     firstAvailableDate?: DateValue;
     onHourReset?: () => void;

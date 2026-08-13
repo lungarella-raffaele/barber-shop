@@ -7,6 +7,7 @@ import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
 import { and, eq, gt, isNull, lt, sql } from "drizzle-orm";
 
+import { reservationExpiresAt } from "./reservation.service";
 import { Service } from "./service";
 
 const logger = createLogger("PublicTokenService");
@@ -30,7 +31,7 @@ type IssueToken = {
 };
 
 type TokenStatus =
-  | { status: "valid"; token: table.DBPublicToken }
+  | { status: "valid"; token: table.PublicTokenRow }
   | { status: "expired" }
   | { status: "consumed" }
   | { status: "invalid" }
@@ -63,25 +64,27 @@ export class PublicTokenService extends Service {
     const tokenHash = hashPublicToken(rawToken);
 
     try {
-      if (input.userID) {
-        await this.database
-          .delete(table.publicToken)
-          .where(
-            and(
-              eq(table.publicToken.userID, input.userID),
-              eq(table.publicToken.purpose, input.purpose),
-              isNull(table.publicToken.consumedAt),
-            ),
-          );
-      }
+      await this.database.transaction(async (tx) => {
+        if (input.userID) {
+          await tx
+            .delete(table.publicToken)
+            .where(
+              and(
+                eq(table.publicToken.userID, input.userID),
+                eq(table.publicToken.purpose, input.purpose),
+                isNull(table.publicToken.consumedAt),
+              ),
+            );
+        }
 
-      await this.database.insert(table.publicToken).values({
-        tokenHash,
-        purpose: input.purpose,
-        userID: input.userID,
-        reservationID: input.reservationID,
-        pendingEmail: input.pendingEmail,
-        expiresAt: input.expiresAt,
+        await tx.insert(table.publicToken).values({
+          tokenHash,
+          purpose: input.purpose,
+          userID: input.userID,
+          reservationID: input.reservationID,
+          pendingEmail: input.pendingEmail,
+          expiresAt: input.expiresAt,
+        });
       });
 
       return ok(rawToken);
@@ -139,6 +142,125 @@ export class PublicTokenService extends Service {
     }
   }
 
+  async verifyAccount(rawToken: string) {
+    const tokenHash = hashPublicToken(rawToken);
+
+    try {
+      return await this.database.transaction(async (tx) => {
+        const token = await tx
+          .update(table.publicToken)
+          .set({ consumedAt: new Date() })
+          .where(
+            and(
+              eq(table.publicToken.tokenHash, tokenHash),
+              eq(table.publicToken.purpose, "account_verification"),
+              isNull(table.publicToken.consumedAt),
+              gt(table.publicToken.expiresAt, new Date()),
+            ),
+          )
+          .returning({ userID: table.publicToken.userID })
+          .get();
+
+        if (!token?.userID) return null;
+
+        const user = await tx
+          .update(table.user)
+          .set({ verifiedEmail: true, expiresAt: null })
+          .where(and(eq(table.user.id, token.userID), eq(table.user.verifiedEmail, false)))
+          .returning()
+          .get();
+
+        if (!user) throw new Error("Account is missing or already verified");
+        return user;
+      });
+    } catch (error) {
+      logger.error({ err: error, tokenHash }, "verifyAccount failed");
+      return null;
+    }
+  }
+
+  async confirmEmailChange(rawToken: string, userID: string, currentSessionID: string) {
+    const tokenHash = hashPublicToken(rawToken);
+
+    try {
+      return await this.database.transaction(async (tx) => {
+        const token = await tx
+          .update(table.publicToken)
+          .set({ consumedAt: new Date() })
+          .where(
+            and(
+              eq(table.publicToken.tokenHash, tokenHash),
+              eq(table.publicToken.purpose, "email_change"),
+              eq(table.publicToken.userID, userID),
+              isNull(table.publicToken.consumedAt),
+              gt(table.publicToken.expiresAt, new Date()),
+            ),
+          )
+          .returning({ pendingEmail: table.publicToken.pendingEmail })
+          .get();
+
+        if (!token?.pendingEmail) return null;
+
+        const user = await tx
+          .update(table.user)
+          .set({ email: token.pendingEmail.toLowerCase().trim() })
+          .where(eq(table.user.id, userID))
+          .returning()
+          .get();
+
+        if (!user) throw new Error("Account is missing");
+
+        await tx
+          .delete(table.session)
+          .where(
+            and(eq(table.session.userID, userID), sql`${table.session.id} != ${currentSessionID}`),
+          );
+        return user;
+      });
+    } catch (error) {
+      logger.error({ err: error, tokenHash, userId: userID }, "confirmEmailChange failed");
+      return null;
+    }
+  }
+
+  async resetPassword(rawToken: string, passwordHash: string) {
+    const tokenHash = hashPublicToken(rawToken);
+
+    try {
+      return await this.database.transaction(async (tx) => {
+        const token = await tx
+          .update(table.publicToken)
+          .set({ consumedAt: new Date() })
+          .where(
+            and(
+              eq(table.publicToken.tokenHash, tokenHash),
+              eq(table.publicToken.purpose, "password_reset"),
+              isNull(table.publicToken.consumedAt),
+              gt(table.publicToken.expiresAt, new Date()),
+            ),
+          )
+          .returning({ userID: table.publicToken.userID })
+          .get();
+
+        if (!token?.userID) return null;
+
+        const user = await tx
+          .update(table.user)
+          .set({ passwordHash })
+          .where(eq(table.user.id, token.userID))
+          .returning({ id: table.user.id })
+          .get();
+
+        if (!user) throw new Error("Account is missing");
+        await tx.delete(table.session).where(eq(table.session.userID, user.id));
+        return user.id;
+      });
+    } catch (error) {
+      logger.error({ err: error, tokenHash }, "resetPassword failed");
+      return null;
+    }
+  }
+
   async confirmReservation(rawToken: string) {
     const tokenHash = hashPublicToken(rawToken);
 
@@ -160,11 +282,18 @@ export class PublicTokenService extends Service {
 
         if (!token?.reservationID) return null;
 
+        const reservationDate = await tx
+          .select({ date: table.reservation.date })
+          .from(table.reservation)
+          .where(eq(table.reservation.id, token.reservationID))
+          .get();
+        if (!reservationDate) throw new Error("Reservation is missing");
+
         const reservation = await tx
           .update(table.reservation)
           .set({
             pending: false,
-            expiresAt: sql`strftime('%s', datetime(${table.reservation.date}, '+1 day'))`,
+            expiresAt: reservationExpiresAt(reservationDate.date),
           })
           .where(
             and(eq(table.reservation.id, token.reservationID), eq(table.reservation.pending, true)),

@@ -2,22 +2,22 @@
   import Duration from "$lib/components/app/duration.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import type { OfferingDTO, StaffDTO } from "$lib/dto";
   import { formatDate, formatTime } from "$lib/utils";
-  import type { Kind, Staff } from "@domain";
 
   let {
     isOpen = $bindable(),
     loading,
     staff,
-    kinds,
+    offerings,
     date,
     hour,
     duration,
   }: {
     isOpen: boolean;
     loading: boolean;
-    staff?: Staff;
-    kinds: Kind[];
+    staff?: StaffDTO;
+    offerings: OfferingDTO[];
     date: string;
     hour: string;
     duration: number;
@@ -58,15 +58,15 @@
           <h3 id="confirmation-services-title" class="text-muted-foreground typo-body-sm">
             Servizi
           </h3>
-          <span class="rounded-full bg-gray-5 px-2 py-0.5 typo-caption">{kinds.length}</span>
+          <span class="rounded-full bg-gray-5 px-2 py-0.5 typo-caption">{offerings.length}</span>
         </div>
         <ol
           class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-gray-2"
         >
-          {#each kinds as kind (kind.id)}
+          {#each offerings as offering (offering.id)}
             <li class="flex items-center justify-between gap-4 px-4 py-3">
-              <span class="min-w-0 wrap-break-word typo-label">{kind.name}</span>
-              <Duration amount={kind.duration} class="text-muted-foreground shrink-0" />
+              <span class="min-w-0 wrap-break-word typo-label">{offering.name}</span>
+              <Duration amount={offering.duration} class="text-muted-foreground shrink-0" />
             </li>
           {/each}
         </ol>

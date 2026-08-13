@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Select from "$lib/components/ui/select/index.js";
+  import type { Slot } from "$lib/modules/get-slots";
   import { formatTime } from "$lib/utils";
-  import type { Slot } from "@domain";
 
   let {
     availableSlots,

@@ -1,13 +1,13 @@
 <script lang="ts">
+  import type { ReservationDTO } from "$lib/dto";
   import { cn, formatDuration } from "$lib/utils";
-  import type { Reservation } from "@domain";
   import BarChart3 from "@lucide/svelte/icons/chart-no-axes-column-increasing";
 
   const {
     reservations = [],
     loading = false,
   }: {
-    reservations?: Reservation[];
+    reservations?: ReservationDTO[];
     loading?: boolean;
   } = $props();
 
@@ -15,7 +15,8 @@
   const totalMinutes = $derived(
     reservations.reduce(
       (total, reservation) =>
-        total + reservation.kinds.reduce((duration, kind) => duration + kind.duration, 0),
+        total +
+        reservation.offerings.reduce((duration, offering) => duration + offering.duration, 0),
       0,
     ),
   );

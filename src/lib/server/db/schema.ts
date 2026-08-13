@@ -1,4 +1,13 @@
-import { index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
+import {
+  check,
+  index,
+  integer,
+  primaryKey,
+  real,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 
 const timestamps = {
   createdAt: integer("created_at", { mode: "timestamp" })
@@ -11,25 +20,33 @@ const timestamps = {
     .$onUpdateFn(() => new Date()),
 };
 
-export const user = sqliteTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  phoneNumber: text("phone_number"),
-  email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  verifiedEmail: integer("verified_email", { mode: "boolean" }).notNull().default(false),
-  expiresAt: integer("expires_at", { mode: "timestamp" }),
-  ...timestamps,
-});
+export const user = sqliteTable(
+  "user",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    phoneNumber: text("phone_number"),
+    email: text("email").notNull().unique(),
+    passwordHash: text("password_hash").notNull(),
+    verifiedEmail: integer("verified_email", { mode: "boolean" }).notNull().default(false),
+    expiresAt: integer("expires_at", { mode: "timestamp" }),
+    ...timestamps,
+  },
+  (entry) => [index("user_expires_at_idx").on(entry.expiresAt)],
+);
 
-export const session = sqliteTable("session", {
-  id: text("id").primaryKey(),
-  userID: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  ...timestamps,
-});
+export const session = sqliteTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    userID: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+    ...timestamps,
+  },
+  (entry) => [index("session_expires_at_idx").on(entry.expiresAt)],
+);
 
 export const reservation = sqliteTable(
   "reservation",
@@ -49,37 +66,50 @@ export const reservation = sqliteTable(
       .references(() => staff.userID, { onDelete: "restrict" }),
     ...timestamps,
   },
-  (entry) => [index("reservation_owner_user_idx").on(entry.ownerUserID)],
+  (entry) => [
+    index("reservation_owner_user_idx").on(entry.ownerUserID),
+    index("reservation_availability_idx").on(entry.staffID, entry.date, entry.hour),
+    index("reservation_expires_at_idx").on(entry.expiresAt),
+    index("reservation_pending_idx").on(entry.pending),
+  ],
 );
 
-export const kind = sqliteTable("kind", {
-  id: text("id").primaryKey(),
-  staffID: text("staff_id")
-    .notNull()
-    .references(() => staff.userID, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  duration: integer("duration").notNull(),
-  price: integer("price").notNull(),
-  description: text("description"),
-  active: integer("active", { mode: "boolean" }).notNull().default(false),
-  ...timestamps,
-});
+export const offering = sqliteTable(
+  "offering",
+  {
+    id: text("id").primaryKey(),
+    staffID: text("staff_id")
+      .notNull()
+      .references(() => staff.userID, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    duration: integer("duration").notNull(),
+    price: integer("price").notNull(),
+    description: text("description"),
+    active: integer("active", { mode: "boolean" }).notNull().default(false),
+    ...timestamps,
+  },
+  (entry) => [
+    check("offering_duration_positive_check", sql`${entry.duration} > 0`),
+    check("offering_price_nonnegative_check", sql`${entry.price} >= 0`),
+    index("offering_staff_active_idx").on(entry.staffID, entry.active),
+  ],
+);
 
-export const reservationKind = sqliteTable(
-  "reservation_kind",
+export const reservationOffering = sqliteTable(
+  "reservation_offering",
   {
     reservationID: text("reservation_id")
       .notNull()
       .references(() => reservation.id, { onDelete: "cascade" }),
-    kindID: text("kind_id")
+    offeringID: text("offering_id")
       .notNull()
-      .references(() => kind.id, { onDelete: "restrict" }),
+      .references(() => offering.id, { onDelete: "restrict" }),
     position: integer("position").notNull(),
   },
   (entry) => [
-    primaryKey({ columns: [entry.reservationID, entry.kindID] }),
-    index("reservation_kind_reservation_idx").on(entry.reservationID),
-    index("reservation_kind_kind_idx").on(entry.kindID),
+    primaryKey({ columns: [entry.reservationID, entry.offeringID] }),
+    index("reservation_offering_reservation_idx").on(entry.reservationID),
+    index("reservation_offering_offering_idx").on(entry.offeringID),
   ],
 );
 
@@ -91,15 +121,22 @@ export const banner = sqliteTable("banner", {
 });
 
 // was closures
-export const shutdowns = sqliteTable("shutdown", {
-  id: text("id").primaryKey(),
-  staffID: text("staff_id")
-    .notNull()
-    .references(() => staff.userID, { onDelete: "cascade" }),
-  start: text("start").notNull(),
-  end: text("end").notNull(),
-  ...timestamps,
-});
+export const shutdowns = sqliteTable(
+  "shutdown",
+  {
+    id: text("id").primaryKey(),
+    staffID: text("staff_id")
+      .notNull()
+      .references(() => staff.userID, { onDelete: "cascade" }),
+    start: text("start").notNull(),
+    end: text("end").notNull(),
+    ...timestamps,
+  },
+  (entry) => [
+    check("shutdown_range_check", sql`${entry.start} <= ${entry.end}`),
+    index("shutdown_staff_range_idx").on(entry.staffID, entry.start, entry.end),
+  ],
+);
 
 export const emailVerification = sqliteTable("email_verification", {
   id: text("id").primaryKey(),
@@ -119,6 +156,21 @@ export const passwordRecover = sqliteTable("password_recover", {
   expiresAt: integer("expires_at", { mode: "timestamp" }),
   ...timestamps,
 });
+
+export const rateLimit = sqliteTable(
+  "rate_limit",
+  {
+    keyHash: text("key_hash").notNull(),
+    windowStart: integer("window_start", { mode: "timestamp" }).notNull(),
+    requestCount: integer("request_count").notNull().default(1),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  },
+  (entry) => [
+    primaryKey({ columns: [entry.keyHash, entry.windowStart] }),
+    index("rate_limit_expires_at_idx").on(entry.expiresAt),
+    check("rate_limit_request_count_positive_check", sql`${entry.requestCount} > 0`),
+  ],
+);
 
 export const publicToken = sqliteTable(
   "public_token",
@@ -149,18 +201,37 @@ export const publicToken = sqliteTable(
   ],
 );
 
-export const schedule = sqliteTable("schedule", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  staffID: text("staff_id")
-    .notNull()
-    .references(() => staff.userID, { onDelete: "cascade" }),
-  day: integer("day").notNull(),
-  startHour: integer("start_hour").notNull(),
-  startMinute: integer("start_minute").notNull().default(0),
-  endHour: integer("end_hour").notNull(),
-  endMinute: integer("end_minute").notNull().default(0),
-  ...timestamps,
-});
+export const schedule = sqliteTable(
+  "schedule",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    staffID: text("staff_id")
+      .notNull()
+      .references(() => staff.userID, { onDelete: "cascade" }),
+    day: integer("day").notNull(),
+    startHour: integer("start_hour").notNull(),
+    startMinute: integer("start_minute").notNull().default(0),
+    endHour: integer("end_hour").notNull(),
+    endMinute: integer("end_minute").notNull().default(0),
+    ...timestamps,
+  },
+  (entry) => [
+    check("schedule_day_check", sql`${entry.day} BETWEEN 0 AND 6`),
+    check(
+      "schedule_hours_check",
+      sql`${entry.startHour} BETWEEN 0 AND 23 AND ${entry.endHour} BETWEEN 0 AND 23`,
+    ),
+    check(
+      "schedule_minutes_check",
+      sql`${entry.startMinute} BETWEEN 0 AND 59 AND ${entry.endMinute} BETWEEN 0 AND 59`,
+    ),
+    check(
+      "schedule_range_check",
+      sql`${entry.startHour} * 60 + ${entry.startMinute} < ${entry.endHour} * 60 + ${entry.endMinute}`,
+    ),
+    index("schedule_staff_day_idx").on(entry.staffID, entry.day),
+  ],
+);
 
 export const staff = sqliteTable("staff", {
   userID: text("user_id")
@@ -176,18 +247,19 @@ export const staff = sqliteTable("staff", {
   ...timestamps,
 });
 
-export type DBSession = typeof session.$inferSelect;
-export type NewSession = typeof session.$inferInsert;
-export type DBUser = typeof user.$inferSelect;
-export type DBStaff = typeof staff.$inferSelect;
-export type DBReservation = typeof reservation.$inferSelect;
-export type DBReservationKind = typeof reservationKind.$inferSelect;
-export type DBKind = typeof kind.$inferSelect;
-export type NewKind = typeof kind.$inferInsert;
-export type DBBanner = typeof banner.$inferSelect;
-export type DBShutdown = typeof shutdowns.$inferSelect;
-export type DBEmailVerificationToken = typeof emailVerification.$inferSelect;
-export type DBPasswordRecover = typeof passwordRecover.$inferSelect;
-export type DBPublicToken = typeof publicToken.$inferSelect;
-export type DBSchedule = typeof schedule.$inferSelect;
-export type Schedule = Omit<typeof schedule.$inferInsert, "id">;
+export type SessionRow = typeof session.$inferSelect;
+export type NewSessionRow = typeof session.$inferInsert;
+export type UserRow = typeof user.$inferSelect;
+export type StaffRow = typeof staff.$inferSelect;
+export type ReservationRow = typeof reservation.$inferSelect;
+export type ReservationOfferingRow = typeof reservationOffering.$inferSelect;
+export type OfferingRow = typeof offering.$inferSelect;
+export type NewOfferingRow = typeof offering.$inferInsert;
+export type BannerRow = typeof banner.$inferSelect;
+export type ShutdownRow = typeof shutdowns.$inferSelect;
+export type EmailVerificationTokenRow = typeof emailVerification.$inferSelect;
+export type PasswordRecoverRow = typeof passwordRecover.$inferSelect;
+export type PublicTokenRow = typeof publicToken.$inferSelect;
+export type RateLimitRow = typeof rateLimit.$inferSelect;
+export type ScheduleRow = typeof schedule.$inferSelect;
+export type NewScheduleRow = Omit<typeof schedule.$inferInsert, "id">;

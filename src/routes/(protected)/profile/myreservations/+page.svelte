@@ -16,8 +16,8 @@
   import * as Dialog from "$lib/components/ui/dialog/index";
   import { Input } from "$lib/components/ui/input/index";
   import * as Table from "$lib/components/ui/table/index";
+  import type { ReservationDTO } from "$lib/dto";
   import { cn, formatDate } from "$lib/utils";
-  import type { Reservation } from "@domain";
   import { ArrowDown, ArrowUp } from "@lucide/svelte";
   import type { SubmitFunction } from "@sveltejs/kit";
   import { toast } from "svelte-sonner";
@@ -25,13 +25,13 @@
 
   import type { PageData } from "./$types";
 
-  type SortKey = "name" | "date" | "kind" | "status";
+  type SortKey = "name" | "date" | "offering" | "status";
   type SortDirection = "asc" | "desc";
 
   const sortLabels: Record<SortKey, string> = {
     name: "Nome",
     date: "Data e ora",
-    kind: "Servizio",
+    offering: "Servizio",
     status: "Stato",
   };
 
@@ -44,8 +44,8 @@
   let currentPage = $state(1);
   const selectedIds = new SvelteSet<string>();
 
-  let selectedReservation = $state<Reservation | null>(null);
-  let reservationToDelete = $state<Reservation | null>(null);
+  let selectedReservation = $state<ReservationDTO | null>(null);
+  let reservationToDelete = $state<ReservationDTO | null>(null);
   let isDetailsOpen = $state(false);
   let isDeleteOpen = $state(false);
   let isBatchDeleteOpen = $state(false);
@@ -65,7 +65,7 @@
             formatShortDate(reservation.date),
             displayTime(reservation.hour),
             reservation.hour,
-            ...reservation.kinds.map((kind) => kind.name),
+            ...reservation.offerings.map((offering) => offering.name),
             reservation.staff?.name,
           ]
             .filter(Boolean)
@@ -125,17 +125,17 @@
     return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : hour;
   }
 
-  function compareReservations(a: Reservation, b: Reservation, key: SortKey) {
+  function compareReservations(a: ReservationDTO, b: ReservationDTO, key: SortKey) {
     if (key === "date") {
       const byDate = a.date.localeCompare(b.date);
       return byDate !== 0 ? byDate : displayTime(a.hour).localeCompare(displayTime(b.hour));
     }
 
-    if (key === "kind") {
-      return a.kinds
-        .map((kind) => kind.name)
+    if (key === "offering") {
+      return a.offerings
+        .map((offering) => offering.name)
         .join(", ")
-        .localeCompare(b.kinds.map((kind) => kind.name).join(", "));
+        .localeCompare(b.offerings.map((offering) => offering.name).join(", "));
     }
 
     if (key === "status") {
@@ -154,12 +154,12 @@
     }
   }
 
-  function openDetails(reservation: Reservation) {
+  function openDetails(reservation: ReservationDTO) {
     selectedReservation = reservation;
     isDetailsOpen = true;
   }
 
-  function openDelete(reservation: Reservation) {
+  function openDelete(reservation: ReservationDTO) {
     reservationToDelete = reservation;
     isDeleteOpen = true;
   }
@@ -302,7 +302,7 @@
             <Table.Head>{@render sortButton("name")}</Table.Head>
           {/if}
           <Table.Head>{@render sortButton("date")}</Table.Head>
-          <Table.Head>{@render sortButton("kind")}</Table.Head>
+          <Table.Head>{@render sortButton("offering")}</Table.Head>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -376,9 +376,9 @@
             >
               <div
                 class="typo-label w-32 truncate"
-                title={reservation.kinds.map((kind) => kind.name).join(", ")}
+                title={reservation.offerings.map((offering) => offering.name).join(", ")}
               >
-                {reservation.kinds.map((kind) => kind.name).join(", ")}
+                {reservation.offerings.map((offering) => offering.name).join(", ")}
               </div>
               <div class="typo-caption text-muted-foreground">
                 {reservation.staff?.name}

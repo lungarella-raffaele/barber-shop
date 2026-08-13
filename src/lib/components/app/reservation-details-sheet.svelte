@@ -3,8 +3,8 @@
   import { ChevronLeft, ChevronRight, Mail, Trash } from "$lib/components/icons";
   import { Button } from "$lib/components/ui/button";
   import * as Sheet from "$lib/components/ui/sheet";
+  import type { ReservationDTO } from "$lib/dto";
   import { formatCurrency, formatDuration, formatTime } from "$lib/utils";
-  import type { Reservation } from "@domain";
   import ChevronsRight from "@lucide/svelte/icons/chevrons-right";
 
   let {
@@ -13,10 +13,10 @@
     open = $bindable(false),
     onDelete,
   }: {
-    reservation?: Reservation | null;
-    reservations?: Reservation[];
+    reservation?: ReservationDTO | null;
+    reservations?: ReservationDTO[];
     open?: boolean;
-    onDelete?: (reservation: Reservation) => void;
+    onDelete?: (reservation: ReservationDTO) => void;
   } = $props();
 
   const orderedReservations = $derived(
@@ -31,10 +31,10 @@
   const hasPrevious = $derived(currentIndex > 0);
   const hasNext = $derived(currentIndex >= 0 && currentIndex < orderedReservations.length - 1);
   const totalDuration = $derived(
-    reservation?.kinds.reduce((total, kind) => total + kind.duration, 0) ?? 0,
+    reservation?.offerings.reduce((total, offering) => total + offering.duration, 0) ?? 0,
   );
   const totalPrice = $derived(
-    reservation?.kinds.reduce((total, kind) => total + kind.price, 0) ?? 0,
+    reservation?.offerings.reduce((total, offering) => total + offering.price, 0) ?? 0,
   );
 
   function navigate(offset: -1 | 1) {
@@ -141,7 +141,7 @@
             <dd class="text-right typo-label">{formatDuration(totalDuration)}</dd>
           </div>
           <div class="flex items-center justify-between gap-4 px-4 py-3">
-            <dt class="text-muted-foreground typo-body-sm">Staff</dt>
+            <dt class="text-muted-foreground typo-body-sm">StaffDTO</dt>
             <dd class="min-w-0 truncate text-right typo-label">{reservation.staff.name}</dd>
           </div>
           <div class="flex items-center justify-between gap-4 px-4 py-3">
@@ -156,19 +156,21 @@
               Servizi
             </h3>
             <span class="rounded-full bg-gray-5 px-2 py-0.5 typo-caption">
-              {reservation.kinds.length}
+              {reservation.offerings.length}
             </span>
           </div>
           <div
             class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-gray-2"
           >
-            {#each reservation.kinds as kind (kind.id)}
+            {#each reservation.offerings as offering (offering.id)}
               <div class="flex items-center justify-between gap-4 px-4 py-3">
                 <div class="min-w-0">
-                  <p class="truncate typo-label">{kind.name}</p>
-                  <p class="typo-caption text-muted-foreground">{formatDuration(kind.duration)}</p>
+                  <p class="truncate typo-label">{offering.name}</p>
+                  <p class="typo-caption text-muted-foreground">
+                    {formatDuration(offering.duration)}
+                  </p>
                 </div>
-                <p class="shrink-0 typo-label">{formatCurrency(String(kind.price))}</p>
+                <p class="shrink-0 typo-label">{formatCurrency(String(offering.price))}</p>
               </div>
             {/each}
             <div class="flex items-center justify-between gap-4 px-4 py-3">

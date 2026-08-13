@@ -1,4 +1,5 @@
-import type { ReservedSlot, ScheduleUI, Slot } from "@domain";
+import type { ReservedSlotDTO } from "$lib/dto";
+import type { ScheduleUI } from "$lib/shared";
 import {
   type CalendarDate,
   getDayOfWeek,
@@ -9,13 +10,20 @@ import {
   type DateValue,
 } from "@internationalized/date";
 
+export type Slot = {
+  start: Time;
+  available: boolean;
+  invalid: boolean;
+  past: boolean;
+};
+
 export const SlotDuration = new Time(0, 15);
 
 export const getSlots = (
   date: CalendarDate,
-  reservations: ReservedSlot[],
+  reservations: ReservedSlotDTO[],
   schedule: ScheduleUI,
-  kind?: Time,
+  offering?: Time,
 ) => {
   let slots = generateSlots(date, schedule);
 
@@ -29,8 +37,8 @@ export const getSlots = (
   }
 
   // slots with not enough time
-  if (kind) {
-    slots = invalid(slots, kind);
+  if (offering) {
+    slots = invalid(slots, offering);
   }
 
   return sortSlots(slots);
@@ -80,7 +88,7 @@ function slotsWithoutGaps(slots: Slot[]) {
   return true;
 }
 
-function isAvailable(slot: Slot, reservations: ReservedSlot[]): boolean {
+function isAvailable(slot: Slot, reservations: ReservedSlotDTO[]): boolean {
   for (const r of reservations) {
     const startInterval = r.start;
     const endInterval = r.start.add({ hours: r.duration.hour, minutes: r.duration.minute });
@@ -93,7 +101,7 @@ function isAvailable(slot: Slot, reservations: ReservedSlot[]): boolean {
   return true;
 }
 
-function reserved(slots: Slot[], reservations: ReservedSlot[]): Slot[] {
+function reserved(slots: Slot[], reservations: ReservedSlotDTO[]): Slot[] {
   return slots.map((s) => ({ ...s, available: isAvailable(s, reservations) }));
 }
 

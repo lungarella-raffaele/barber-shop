@@ -6,16 +6,16 @@
   import * as Menubar from "$lib/components/ui/menubar/index.js";
   import { Separator } from "$lib/components/ui/separator";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
+  import type { SessionUserDTO } from "$lib/dto";
   import {
     isNavigationItemActive,
     ROUTES,
     getNavigationItems,
     type NavigationItem,
   } from "$lib/navigation";
-  import type { User } from "@domain";
   import MenuIcon from "@lucide/svelte/icons/menu";
 
-  const { user }: { user: User | null } = $props();
+  const { user }: { user: SessionUserDTO | null } = $props();
 
   let logoutForm: HTMLFormElement | undefined = $state();
   let menubarValue = $state("");

@@ -914,7 +914,7 @@
         </div>
 
         <Alert.Root>
-          <Alert.Title>Schedule synced</Alert.Title>
+          <Alert.Title>NewScheduleRow synced</Alert.Title>
           <Alert.Description>Appointments are up to date across all devices.</Alert.Description>
           <Alert.Action>Review</Alert.Action>
         </Alert.Root>

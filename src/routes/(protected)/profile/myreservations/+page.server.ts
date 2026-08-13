@@ -10,8 +10,8 @@ export const load: PageServerLoad = async ({ locals }) => {
   }
 
   const reservations = await ReservationService.get().getByUser(
-    locals.user.data.id,
-    locals.user.data.email,
+    locals.user.account.id,
+    locals.user.account.email,
   );
 
   if (!reservations) {
@@ -38,8 +38,8 @@ export const actions: Actions = {
 
     const res = await ReservationService.get().deleteByUser(
       id,
-      locals.user.data.id,
-      locals.user.data.email,
+      locals.user.account.id,
+      locals.user.account.email,
     );
 
     if (res && res.length > 0) {
@@ -65,8 +65,8 @@ export const actions: Actions = {
 
     const res = await ReservationService.get().deleteManyByUser(
       ids,
-      locals.user.data.id,
-      locals.user.data.email,
+      locals.user.account.id,
+      locals.user.account.email,
     );
 
     if (res) {

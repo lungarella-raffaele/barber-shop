@@ -29,7 +29,7 @@
     adding = true;
     formData.append("start", value.start.toString());
     formData.append("end", value.end.toString());
-    formData.append("id", data.user.data.id);
+    formData.append("id", data.user.account.id);
 
     return async ({ result }) => {
       if (result.type === "success") {

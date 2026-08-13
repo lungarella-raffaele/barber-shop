@@ -1,8 +1,8 @@
 import type { Database } from "$lib/server/db/client";
 import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
-import type { DBSchedule, Schedule } from "$lib/server/db/schema";
-import { eq } from "drizzle-orm";
+import type { ScheduleRow, NewScheduleRow } from "$lib/server/db/schema";
+import { and, eq } from "drizzle-orm";
 
 import { createLogger } from "../logger";
 import { Service } from "./service";
@@ -14,7 +14,7 @@ export class ScheduleService extends Service {
     super();
   }
 
-  async getAll(): Promise<DBSchedule[] | null> {
+  async getAll(): Promise<ScheduleRow[] | null> {
     try {
       return this.database.select().from(table.schedule);
     } catch (e) {
@@ -23,25 +23,39 @@ export class ScheduleService extends Service {
     }
   }
 
-  async update(schedules: Schedule[], staffID: string): Promise<boolean> {
+  async getByStaff(staffID: string): Promise<ScheduleRow[] | null> {
     try {
-      const result = await this.database.transaction(async (tx) => {
+      return this.database.select().from(table.schedule).where(eq(table.schedule.staffID, staffID));
+    } catch (e) {
+      logger.error({ err: e, staffID }, "getByStaff failed");
+      return null;
+    }
+  }
+
+  async update(schedules: NewScheduleRow[], staffID: string): Promise<boolean> {
+    try {
+      return await this.database.transaction(async (tx) => {
         await tx.delete(table.schedule).where(eq(table.schedule.staffID, staffID));
-        return await tx.insert(table.schedule).values(schedules).returning();
+        if (schedules.length === 0) return true;
+
+        const result = await tx.insert(table.schedule).values(schedules).returning();
+        return result.length === schedules.length;
       });
-      return !!result.length;
     } catch (e) {
       logger.error({ err: e, staffID }, "update failed");
       return false;
     }
   }
 
-  async delete(id: number): Promise<boolean> {
+  async delete(id: number, staffID: string): Promise<boolean> {
     try {
-      await this.database.delete(table.schedule).where(eq(table.schedule.id, id));
-      return true;
+      const deleted = await this.database
+        .delete(table.schedule)
+        .where(and(eq(table.schedule.id, id), eq(table.schedule.staffID, staffID)))
+        .returning({ id: table.schedule.id });
+      return deleted.length === 1;
     } catch (e) {
-      logger.error({ err: e, scheduleId: id }, "delete failed");
+      logger.error({ err: e, scheduleId: id, staffID }, "delete failed");
       return false;
     }
   }

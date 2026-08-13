@@ -28,8 +28,8 @@
   const { data }: PageProps = $props();
 
   const infoBackup = $derived({
-    name: data.user.data.name,
-    phoneNumber: data.user.data.phoneNumber,
+    name: data.user.account.name,
+    phoneNumber: data.user.account.phoneNumber,
   });
 
   let isOpen = $state(false);
@@ -112,7 +112,7 @@
               <Input
                 class="max-w-50"
                 name="name"
-                value={data.user.data.name}
+                value={data.user.account.name}
                 placeholder="Mario Rossi"
                 disabled={!isEditingInfo}
               />
@@ -125,7 +125,7 @@
               <Input
                 class="max-w-50"
                 name="phone"
-                value={data.user.data.phoneNumber}
+                value={data.user.account.phoneNumber}
                 placeholder="+39 333 444 55 66"
                 disabled={!isEditingInfo}
               />
@@ -147,7 +147,7 @@
         <div class="flex flex-row justify-between">
           <Label for="email">Email</Label>
           <div class="align-middle items-center flex gap-4">
-            {data.user.data.email}
+            {data.user.account.email}
             <Button
               onclick={() => (changeEmailDialog = !changeEmailDialog)}
               variant="outline"

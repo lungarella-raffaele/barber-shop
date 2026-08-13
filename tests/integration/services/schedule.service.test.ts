@@ -11,6 +11,11 @@ describe("ScheduleService", () => {
   beforeEach(async () => {
     testDatabase = await createTestDatabase();
     await seedStaff(testDatabase.database);
+    await seedStaff(testDatabase.database, {
+      id: "staff-2",
+      name: "Second Barber",
+      email: "second-barber@example.com",
+    });
     service = new ScheduleService(testDatabase.database);
   });
 
@@ -69,7 +74,21 @@ describe("ScheduleService", () => {
     expect(schedule).toBeDefined();
     if (!schedule) throw new Error("Expected the replacement schedule to exist");
 
-    expect(await service.delete(schedule.id)).toBe(true);
+    expect(await service.delete(schedule.id, "staff-1")).toBe(true);
     expect(await service.getAll()).toEqual([]);
+  });
+
+  it("supports clearing a schedule and scopes deletion to its owner", async () => {
+    expect(
+      await service.update([{ staffID: "staff-2", day: 1, startHour: 9, endHour: 12 }], "staff-2"),
+    ).toBe(true);
+    const secondStaffSchedule = (await service.getByStaff("staff-2"))?.[0];
+    if (!secondStaffSchedule) throw new Error("Expected staff-2 schedule");
+
+    expect(await service.delete(secondStaffSchedule.id, "staff-1")).toBe(false);
+    expect(await service.getByStaff("staff-2")).toHaveLength(1);
+    expect(await service.update([], "staff-2")).toBe(true);
+    expect(await service.getByStaff("staff-2")).toEqual([]);
+    expect(await service.delete(999_999, "staff-1")).toBe(false);
   });
 });

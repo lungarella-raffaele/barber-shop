@@ -12,9 +12,8 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { TOOLTIP_DELAY } from "$lib/constants";
   import { Day, dayLabels, getWeekDay } from "$lib/enums/days";
-  import type { DBSchedule } from "$lib/server/db/schema";
+  import type { ScheduleEntry, ScheduleRange } from "$lib/shared";
   import { formatTime } from "$lib/utils";
-  import type { ScheduleRange } from "@domain";
   import { Time } from "@internationalized/date";
   import type { SubmitFunction } from "@sveltejs/kit";
   import { onMount } from "svelte";
@@ -22,7 +21,7 @@
 
   import { initializeEmptyMap, mapToDB, mapToUI, validateRange } from "./ranges";
 
-  const { schedule, staffID }: { schedule: Promise<DBSchedule[] | null>; staffID: string } =
+  const { schedule, staffID }: { schedule: Promise<ScheduleEntry[] | null>; staffID: string } =
     $props();
 
   type DialogView = "add" | "edit" | "confirm-delete";
