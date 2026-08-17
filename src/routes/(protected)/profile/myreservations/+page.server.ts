@@ -14,13 +14,11 @@ export const load: PageServerLoad = async ({ locals }) => {
     locals.user.account.email,
   );
 
-  if (!reservations) {
-    return error(500);
-  }
+  if (reservations.isErr()) return error(503);
 
-  logger.info(`Retrieved ${reservations.length} reservations`);
+  logger.info(`Retrieved ${reservations.value.length} reservations`);
 
-  return { reservations, title: "Prenotazioni -" };
+  return { reservations: reservations.value, title: "Prenotazioni -" };
 };
 
 export const actions: Actions = {
@@ -42,11 +40,11 @@ export const actions: Actions = {
       locals.user.account.email,
     );
 
-    if (res && res.length > 0) {
-      return { res };
+    if (res.isErr()) {
+      return fail(res.error.type === "not-found" ? 404 : 503, { success: false });
     }
 
-    return fail(404, { success: false });
+    return { res: res.value };
   },
   deleteBatch: async ({ locals, request }) => {
     if (!locals.user) {
@@ -69,10 +67,8 @@ export const actions: Actions = {
       locals.user.account.email,
     );
 
-    if (res) {
-      return { res, deleted: res.length };
-    }
+    if (res.isErr()) return fail(503, { success: false });
 
-    return fail(500, { success: false });
+    return { res: res.value, deleted: res.value.affectedRows };
   },
 };

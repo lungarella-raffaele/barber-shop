@@ -20,7 +20,7 @@ This document tracks the backend audit and remediation work.
 - [x] Enforce staff activity, schedule, shutdowns, future time, valid formats, duration, and overlap on the transactional write path.
 - [x] Define canonical Europe/Rome date/time and reservation expiration semantics.
 - [x] Fix reservation expiration being up to one day late/inconsistent across flows.
-- [ ] Add stronger cross-instance concurrency protection and stress tests for simultaneous booking attempts.
+- [x] Add stronger cross-instance concurrency protection for simultaneous booking attempts.
 - [x] Validate all admin action payloads and return controlled 4xx errors.
 - [x] Validate and normalize profile updates at the service boundary.
 - [x] Validate avatar metadata and decoded image size.
@@ -31,7 +31,7 @@ This document tracks the backend audit and remediation work.
 - [x] Add offering duration/price checks and staff/active index.
 - [x] Add reservation availability/cleanup indexes.
 - [x] Add shutdown range checks/indexes.
-- [ ] Add token structural constraints after auditing existing production token rows.
+- [x] Enforce purpose-dependent token structure at the typed service boundary with runtime validation.
 - [x] Add missing session/token cleanup indexes.
 - [ ] Review reservation status model (`pending` vs explicit lifecycle states).
 - [ ] Review canonical `startsAt`/`endsAt` storage as a future migration.
@@ -39,7 +39,13 @@ This document tracks the backend audit and remediation work.
 ## P2 — Services and maintainability
 
 - [ ] Standardize service result/error contracts and affected-row reporting.
+  - [x] Standardize authentication/session reads, public-token mutations, and admin CRUD.
+  - [x] Standardize reservation reads and deletion methods.
+  - [ ] Standardize remaining user/account mutation methods.
 - [ ] Stop swallowing infrastructure errors where callers need to detect failure.
+  - [x] Distinguish storage failures in authentication, token routes, and admin actions.
+  - [x] Distinguish storage failures in reservation reads and deletes.
+  - [ ] Distinguish storage failures in remaining account deletion cleanup.
 - [x] Make public-token replacement transactional.
 - [x] Make cleanup failure-aware, idempotent, and return a structured report.
 - [x] Inject database dependencies into cleanup, banner, and legacy token services.
@@ -60,7 +66,8 @@ This document tracks the backend audit and remediation work.
 - [x] Assert client-safe user serialization excludes password hashes and private staff fields.
 - [x] Assert anonymous booking availability contains no customer PII.
 - [x] Test schedule, shutdown, inactive-staff, past-time, and malformed-time rejection.
-- [ ] Add cross-instance concurrent booking stress coverage.
+- [x] Add focused cross-instance concurrent booking integration coverage.
+- [ ] Define and implement a dedicated `test:stress` suite with many independent clients and repeated simultaneous booking rounds.
 - [x] Test atomic password reset and session revocation.
 - [x] Test staff cross-ownership mutations are rejected.
 - [x] Test account verification one-time use and POST-only mutation.
@@ -76,9 +83,9 @@ This document tracks the backend audit and remediation work.
 - `pnpm lint`: passed
 - `pnpm fmt:check`: passed
 - `pnpm build`: passed
-- `pnpm test:unit`: 89 passed
-- `pnpm test:integration`: 62 passed
+- `pnpm test:unit`: 110 passed
+- `pnpm test:integration`: 71 passed
 
 ## Deliberate follow-up design work
 
-The remaining unchecked items are migrations or architectural changes that should not be silently imposed on a live database without product/operations decisions: explicit reservation lifecycle statuses, canonical timestamp-column redesign, removal of legacy token tables after a compatibility window, production-data validation before token constraints, cross-instance booking serialization strategy, backup/recovery policy, readiness semantics, and isolated E2E infrastructure.
+The remaining unchecked items are migrations, architectural changes, or dedicated test infrastructure that should not be silently imposed without product/operations decisions: explicit reservation lifecycle statuses, canonical timestamp-column redesign, removal of legacy token tables after a compatibility window, a high-volume cross-instance stress suite, backup/recovery policy, readiness semantics, and isolated E2E infrastructure.

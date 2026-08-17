@@ -66,27 +66,25 @@ describe("OfferingService", () => {
       active: false,
     });
     expect(inserted.isOk()).toBe(true);
-    if (inserted.isErr()) throw new Error(`Offering insertion failed: ${inserted.error}`);
+    if (inserted.isErr()) throw new Error(`Offering insertion failed: ${inserted.error.type}`);
+    expect(inserted.value).toEqual({ affectedRows: 1 });
 
-    expect(
-      await service.update({
-        id: "haircut",
-        staffID: "staff-1",
-        name: "Premium Haircut",
-        description: "Updated description",
-        duration: 45,
-        price: 3_000,
-        active: true,
-      }),
-    ).toMatchObject({
+    const updated = await service.update({
       id: "haircut",
+      staffID: "staff-1",
       name: "Premium Haircut",
+      description: "Updated description",
       duration: 45,
       price: 3_000,
       active: true,
     });
+    expect(updated.isOk() && updated.value).toEqual({ affectedRows: 1 });
+    expect(await service.getByStaff("staff-1")).toEqual([
+      expect.objectContaining({ id: "haircut", name: "Premium Haircut", duration: 45 }),
+    ]);
 
-    expect(await service.delete("haircut", "staff-1")).toMatchObject({ id: "haircut" });
+    const deleted = await service.delete("haircut", "staff-1");
+    expect(deleted.isOk() && deleted.value).toEqual({ affectedRows: 1 });
     expect(await service.getAll(false)).toEqual([]);
   });
 
@@ -97,17 +95,17 @@ describe("OfferingService", () => {
       name: "Second Haircut",
     });
 
-    expect(
-      await service.update({
-        id: "staff-2-offering",
-        staffID: "staff-1",
-        name: "Hijacked",
-        duration: 10,
-        price: 0,
-        active: false,
-      }),
-    ).toBeNull();
-    expect(await service.delete("staff-2-offering", "staff-1")).toBeNull();
+    const updated = await service.update({
+      id: "staff-2-offering",
+      staffID: "staff-1",
+      name: "Hijacked",
+      duration: 10,
+      price: 0,
+      active: false,
+    });
+    expect(updated.isErr() && updated.error.type).toBe("forbidden");
+    const deleted = await service.delete("staff-2-offering", "staff-1");
+    expect(deleted.isErr() && deleted.error.type).toBe("forbidden");
     expect(await service.getByStaff("staff-2")).toEqual([
       expect.objectContaining({ id: "staff-2-offering", name: "Second Haircut" }),
     ]);
@@ -123,7 +121,7 @@ describe("OfferingService", () => {
       active: true,
     });
 
-    expect(result.isErr()).toBe(true);
+    expect(result.isErr() && result.error.type).toBe("storage-error");
     expect(await testDatabase.database.select().from(table.offering)).toEqual([]);
   });
 
@@ -144,7 +142,8 @@ describe("OfferingService", () => {
       position: 0,
     });
 
-    expect(await service.delete("reserved-offering", "staff-1")).toBeNull();
+    const result = await service.delete("reserved-offering", "staff-1");
+    expect(result.isErr() && result.error.type).toBe("storage-error");
     expect(await service.getAll(false)).toEqual([
       expect.objectContaining({ id: "reserved-offering" }),
     ]);

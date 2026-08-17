@@ -13,6 +13,7 @@ import { and, count, eq, isNotNull, lt } from "drizzle-orm";
 
 import { createLogger } from "../logger";
 import { Service } from "./service";
+import type { ServiceResult } from "./service-result";
 
 type InsertError = "already-existing" | "invalid-email" | "invalid-pass" | "generic";
 
@@ -42,9 +43,12 @@ export class UserService extends Service {
         return err("invalid-pass");
       }
 
-      const isPresent = await this.getByEmail(validEmail.data);
-      if (isPresent) {
+      const existingUser = await this.getByEmail(validEmail.data);
+      if (existingUser.isOk()) {
         return err("already-existing");
+      }
+      if (existingUser.error.type === "storage-error") {
+        return err("generic");
       }
 
       const passwordHash = await hash(data.password, {
@@ -76,7 +80,9 @@ export class UserService extends Service {
     }
   }
 
-  async getByEmail(email: string): Promise<User | null> {
+  async getByEmail(
+    email: string,
+  ): Promise<ServiceResult<User, { type: "not-found" } | { type: "storage-error" }>> {
     try {
       const lowercaseEmail = email.toLowerCase().trim();
       const result = await this.database
@@ -86,15 +92,17 @@ export class UserService extends Service {
         .where(eq(table.user.email, lowercaseEmail))
         .get();
 
-      if (!result) return null;
-      return toUserDomain(result.user, result.staff);
+      if (!result) return err({ type: "not-found" });
+      return ok(toUserDomain(result.user, result.staff));
     } catch (e) {
       logger.error({ err: e, email }, "getByEmail failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async getByID(id: string): Promise<User | null> {
+  async getByID(
+    id: string,
+  ): Promise<ServiceResult<User, { type: "not-found" } | { type: "storage-error" }>> {
     try {
       const result = await this.database
         .select()
@@ -104,13 +112,13 @@ export class UserService extends Service {
         .get();
 
       if (!result) {
-        return null;
+        return err({ type: "not-found" });
       }
 
-      return toUserDomain(result.user, result.staff);
-    } catch (err) {
-      logger.error({ err, userId: id }, "getByID failed");
-      return null;
+      return ok(toUserDomain(result.user, result.staff));
+    } catch (error) {
+      logger.error({ err: error, userId: id }, "getByID failed");
+      return err({ type: "storage-error" });
     }
   }
 

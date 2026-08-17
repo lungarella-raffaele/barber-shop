@@ -2,8 +2,9 @@
   import Duration from "$lib/components/app/duration.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import type { OfferingDTO, StaffDTO } from "$lib/dto";
-  import { formatDate, formatTime } from "$lib/utils";
+  import { formatMinuteOfDay, type MinuteOfDay } from "$lib/domain/minute-of-day";
+  import type { OfferingDTO, StaffSummaryDTO } from "$lib/dto";
+  import { formatDate } from "$lib/utils";
 
   let {
     isOpen = $bindable(),
@@ -11,15 +12,15 @@
     staff,
     offerings,
     date,
-    hour,
+    startMinute,
     duration,
   }: {
     isOpen: boolean;
     loading: boolean;
-    staff?: StaffDTO;
+    staff?: StaffSummaryDTO;
     offerings: OfferingDTO[];
     date: string;
-    hour: string;
+    startMinute: MinuteOfDay;
     duration: number;
   } = $props();
 </script>
@@ -45,7 +46,7 @@
         </div>
         <div class="flex items-center justify-between gap-4 px-4 py-3">
           <dt class="text-muted-foreground typo-body-sm">Orario</dt>
-          <dd class="text-right typo-label tabular-nums">{formatTime(hour)}</dd>
+          <dd class="text-right typo-label tabular-nums">{formatMinuteOfDay(startMinute)}</dd>
         </div>
         <div class="flex items-center justify-between gap-4 px-4 py-3">
           <dt class="text-muted-foreground typo-body-sm">Durata</dt>

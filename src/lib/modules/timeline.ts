@@ -35,17 +35,6 @@ export const DEFAULT_TIMELINE_CONFIG: TimelineConfig = {
   pixelsPerMinute: 1,
 };
 
-export function parseTimeToMinute(value: string): number {
-  const match = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(value);
-  if (!match) throw new Error(`Invalid time: ${value}`);
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (hours > 23 || minutes > 59) throw new Error(`Invalid time: ${value}`);
-
-  return hours * 60 + minutes;
-}
-
 export function formatMinute(minute: number): string {
   const clamped = Math.min(Math.max(Math.round(minute), 0), 24 * 60 - 1);
   return `${String(Math.floor(clamped / 60)).padStart(2, "0")}:${String(clamped % 60).padStart(2, "0")}`;
@@ -107,8 +96,8 @@ export function layoutReservations(
 ): TimelineReservationLayout[] {
   const scale = createTimelineScale(config);
   const visible = reservations
-    .map((reservation) => {
-      const startMinute = parseTimeToMinute(reservation.hour);
+    .map<TimelineReservationLayout | null>((reservation) => {
+      const startMinute = reservation.startMinute;
       const duration = reservation.offerings.reduce(
         (total, offering) => total + offering.duration,
         0,

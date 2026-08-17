@@ -26,8 +26,10 @@ describe("StaffService", () => {
   it("lists only active staff", async () => {
     expect(await service.getAll()).toEqual([]);
 
-    expect(await service.toggleActive(true, "missing-staff")).toBe(false);
-    expect(await service.toggleActive(true, "staff-1")).toBe(true);
+    const missing = await service.toggleActive(true, "missing-staff");
+    expect(missing.isErr() && missing.error.type).toBe("not-found");
+    const activated = await service.toggleActive(true, "staff-1");
+    expect(activated.isOk() && activated.value).toEqual({ affectedRows: 1 });
 
     expect(await service.getAll()).toEqual([
       {
@@ -55,7 +57,8 @@ describe("StaffService", () => {
       avatarDisplayScale: 1.25,
     });
 
-    expect(await service.deleteAvatar("staff-1")).toBe(true);
+    const deleted = await service.deleteAvatar("staff-1");
+    expect(deleted.isOk() && deleted.value).toEqual({ affectedRows: 1 });
     expect(await service.getByUserID("staff-1")).toMatchObject({
       avatar: null,
       avatarOriginal: null,
@@ -63,7 +66,8 @@ describe("StaffService", () => {
       avatarOffsetY: null,
       avatarDisplayScale: null,
     });
-    expect(await service.deleteAvatar("missing-staff")).toBe(false);
+    const missing = await service.deleteAvatar("missing-staff");
+    expect(missing.isErr() && missing.error.type).toBe("not-found");
   });
 
   it("rejects invalid avatar data without changing the staff row", async () => {

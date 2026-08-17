@@ -69,19 +69,23 @@ describe("UserService", () => {
     });
     await seedStaff(testDatabase.database);
 
-    expect(await service.getByID("customer-1")).toMatchObject({
+    const customerByID = await service.getByID("customer-1");
+    expect(customerByID.isOk() && customerByID.value).toMatchObject({
       role: "customer",
       account: { id: "customer-1" },
     });
-    expect(await service.getByEmail(" CUSTOMER@EXAMPLE.COM ")).toMatchObject({
+    const customerByEmail = await service.getByEmail(" CUSTOMER@EXAMPLE.COM ");
+    expect(customerByEmail.isOk() && customerByEmail.value).toMatchObject({
       role: "customer",
       account: { id: "customer-1" },
     });
-    expect(await service.getByID("staff-1")).toMatchObject({
+    const staffByID = await service.getByID("staff-1");
+    expect(staffByID.isOk() && staffByID.value).toMatchObject({
       role: "staff",
       account: { id: "staff-1" },
     });
-    expect(await service.getByEmail("barber@example.com")).toMatchObject({
+    const staffByEmail = await service.getByEmail("barber@example.com");
+    expect(staffByEmail.isOk() && staffByEmail.value).toMatchObject({
       role: "staff",
       account: { id: "staff-1" },
     });
@@ -101,7 +105,8 @@ describe("UserService", () => {
       phoneNumber: "555123",
     });
     expect(await service.updateInfo("user-1", "  Profile Name  ", "  123  ")).toBe(true);
-    expect(await service.getByID("user-1")).toMatchObject({
+    const updatedUser = await service.getByID("user-1");
+    expect(updatedUser.isOk() && updatedUser.value).toMatchObject({
       account: { name: "Profile Name", phoneNumber: "123" },
     });
     expect(await service.updateInfo("user-1", "   ", "456")).toBe(false);
@@ -142,8 +147,20 @@ describe("UserService", () => {
     expect(await service.countExpired()).toBe(1);
     await service.deleteAllExpired();
 
-    expect(await service.getByID("expired")).toBeNull();
-    expect(await service.getByID("future")).not.toBeNull();
-    expect(await service.getByID("verified")).not.toBeNull();
+    const expired = await service.getByID("expired");
+    const future = await service.getByID("future");
+    const verified = await service.getByID("verified");
+    expect(expired.isErr() && expired.error).toEqual({ type: "not-found" });
+    expect(future.isOk()).toBe(true);
+    expect(verified.isOk()).toBe(true);
+  });
+
+  it("distinguishes missing users from storage failures", async () => {
+    const missing = await service.getByEmail("missing@example.com");
+    expect(missing.isErr() && missing.error).toEqual({ type: "not-found" });
+
+    await testDatabase.cleanup();
+    const unavailable = await service.getByID("user-1");
+    expect(unavailable.isErr() && unavailable.error).toEqual({ type: "storage-error" });
   });
 });

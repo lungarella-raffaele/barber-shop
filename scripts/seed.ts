@@ -1,7 +1,7 @@
 import { createClient } from "@libsql/client";
 import { hash } from "argon2";
 import { config } from "dotenv";
-import { eq } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 
 import * as table from "../src/lib/server/db/schema";
@@ -19,6 +19,31 @@ const client = createClient({ url, authToken });
 const db = drizzle(client);
 
 const DEFAULT_PASSWORD = "Password123";
+const SEED_SLOT_DURATION_MINUTES = 15;
+
+function reservationSlotData(hour: string, durationMinutes: number) {
+  const [hours, minutes] = hour.split(":").map(Number);
+  const startMinute = hours * 60 + minutes;
+  const slotStart = startMinute / SEED_SLOT_DURATION_MINUTES;
+  const slotCount = Math.ceil(durationMinutes / SEED_SLOT_DURATION_MINUTES);
+  if (!Number.isInteger(slotStart)) throw new Error(`Seed hour ${hour} is not slot-aligned`);
+
+  let occupancyBitsLow = 0n;
+  let occupancyBitsHigh = 0n;
+  for (let slot = slotStart; slot < slotStart + slotCount; slot++) {
+    if (slot < 48) occupancyBitsLow |= 1n << BigInt(slot);
+    else occupancyBitsHigh |= 1n << BigInt(slot - 48);
+  }
+
+  return {
+    startMinute,
+    slotDurationMinutes: SEED_SLOT_DURATION_MINUTES,
+    slotStart,
+    slotCount,
+    occupancyBitsLow: Number(occupancyBitsLow),
+    occupancyBitsHigh: Number(occupancyBitsHigh),
+  };
+}
 
 const staffUsers = [
   {
@@ -53,7 +78,7 @@ const pendingUsers = [
   },
 ];
 
-const services = [
+const offerings = [
   {
     id: "seed-offering-taglio-base-uomo",
     staffID: "seed-staff-emilia",
@@ -243,120 +268,120 @@ const reservations = [
   {
     id: "seed-reservation-elena",
     date: getDateFromToday(2),
-    hour: "09:30",
+    hour: "10:15",
     phoneNumber: "+39 320 101 2202",
     offeringIDs: ["seed-offering-taglio-bambino"],
     name: "Elena Bianchi",
     email: "elena.bianchi@example.com",
-    expiresAt: getDateTimeFromToday(2, 9, 30),
+    expiresAt: getDateTimeFromToday(2, 10, 15),
     pending: false,
     staffID: "seed-staff-emilia",
   },
   {
     id: "seed-reservation-luca",
     date: getDateFromToday(2),
-    hour: "10:00",
+    hour: "10:45",
     phoneNumber: "+39 320 777 8899",
     offeringIDs: ["seed-offering-taglio-base-uomo"],
     name: "Luca Verdi",
     email: "luca@example.com",
-    expiresAt: getDateTimeFromToday(2, 10, 0),
+    expiresAt: getDateTimeFromToday(2, 10, 45),
     pending: false,
     staffID: "seed-staff-emilia",
   },
   {
     id: "seed-reservation-davide",
     date: getDateFromToday(2),
-    hour: "10:45",
+    hour: "11:30",
     phoneNumber: "+39 320 101 2203",
     offeringIDs: ["seed-offering-taglio-scolpitura-barba"],
     name: "Davide Romano",
     email: "davide.romano@example.com",
-    expiresAt: getDateTimeFromToday(2, 10, 45),
+    expiresAt: getDateTimeFromToday(2, 11, 30),
     pending: true,
     staffID: "seed-staff-emilia",
   },
   {
     id: "seed-reservation-chiara",
     date: getDateFromToday(2),
-    hour: "11:45",
+    hour: "12:15",
     phoneNumber: "+39 320 101 2204",
     offeringIDs: ["seed-offering-taglio-donna-piega", "seed-offering-tonalizzante-piega"],
     name: "Chiara Fontana",
     email: "chiara.fontana@example.com",
-    expiresAt: getDateTimeFromToday(2, 11, 45),
+    expiresAt: getDateTimeFromToday(2, 12, 15),
     pending: false,
     staffID: "seed-staff-emilia",
   },
   {
     id: "seed-reservation-simone",
     date: getDateFromToday(2),
-    hour: "13:15",
+    hour: "15:00",
     phoneNumber: "+39 320 101 2205",
     offeringIDs: ["seed-offering-taglio-base-uomo"],
     name: "Simone Greco",
     email: "simone.greco@example.com",
-    expiresAt: getDateTimeFromToday(2, 13, 15),
+    expiresAt: getDateTimeFromToday(2, 15, 0),
     pending: false,
     staffID: "seed-staff-emilia",
   },
   {
     id: "seed-reservation-martina",
     date: getDateFromToday(2),
-    hour: "14:00",
+    hour: "15:45",
     phoneNumber: "+39 320 101 2206",
     offeringIDs: ["seed-offering-colore-base-piega"],
     name: "Martina Costa",
     email: "martina.costa@example.com",
-    expiresAt: getDateTimeFromToday(2, 14, 0),
+    expiresAt: getDateTimeFromToday(2, 15, 45),
     pending: false,
     staffID: "seed-staff-emilia",
   },
   {
     id: "seed-reservation-alessio",
     date: getDateFromToday(2),
-    hour: "15:30",
+    hour: "17:15",
     phoneNumber: "+39 320 101 2207",
     offeringIDs: ["seed-offering-taglio-base-uomo"],
     name: "Alessio Moretti",
     email: "alessio.moretti@example.com",
-    expiresAt: getDateTimeFromToday(2, 15, 30),
+    expiresAt: getDateTimeFromToday(2, 17, 15),
     pending: true,
     staffID: "seed-staff-emilia",
   },
   {
     id: "seed-reservation-sara",
-    date: getDateFromToday(2),
-    hour: "16:15",
+    date: getDateFromToday(3),
+    hour: "09:00",
     phoneNumber: "+39 320 101 2208",
     offeringIDs: ["seed-offering-solo-sfumatura"],
     name: "Sara De Luca",
     email: "sara.deluca@example.com",
-    expiresAt: getDateTimeFromToday(2, 16, 15),
+    expiresAt: getDateTimeFromToday(3, 9, 0),
     pending: false,
     staffID: "seed-staff-emilia",
   },
   {
     id: "seed-reservation-federico",
-    date: getDateFromToday(2),
-    hour: "16:45",
+    date: getDateFromToday(3),
+    hour: "09:30",
     phoneNumber: "+39 320 101 2209",
     offeringIDs: ["seed-offering-taglio-scolpitura-barba"],
     name: "Federico Leone",
     email: "federico.leone@example.com",
-    expiresAt: getDateTimeFromToday(2, 16, 45),
+    expiresAt: getDateTimeFromToday(3, 9, 30),
     pending: false,
     staffID: "seed-staff-emilia",
   },
   {
     id: "seed-reservation-gabriele",
-    date: getDateFromToday(2),
-    hour: "17:30",
+    date: getDateFromToday(3),
+    hour: "10:15",
     phoneNumber: "+39 320 101 2210",
     offeringIDs: ["seed-offering-taglio-bambino"],
     name: "Gabriele Sala",
     email: "gabriele.sala@example.com",
-    expiresAt: getDateTimeFromToday(2, 17, 30),
+    expiresAt: getDateTimeFromToday(3, 10, 15),
     pending: true,
     staffID: "seed-staff-emilia",
   },
@@ -384,10 +409,7 @@ const reservations = [
     pending: true,
     staffID: "seed-staff-emilia",
   },
-].map((reservation) => ({
-  ...reservation,
-  date: getDateFromToday(0),
-}));
+];
 
 async function main() {
   console.info("Seeding database...");
@@ -457,7 +479,7 @@ async function main() {
       });
   }
 
-  for (const service of services) {
+  for (const service of offerings) {
     await db
       .insert(table.offering)
       .values(service)
@@ -504,26 +526,44 @@ async function main() {
       },
     });
 
+  const reservationIDs = reservations.map(({ id }) => id);
+  await db.delete(table.reservation).where(inArray(table.reservation.id, reservationIDs));
+
   for (const reservation of reservations) {
     const { offeringIDs, ...reservationData } = reservation;
+    const durationMinutes = offeringIDs.reduce((total, offeringID) => {
+      const offering = offerings.find(({ id }) => id === offeringID);
+      if (!offering) throw new Error(`Unknown seed offering ${offeringID}`);
+      return total + offering.duration;
+    }, 0);
+    const slotData = reservationSlotData(reservation.hour, durationMinutes);
 
     await db.transaction(async (tx) => {
-      await tx
-        .insert(table.reservation)
-        .values(reservationData)
-        .onConflictDoUpdate({
-          target: table.reservation.id,
-          set: {
-            date: reservation.date,
-            hour: reservation.hour,
-            phoneNumber: reservation.phoneNumber,
-            name: reservation.name,
-            email: reservation.email,
-            expiresAt: reservation.expiresAt,
-            pending: reservation.pending,
+      if (reservation.expiresAt.getTime() > Date.now()) {
+        await tx
+          .insert(table.reservationDayOccupancy)
+          .values({
             staffID: reservation.staffID,
-          },
-        });
+            date: reservation.date,
+            slotDurationMinutes: slotData.slotDurationMinutes,
+          })
+          .onConflictDoNothing();
+        const claimed = await tx.all(sql`
+          UPDATE reservation_day_occupancy
+          SET
+            bits_low = bits_low | ${slotData.occupancyBitsLow},
+            bits_high = bits_high | ${slotData.occupancyBitsHigh},
+            updated_at = unixepoch()
+          WHERE staff_id = ${reservation.staffID}
+            AND date = ${reservation.date}
+            AND (bits_low & ${slotData.occupancyBitsLow}) = 0
+            AND (bits_high & ${slotData.occupancyBitsHigh}) = 0
+          RETURNING staff_id
+        `);
+        if (claimed.length !== 1) throw new Error(`Seed reservation ${reservation.id} overlaps`);
+      }
+
+      await tx.insert(table.reservation).values({ ...reservationData, ...slotData });
 
       await tx
         .delete(table.reservationOffering)

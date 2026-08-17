@@ -6,6 +6,7 @@ import * as table from "$lib/server/db/schema";
 
 import { createLogger } from "../logger";
 import { Service } from "./service";
+import type { AffectedRows, ServiceResult } from "./service-result";
 
 const logger = createLogger("BannerService");
 
@@ -23,27 +24,26 @@ export class BannerService extends Service {
     }
   }
 
-  async update(message: string, visible: boolean) {
+  async update(message: string, visible: boolean): Promise<ServiceResult<AffectedRows>> {
     const parsed = bannerSchema.safeParse({ message, visible });
     if (!parsed.success) {
       logger.error({ err: parsed.error }, "update failed: invalid data");
-      return err("Invalid banner data");
+      return err({ type: "invalid-input" });
     }
 
     try {
-      const result = await this.database
+      const updated = await this.database
         .insert(table.banner)
         .values({ message: parsed.data.message, visible: parsed.data.visible })
         .onConflictDoUpdate({
           target: table.banner.id,
           set: { message: parsed.data.message, visible: parsed.data.visible },
         })
-        .returning()
-        .get();
-      return ok(result);
+        .returning({ id: table.banner.id });
+      return ok({ affectedRows: updated.length });
     } catch (e) {
       logger.error({ err: e }, "update failed");
-      return err("Could not update banner");
+      return err({ type: "storage-error" });
     }
   }
 }

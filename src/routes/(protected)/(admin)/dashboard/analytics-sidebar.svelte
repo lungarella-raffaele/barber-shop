@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatMinuteOfDay } from "$lib/domain/minute-of-day";
   import type { ReservationDTO } from "$lib/dto";
   import { cn, formatDuration } from "$lib/utils";
   import BarChart3 from "@lucide/svelte/icons/chart-no-axes-column-increasing";
@@ -20,9 +21,10 @@
       0,
     ),
   );
-  const firstArrival = $derived(
-    [...reservations].sort((a, b) => a.hour.localeCompare(b.hour))[0]?.hour.slice(0, 5),
-  );
+  const firstArrival = $derived.by(() => {
+    const first = [...reservations].sort((a, b) => a.startMinute - b.startMinute)[0];
+    return first ? formatMinuteOfDay(first.startMinute) : undefined;
+  });
 </script>
 
 <aside

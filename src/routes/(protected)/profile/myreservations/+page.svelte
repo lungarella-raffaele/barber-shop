@@ -16,6 +16,7 @@
   import * as Dialog from "$lib/components/ui/dialog/index";
   import { Input } from "$lib/components/ui/input/index";
   import * as Table from "$lib/components/ui/table/index";
+  import { formatMinuteOfDay } from "$lib/domain/minute-of-day";
   import type { ReservationDTO } from "$lib/dto";
   import { cn, formatDate } from "$lib/utils";
   import { ArrowDown, ArrowUp } from "@lucide/svelte";
@@ -63,8 +64,8 @@
             reservation.date,
             safeFormatDate(reservation.date),
             formatShortDate(reservation.date),
-            displayTime(reservation.hour),
-            reservation.hour,
+            formatMinuteOfDay(reservation.startMinute),
+            String(reservation.startMinute),
             ...reservation.offerings.map((offering) => offering.name),
             reservation.staff?.name,
           ]
@@ -120,15 +121,10 @@
     return date;
   }
 
-  function displayTime(hour: string) {
-    const parts = hour.split(":");
-    return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : hour;
-  }
-
   function compareReservations(a: ReservationDTO, b: ReservationDTO, key: SortKey) {
     if (key === "date") {
       const byDate = a.date.localeCompare(b.date);
-      return byDate !== 0 ? byDate : displayTime(a.hour).localeCompare(displayTime(b.hour));
+      return byDate !== 0 ? byDate : a.startMinute - b.startMinute;
     }
 
     if (key === "offering") {
@@ -365,7 +361,7 @@
                 {safeFormatDate(reservation.date)}
               </div>
               <div class="typo-caption text-muted-foreground">
-                {displayTime(reservation.hour)}
+                {formatMinuteOfDay(reservation.startMinute)}
               </div>
             </Table.Cell>
             <Table.Cell

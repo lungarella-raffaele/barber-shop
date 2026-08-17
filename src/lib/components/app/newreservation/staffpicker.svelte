@@ -2,7 +2,7 @@
   import * as Avatar from "$lib/components/ui/avatar";
   import { Skeleton } from "$lib/components/ui/skeleton";
   import * as ToggleGroup from "$lib/components/ui/toggle-group";
-  import type { StaffDTO } from "$lib/dto";
+  import type { StaffSummaryDTO } from "$lib/dto";
   import { cn } from "$lib/utils";
 
   type Orientation = "horizontal" | "vertical";
@@ -13,7 +13,7 @@
     class: className,
     onStaffChange,
   }: {
-    staff: StaffDTO[] | Promise<StaffDTO[] | null> | null;
+    staff: StaffSummaryDTO[] | Promise<StaffSummaryDTO[] | null> | null;
     value: string;
     class?: string;
     orientation?: Orientation;

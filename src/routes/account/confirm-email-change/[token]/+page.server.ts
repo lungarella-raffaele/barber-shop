@@ -1,4 +1,5 @@
 import { PublicTokenService } from "@service/public-token.service";
+import { error } from "@sveltejs/kit";
 
 import type { Actions, PageServerLoad } from "./$types";
 
@@ -9,14 +10,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
   const token = await PublicTokenService.get().inspect(params.token, "email_change");
 
+  if (token.status === "error") return error(503);
   if (token.status !== "valid") {
     return {
       status:
         token.status === "expired" || token.status === "consumed"
           ? ("expired" as const)
-          : token.status === "error"
-            ? ("error" as const)
-            : ("invalid" as const),
+          : ("invalid" as const),
     };
   }
 
@@ -34,14 +34,13 @@ export const actions: Actions = {
 
     const tokenService = PublicTokenService.get();
     const token = await tokenService.inspect(params.token, "email_change");
+    if (token.status === "error") return error(503);
     if (token.status !== "valid") {
       return {
         status:
           token.status === "expired" || token.status === "consumed"
             ? ("expired" as const)
-            : token.status === "error"
-              ? ("error" as const)
-              : ("invalid" as const),
+            : ("invalid" as const),
       };
     }
     if (token.token.userID !== locals.user.account.id) {
@@ -53,10 +52,11 @@ export const actions: Actions = {
       locals.user.account.id,
       locals.session.id,
     );
-    if (!updatedUser) {
-      return { status: "error" as const };
+    if (updatedUser.isErr()) {
+      if (updatedUser.error.type === "storage-error") return error(503);
+      return { status: "expired" as const };
     }
 
-    return { status: "confirmed" as const, email: updatedUser.email };
+    return { status: "confirmed" as const, email: updatedUser.value.email };
   },
 };

@@ -10,17 +10,12 @@
   import { Button } from "$lib/components/ui/button/index";
   import * as Form from "$lib/components/ui/form";
   import { Input } from "$lib/components/ui/input";
+  import { createMinuteOfDay, parseMinuteOfDay } from "$lib/domain/minute-of-day";
   import type { CreatedReservationDTO } from "$lib/dto";
   import { findFirstAvailableDate } from "$lib/modules/find-first-available-date";
   import { getSlots } from "$lib/modules/get-slots";
   import { minutesToTime } from "$lib/utils";
-  import {
-    getLocalTimeZone,
-    parseDate,
-    parseTime,
-    today,
-    type CalendarDate,
-  } from "@internationalized/date";
+  import { getLocalTimeZone, parseDate, today, type CalendarDate } from "@internationalized/date";
   import { bookSchema, offeringsFieldSchema } from "@schema";
   import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
@@ -94,10 +89,9 @@
       data.currentReservations
         .filter((entry) => entry.staff.id === $formData.staff)
         .filter((entry) => entry.date === dateValue)
-        .filter((entry) => entry.hour)
         .map((entry) => ({
           date: parseDate(entry.date),
-          start: parseTime(entry.hour),
+          startMinute: entry.startMinute,
           duration: minutesToTime(
             entry.offerings.reduce((total, offering) => total + offering.duration, 0),
           ),
@@ -126,9 +120,9 @@
     if (result.valid) isDialogOpen = true;
   };
 
-  function clearDateAndHour() {
+  function clearDateAndStartMinute() {
     $formData.date = "";
-    $formData.hour = "";
+    $formData.startMinute = createMinuteOfDay(0);
   }
 
   function handleStaffChange(value: string) {
@@ -137,7 +131,7 @@
     $formData.staff = value;
     selectedOfferingIds = [];
     $formData.offerings = [];
-    clearDateAndHour();
+    clearDateAndStartMinute();
     void validate("staff");
   }
 
@@ -146,7 +140,7 @@
 
     selectedOfferingIds = value;
     $formData.offerings = value;
-    clearDateAndHour();
+    clearDateAndStartMinute();
 
     const result = offeringsFieldSchema.safeParse(value);
     $errors.offerings = result.success
@@ -159,9 +153,9 @@
     void validate("date");
   }
 
-  function handleHourChange(value: string) {
-    $formData.hour = value;
-    void validate("hour");
+  function handleStartMinuteChange(value: string) {
+    $formData.startMinute = parseMinuteOfDay(value) ?? createMinuteOfDay(0);
+    void validate("startMinute");
   }
 </script>
 
@@ -180,7 +174,7 @@
   staff={selectedStaff}
   offerings={selectedOfferings}
   date={$formData.date}
-  hour={$formData.hour}
+  startMinute={createMinuteOfDay($formData.startMinute ?? 0)}
   duration={selectedOfferingDuration}
 />
 <div class="mx-auto w-full max-w-xl">
@@ -321,7 +315,7 @@
                   shutdown={data.shutdown}
                   staffID={$formData.staff}
                   {firstAvailableDate}
-                  onHourReset={() => ($formData.hour = "")}
+                  onHourReset={() => ($formData.startMinute = createMinuteOfDay(0))}
                   onDateChange={handleDateChange}
                 />
               {/snippet}
@@ -346,15 +340,15 @@
           class="transition-opacity duration-300"
           class:opacity-35={!$formData.date}
         >
-          <Form.Field form={sForm} name="hour">
+          <Form.Field form={sForm} name="startMinute">
             <Form.Control>
               {#snippet children({ props })}
-                <input type="hidden" name={props.name} value={$formData.hour} />
+                <input type="hidden" name={props.name} value={$formData.startMinute ?? ""} />
                 <SlotPicker
                   {availableSlots}
                   date={$formData.date}
-                  bind:value={$formData.hour}
-                  onHourChange={handleHourChange}
+                  value={$formData.startMinute === undefined ? "" : String($formData.startMinute)}
+                  onStartMinuteChange={handleStartMinuteChange}
                 />
               {/snippet}
             </Form.Control>

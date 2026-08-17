@@ -1,3 +1,4 @@
+import { ok } from "$lib/modules/result";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const tokenService = vi.hoisted(() => ({
@@ -55,7 +56,7 @@ describe("email change confirmation route", () => {
       status: "valid",
       token: { userID: "user-1" },
     });
-    tokenService.confirmEmailChange.mockResolvedValue({ email: "nuova@example.com" });
+    tokenService.confirmEmailChange.mockResolvedValue(ok({ email: "nuova@example.com" }));
 
     await expect(actions.default(event as unknown as ActionEvent)).resolves.toEqual({
       status: "confirmed",

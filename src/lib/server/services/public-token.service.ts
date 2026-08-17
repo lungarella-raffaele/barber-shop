@@ -9,6 +9,7 @@ import { and, eq, gt, isNull, lt, sql } from "drizzle-orm";
 
 import { reservationExpiresAt } from "./reservation.service";
 import { Service } from "./service";
+import type { AffectedRows, ServiceResult } from "./service-result";
 
 const logger = createLogger("PublicTokenService");
 
@@ -22,13 +23,74 @@ export const publicTokenPurposes = [
 
 export type PublicTokenPurpose = (typeof publicTokenPurposes)[number];
 
-type IssueToken = {
-  purpose: PublicTokenPurpose;
-  userID?: string;
-  reservationID?: string;
-  pendingEmail?: string;
-  expiresAt: Date;
-};
+type UserTokenPurpose = "account_verification" | "password_reset";
+type ReservationTokenPurpose = "reservation_access" | "reservation_confirmation";
+
+export type IssuePublicTokenInput =
+  | {
+      purpose: UserTokenPurpose;
+      userID: string;
+      reservationID?: never;
+      pendingEmail?: never;
+      expiresAt: Date;
+    }
+  | {
+      purpose: "email_change";
+      userID: string;
+      pendingEmail: string;
+      reservationID?: never;
+      expiresAt: Date;
+    }
+  | {
+      purpose: ReservationTokenPurpose;
+      reservationID: string;
+      userID?: never;
+      pendingEmail?: never;
+      expiresAt: Date;
+    };
+
+export type IssuePublicTokenError = "invalid-input" | "storage-error";
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+export function isIssuePublicTokenInput(input: unknown): input is IssuePublicTokenInput {
+  if (!input || typeof input !== "object") return false;
+
+  const candidate = input as Record<string, unknown>;
+  if (!(candidate.expiresAt instanceof Date) || !Number.isFinite(candidate.expiresAt.getTime())) {
+    return false;
+  }
+
+  switch (candidate.purpose) {
+    case "account_verification":
+    case "password_reset":
+      return (
+        isNonEmptyString(candidate.userID) &&
+        candidate.reservationID === undefined &&
+        candidate.pendingEmail === undefined
+      );
+    case "email_change":
+      return (
+        isNonEmptyString(candidate.userID) &&
+        isNonEmptyString(candidate.pendingEmail) &&
+        candidate.reservationID === undefined
+      );
+    case "reservation_access":
+    case "reservation_confirmation":
+      return (
+        isNonEmptyString(candidate.reservationID) &&
+        candidate.userID === undefined &&
+        candidate.pendingEmail === undefined
+      );
+    default:
+      return false;
+  }
+}
+
+type PublicTokenOperationError = { type: "invalid-input" } | { type: "storage-error" };
+type PublicTokenStorageError = { type: "storage-error" };
 
 type TokenStatus =
   | { status: "valid"; token: table.PublicTokenRow }
@@ -59,7 +121,15 @@ export class PublicTokenService extends Service {
     super();
   }
 
-  async issue(input: IssueToken): Promise<Result<string, "storage-error">> {
+  async issue(input: IssuePublicTokenInput): Promise<Result<string, IssuePublicTokenError>> {
+    if (!isIssuePublicTokenInput(input)) {
+      logger.warn(
+        { purpose: (input as { purpose?: unknown })?.purpose },
+        "issue rejected structurally invalid input",
+      );
+      return err("invalid-input");
+    }
+
     const rawToken = generatePublicToken(input.purpose);
     const tokenHash = hashPublicToken(rawToken);
 
@@ -117,7 +187,10 @@ export class PublicTokenService extends Service {
     }
   }
 
-  async consume(rawToken: string, purpose: PublicTokenPurpose) {
+  async consume(
+    rawToken: string,
+    purpose: PublicTokenPurpose,
+  ): Promise<ServiceResult<AffectedRows, PublicTokenOperationError>> {
     const tokenHash = hashPublicToken(rawToken);
 
     try {
@@ -132,136 +205,156 @@ export class PublicTokenService extends Service {
             gt(table.publicToken.expiresAt, new Date()),
           ),
         )
-        .returning({ tokenHash: table.publicToken.tokenHash })
-        .get();
+        .returning({ tokenHash: table.publicToken.tokenHash });
 
-      return Boolean(consumed);
+      if (consumed.length === 0) return err({ type: "invalid-input" });
+      return ok({ affectedRows: consumed.length });
     } catch (error) {
       logger.error({ err: error, tokenHash, purpose }, "consume failed");
-      return false;
+      return err({ type: "storage-error" });
     }
   }
 
-  async verifyAccount(rawToken: string) {
+  async verifyAccount(
+    rawToken: string,
+  ): Promise<ServiceResult<table.UserRow, PublicTokenOperationError>> {
     const tokenHash = hashPublicToken(rawToken);
 
     try {
-      return await this.database.transaction(async (tx) => {
-        const token = await tx
-          .update(table.publicToken)
-          .set({ consumedAt: new Date() })
-          .where(
-            and(
-              eq(table.publicToken.tokenHash, tokenHash),
-              eq(table.publicToken.purpose, "account_verification"),
-              isNull(table.publicToken.consumedAt),
-              gt(table.publicToken.expiresAt, new Date()),
-            ),
-          )
-          .returning({ userID: table.publicToken.userID })
-          .get();
+      return await this.database
+        .transaction(async (tx) => {
+          const token = await tx
+            .update(table.publicToken)
+            .set({ consumedAt: new Date() })
+            .where(
+              and(
+                eq(table.publicToken.tokenHash, tokenHash),
+                eq(table.publicToken.purpose, "account_verification"),
+                isNull(table.publicToken.consumedAt),
+                gt(table.publicToken.expiresAt, new Date()),
+              ),
+            )
+            .returning({ userID: table.publicToken.userID })
+            .get();
 
-        if (!token?.userID) return null;
+          if (!token?.userID) return null;
 
-        const user = await tx
-          .update(table.user)
-          .set({ verifiedEmail: true, expiresAt: null })
-          .where(and(eq(table.user.id, token.userID), eq(table.user.verifiedEmail, false)))
-          .returning()
-          .get();
+          const user = await tx
+            .update(table.user)
+            .set({ verifiedEmail: true, expiresAt: null })
+            .where(and(eq(table.user.id, token.userID), eq(table.user.verifiedEmail, false)))
+            .returning()
+            .get();
 
-        if (!user) throw new Error("Account is missing or already verified");
-        return user;
-      });
+          if (!user) throw new Error("Account is missing or already verified");
+          return user;
+        })
+        .then((user) => (user ? ok(user) : err({ type: "invalid-input" })));
     } catch (error) {
       logger.error({ err: error, tokenHash }, "verifyAccount failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async confirmEmailChange(rawToken: string, userID: string, currentSessionID: string) {
+  async confirmEmailChange(
+    rawToken: string,
+    userID: string,
+    currentSessionID: string,
+  ): Promise<ServiceResult<table.UserRow, PublicTokenOperationError>> {
     const tokenHash = hashPublicToken(rawToken);
 
     try {
-      return await this.database.transaction(async (tx) => {
-        const token = await tx
-          .update(table.publicToken)
-          .set({ consumedAt: new Date() })
-          .where(
-            and(
-              eq(table.publicToken.tokenHash, tokenHash),
-              eq(table.publicToken.purpose, "email_change"),
-              eq(table.publicToken.userID, userID),
-              isNull(table.publicToken.consumedAt),
-              gt(table.publicToken.expiresAt, new Date()),
-            ),
-          )
-          .returning({ pendingEmail: table.publicToken.pendingEmail })
-          .get();
+      return await this.database
+        .transaction(async (tx) => {
+          const token = await tx
+            .update(table.publicToken)
+            .set({ consumedAt: new Date() })
+            .where(
+              and(
+                eq(table.publicToken.tokenHash, tokenHash),
+                eq(table.publicToken.purpose, "email_change"),
+                eq(table.publicToken.userID, userID),
+                isNull(table.publicToken.consumedAt),
+                gt(table.publicToken.expiresAt, new Date()),
+              ),
+            )
+            .returning({ pendingEmail: table.publicToken.pendingEmail })
+            .get();
 
-        if (!token?.pendingEmail) return null;
+          if (!token?.pendingEmail) return null;
 
-        const user = await tx
-          .update(table.user)
-          .set({ email: token.pendingEmail.toLowerCase().trim() })
-          .where(eq(table.user.id, userID))
-          .returning()
-          .get();
+          const user = await tx
+            .update(table.user)
+            .set({ email: token.pendingEmail.toLowerCase().trim() })
+            .where(eq(table.user.id, userID))
+            .returning()
+            .get();
 
-        if (!user) throw new Error("Account is missing");
+          if (!user) throw new Error("Account is missing");
 
-        await tx
-          .delete(table.session)
-          .where(
-            and(eq(table.session.userID, userID), sql`${table.session.id} != ${currentSessionID}`),
-          );
-        return user;
-      });
+          await tx
+            .delete(table.session)
+            .where(
+              and(
+                eq(table.session.userID, userID),
+                sql`${table.session.id} != ${currentSessionID}`,
+              ),
+            );
+          return user;
+        })
+        .then((user) => (user ? ok(user) : err({ type: "invalid-input" })));
     } catch (error) {
       logger.error({ err: error, tokenHash, userId: userID }, "confirmEmailChange failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async resetPassword(rawToken: string, passwordHash: string) {
+  async resetPassword(
+    rawToken: string,
+    passwordHash: string,
+  ): Promise<ServiceResult<string, PublicTokenOperationError>> {
     const tokenHash = hashPublicToken(rawToken);
 
     try {
-      return await this.database.transaction(async (tx) => {
-        const token = await tx
-          .update(table.publicToken)
-          .set({ consumedAt: new Date() })
-          .where(
-            and(
-              eq(table.publicToken.tokenHash, tokenHash),
-              eq(table.publicToken.purpose, "password_reset"),
-              isNull(table.publicToken.consumedAt),
-              gt(table.publicToken.expiresAt, new Date()),
-            ),
-          )
-          .returning({ userID: table.publicToken.userID })
-          .get();
+      return await this.database
+        .transaction(async (tx) => {
+          const token = await tx
+            .update(table.publicToken)
+            .set({ consumedAt: new Date() })
+            .where(
+              and(
+                eq(table.publicToken.tokenHash, tokenHash),
+                eq(table.publicToken.purpose, "password_reset"),
+                isNull(table.publicToken.consumedAt),
+                gt(table.publicToken.expiresAt, new Date()),
+              ),
+            )
+            .returning({ userID: table.publicToken.userID })
+            .get();
 
-        if (!token?.userID) return null;
+          if (!token?.userID) return null;
 
-        const user = await tx
-          .update(table.user)
-          .set({ passwordHash })
-          .where(eq(table.user.id, token.userID))
-          .returning({ id: table.user.id })
-          .get();
+          const user = await tx
+            .update(table.user)
+            .set({ passwordHash })
+            .where(eq(table.user.id, token.userID))
+            .returning({ id: table.user.id })
+            .get();
 
-        if (!user) throw new Error("Account is missing");
-        await tx.delete(table.session).where(eq(table.session.userID, user.id));
-        return user.id;
-      });
+          if (!user) throw new Error("Account is missing");
+          await tx.delete(table.session).where(eq(table.session.userID, user.id));
+          return user.id;
+        })
+        .then((userID) => (userID ? ok(userID) : err({ type: "invalid-input" })));
     } catch (error) {
       logger.error({ err: error, tokenHash }, "resetPassword failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async confirmReservation(rawToken: string) {
+  async confirmReservation(
+    rawToken: string,
+  ): Promise<ServiceResult<string, PublicTokenOperationError>> {
     const tokenHash = hashPublicToken(rawToken);
 
     try {
@@ -308,43 +401,57 @@ export class PublicTokenService extends Service {
         return reservation.id;
       });
 
-      return reservationID;
+      return reservationID ? ok(reservationID) : err({ type: "invalid-input" });
     } catch (error) {
       logger.error({ err: error, tokenHash }, "confirmReservation failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async revoke(rawToken: string, purpose: PublicTokenPurpose) {
+  async revoke(
+    rawToken: string,
+    purpose: PublicTokenPurpose,
+  ): Promise<ServiceResult<AffectedRows, PublicTokenStorageError>> {
     const tokenHash = hashPublicToken(rawToken);
     try {
-      await this.database
+      const revoked = await this.database
         .delete(table.publicToken)
         .where(
           and(eq(table.publicToken.tokenHash, tokenHash), eq(table.publicToken.purpose, purpose)),
-        );
-      return true;
+        )
+        .returning({ tokenHash: table.publicToken.tokenHash });
+      return ok({ affectedRows: revoked.length });
     } catch (error) {
       logger.error({ err: error, tokenHash, purpose }, "revoke failed");
-      return false;
+      return err({ type: "storage-error" });
     }
   }
 
-  async deleteByUserID(userID: string) {
+  async deleteByUserID(
+    userID: string,
+  ): Promise<ServiceResult<AffectedRows, PublicTokenStorageError>> {
     try {
-      await this.database.delete(table.publicToken).where(eq(table.publicToken.userID, userID));
+      const deleted = await this.database
+        .delete(table.publicToken)
+        .where(eq(table.publicToken.userID, userID))
+        .returning({ tokenHash: table.publicToken.tokenHash });
+      return ok({ affectedRows: deleted.length });
     } catch (error) {
       logger.error({ err: error, userId: userID }, "deleteByUserID failed");
+      return err({ type: "storage-error" });
     }
   }
 
-  async deleteAllExpired() {
+  async deleteAllExpired(): Promise<ServiceResult<AffectedRows, PublicTokenStorageError>> {
     try {
-      await this.database
+      const deleted = await this.database
         .delete(table.publicToken)
-        .where(lt(table.publicToken.expiresAt, new Date()));
+        .where(lt(table.publicToken.expiresAt, new Date()))
+        .returning({ tokenHash: table.publicToken.tokenHash });
+      return ok({ affectedRows: deleted.length });
     } catch (error) {
       logger.error({ err: error }, "deleteAllExpired failed");
+      return err({ type: "storage-error" });
     }
   }
 }

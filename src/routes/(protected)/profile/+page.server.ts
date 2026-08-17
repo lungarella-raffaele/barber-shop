@@ -3,7 +3,6 @@ import { profileChangeEmailSchema, profileChangePasswordSchema } from "$lib/modu
 import * as auth from "$lib/server/auth";
 import { logger } from "$lib/server/logger";
 import { EmailService } from "$lib/server/mailer";
-import { toSessionUserDTO } from "$lib/server/mappers/session-user.mapper";
 import { getNumber, getString } from "$lib/utils";
 import { PasswordRecoverService } from "@service/password-recover.service.js";
 import { PublicTokenService } from "@service/public-token.service.js";
@@ -27,7 +26,7 @@ export const load: PageServerLoad = async ({ locals }) => {
   const changePasswordForm = await superValidate(zod(profileChangePasswordSchema));
 
   return {
-    user: toSessionUserDTO(locals.user),
+    user: locals.user,
     title: "Profilo -",
     updatedEmail: null,
     changeEmailForm,
@@ -126,7 +125,10 @@ export const actions: Actions = {
     const userService = UserService.get();
     const existingUser = await userService.getByEmail(email);
 
-    if (existingUser && existingUser.account.verifiedEmail) {
+    if (existingUser.isErr() && existingUser.error.type === "storage-error") {
+      return fail(503, { changeEmailForm: form });
+    }
+    if (existingUser.isOk() && existingUser.value.account.verifiedEmail) {
       return setError(form, "email", "Email non disponibile");
     }
 
@@ -186,7 +188,11 @@ export const actions: Actions = {
 
     // Delete all related data
     await sessionService.deleteAllByUserID(user.account.id);
-    await reservationService.deleteAllByUser(user.account.id, user.account.email);
+    const deletedReservations = await reservationService.deleteAllByUser(
+      user.account.id,
+      user.account.email,
+    );
+    if (deletedReservations.isErr()) return fail(503);
     await passwordRecoverService.deleteByUserID(user.account.id);
     await publicTokenService.deleteByUserID(user.account.id);
 
@@ -216,8 +222,14 @@ export const actions: Actions = {
     }
 
     const { oldPassword, newPassword } = form.data;
+    const serverUser = await UserService.get().getByID(user.account.id);
+    if (serverUser.isErr()) {
+      return fail(serverUser.error.type === "storage-error" ? 503 : 401, {
+        changePasswordForm: form,
+      });
+    }
 
-    const validPassword = await verify(user.account.passwordHash, oldPassword, {});
+    const validPassword = await verify(serverUser.value.account.passwordHash, oldPassword, {});
     if (!validPassword) {
       return message(
         form,

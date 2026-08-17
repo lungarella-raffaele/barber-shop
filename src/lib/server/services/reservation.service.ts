@@ -1,4 +1,5 @@
 import { LOCK_DURATION } from "$lib/constants";
+import { createMinuteOfDay, formatMinuteOfDay, type MinuteOfDay } from "$lib/domain/minute-of-day";
 import type { ReservationDTO } from "$lib/dto";
 import { err, ok, type Result } from "$lib/modules/result";
 import type { Database } from "$lib/server/db/client";
@@ -8,26 +9,79 @@ import type { UserRow } from "$lib/server/db/schema";
 import type { AnonymousData, StaffData, UsualData } from "$lib/shared";
 import { parseDate, parseDateTime } from "@internationalized/date";
 import { anonymousUserSchema, staffUserSchema, usualUserSchema } from "@schema";
-import { and, asc, count, eq, gt, inArray, isNull, lt, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNull, lt, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core/alias";
 
 import { createLogger } from "../logger";
 import { Service } from "./service";
+import type { AffectedRows, ServiceResult } from "./service-result";
 
 const logger = createLogger("ReservationService");
 
-type InsertError = "conflict" | "invalid-data" | "server-err";
-type InsertReservation = typeof table.reservation.$inferInsert;
+export type ReservationInsertError =
+  | { type: "invalid-data"; reason: "request-schema-invalid" }
+  | { type: "invalid-data"; reason: "duplicate-offerings" }
+  | { type: "invalid-data"; reason: "invalid-appointment-format" }
+  | { type: "invalid-data"; reason: "appointment-not-in-future" }
+  | { type: "invalid-data"; reason: "staff-not-active" }
+  | {
+      type: "invalid-data";
+      reason: "offerings-unavailable-for-staff";
+      requestedOfferingIDs: string[];
+      availableOfferingIDs: string[];
+    }
+  | {
+      type: "invalid-data";
+      reason: "invalid-offering-duration";
+      offerings: { id: string; duration: number }[];
+    }
+  | {
+      type: "invalid-data";
+      reason: "outside-staff-schedule";
+      requestedStartMinutes: number;
+      requestedEndMinutes: number;
+      scheduleRanges: {
+        startHour: number;
+        startMinute: number;
+        endHour: number;
+        endMinute: number;
+      }[];
+    }
+  | { type: "invalid-data"; reason: "staff-shutdown"; shutdownID: string }
+  | { type: "invalid-data"; reason: "slot-policy-not-configured" }
+  | {
+      type: "invalid-data";
+      reason: "appointment-not-slot-aligned";
+      requestedStartMinutes: number;
+      requestedDurationMinutes: number;
+      slotDurationMinutes: number;
+    }
+  | { type: "conflict"; reason: "slots-occupied" }
+  | { type: "server-error" };
+
+type InvalidReservationInsertError = Extract<ReservationInsertError, { type: "invalid-data" }>;
+type InsertReservation = typeof table.reservation.$inferInsert & { startMinute: MinuteOfDay };
 type ReservationOffering = ReservationDTO["offerings"][number];
+type OccupancyMask = {
+  slotDurationMinutes: number;
+  slotStart: number;
+  slotCount: number;
+  bitsLow: number;
+  bitsHigh: number;
+};
 
 type ReservationRow = Omit<ReservationDTO, "offerings"> & {
   offering: ReservationOffering;
   position: number;
 };
 
+type ReservationStorageError = { type: "storage-error" };
+type ReservationLookupError = { type: "not-found" } | ReservationStorageError;
+export type ReservationBatchDeleteResult = AffectedRows & { requestedRows: number };
+
 export type OccupiedReservationSlot = {
   date: string;
-  hour: string;
+  startMinute: MinuteOfDay;
   staff: { id: string };
   offerings: { duration: number }[];
 };
@@ -57,7 +111,7 @@ export class ReservationService extends Service {
       .select({
         id: table.reservation.id,
         date: table.reservation.date,
-        hour: table.reservation.hour,
+        startMinute: table.reservation.startMinute,
         name: table.reservation.name,
         email: table.reservation.email,
         phoneNumber: table.reservation.phoneNumber,
@@ -121,7 +175,10 @@ export class ReservationService extends Service {
     return reservationExpiresAt(date);
   }
 
-  async insertByUser(data: UsualData, user: UserRow): Promise<Result<ReservationDTO, InsertError>> {
+  async insertByUser(
+    data: UsualData,
+    user: Pick<UserRow, "id" | "name" | "phoneNumber" | "email">,
+  ): Promise<Result<ReservationDTO, ReservationInsertError>> {
     try {
       const schema = usualUserSchema.safeParse({ ...data, date: data.date?.toString() });
       if (!schema.success || !this.validateOfferingIDs(schema.data.offerings)) {
@@ -129,14 +186,18 @@ export class ReservationService extends Service {
           { issues: schema.success ? "duplicate-offerings" : schema.error.issues, userId: user.id },
           "insertByUser validation failed",
         );
-        return err("invalid-data");
+        return err({
+          type: "invalid-data",
+          reason: schema.success ? "duplicate-offerings" : "request-schema-invalid",
+        });
       }
 
-      const { date, hour, offerings, staff } = schema.data;
+      const { date, startMinute, offerings, staff } = schema.data;
       return await this.insertAndFetch(
         {
           date,
-          hour,
+          hour: formatMinuteOfDay(startMinute),
+          startMinute,
           id: crypto.randomUUID(),
           name: user.name,
           phoneNumber: user.phoneNumber,
@@ -151,11 +212,13 @@ export class ReservationService extends Service {
       );
     } catch (e) {
       logger.error({ err: e, userId: user.id }, "insertByUser failed");
-      return err("server-err");
+      return err({ type: "server-error" });
     }
   }
 
-  async insertByAnonymous(data: AnonymousData): Promise<Result<ReservationDTO, InsertError>> {
+  async insertByAnonymous(
+    data: AnonymousData,
+  ): Promise<Result<ReservationDTO, ReservationInsertError>> {
     try {
       const schema = anonymousUserSchema.safeParse({
         ...data,
@@ -167,12 +230,16 @@ export class ReservationService extends Service {
           { reason: schema.success ? "duplicate-offerings" : schema.error.issues[0]?.path },
           "insertByAnonymous validation failed",
         );
-        return err("invalid-data");
+        return err({
+          type: "invalid-data",
+          reason: schema.success ? "duplicate-offerings" : "request-schema-invalid",
+        });
       }
 
       const reservation: InsertReservation = {
         date: schema.data.date,
-        hour: schema.data.hour,
+        hour: formatMinuteOfDay(schema.data.startMinute),
+        startMinute: schema.data.startMinute,
         id: crypto.randomUUID(),
         name: schema.data.name,
         phoneNumber: schema.data.phone ?? null,
@@ -187,15 +254,15 @@ export class ReservationService extends Service {
       });
     } catch (e) {
       logger.error({ err: e }, "insertByAnonymous failed");
-      return err("server-err");
+      return err({ type: "server-error" });
     }
   }
 
   async insertByStaff(
     data: StaffData,
-    user: UserRow,
+    user: Pick<UserRow, "id" | "email">,
     alternativeName?: string,
-  ): Promise<Result<ReservationDTO, InsertError>> {
+  ): Promise<Result<ReservationDTO, ReservationInsertError>> {
     try {
       const schema = staffUserSchema.safeParse({
         ...data,
@@ -210,14 +277,18 @@ export class ReservationService extends Service {
           },
           "insertByStaff validation failed",
         );
-        return err("invalid-data");
+        return err({
+          type: "invalid-data",
+          reason: schema.success ? "duplicate-offerings" : "request-schema-invalid",
+        });
       }
 
-      const { date, hour, offerings, staff, name, phone } = schema.data;
+      const { date, startMinute, offerings, staff, name, phone } = schema.data;
       return await this.insertAndFetch(
         {
           date,
-          hour,
+          hour: formatMinuteOfDay(startMinute),
+          startMinute,
           id: crypto.randomUUID(),
           name,
           email: user.email,
@@ -231,7 +302,7 @@ export class ReservationService extends Service {
       );
     } catch (e) {
       logger.error({ err: e, staffId: user.id }, "insertByStaff failed");
-      return err("server-err");
+      return err({ type: "server-error" });
     }
   }
 
@@ -239,57 +310,73 @@ export class ReservationService extends Service {
     reservation: InsertReservation,
     offeringIDs: string[],
     logContext: Record<string, unknown>,
-  ): Promise<Result<ReservationDTO, InsertError>> {
+  ): Promise<Result<ReservationDTO, ReservationInsertError>> {
     const inserted = await this.insertWithAvailabilityCheck(reservation, offeringIDs);
     if (inserted.isErr()) {
-      logger.error({ ...logContext, reason: inserted.error }, `${logContext.source} failed`);
+      const log =
+        inserted.error.type === "server-error"
+          ? logger.error.bind(logger)
+          : logger.warn.bind(logger);
+      log({ ...logContext, error: inserted.error }, `${logContext.source} rejected reservation`);
       return err(inserted.error);
     }
 
     const fullReservation = await this.getByID(reservation.id);
-    if (!fullReservation) {
-      logger.error({ ...logContext, reservationId: reservation.id }, "post-insert fetch failed");
-      return err("server-err");
+    if (fullReservation.isErr()) {
+      logger.error(
+        { ...logContext, reservationId: reservation.id, error: fullReservation.error },
+        "post-insert fetch failed",
+      );
+      return err({ type: "server-error" });
     }
-    return ok(fullReservation);
+    return ok(fullReservation.value);
   }
 
-  async getAll(): Promise<ReservationDTO[] | null> {
+  async getAll(): Promise<ServiceResult<ReservationDTO[], ReservationStorageError>> {
     try {
-      return await this.findReservations(gt(table.reservation.expiresAt, new Date()));
+      return ok(await this.findReservations(gt(table.reservation.expiresAt, new Date())));
     } catch (e) {
       logger.error({ err: e }, "getAll failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async getOccupiedSlots(): Promise<OccupiedReservationSlot[] | null> {
+  async getOccupiedSlots(): Promise<
+    ServiceResult<OccupiedReservationSlot[], ReservationStorageError>
+  > {
     try {
       const reservations = await this.findReservations(gt(table.reservation.expiresAt, new Date()));
-      return reservations.map((reservation) => ({
-        date: reservation.date,
-        hour: reservation.hour,
-        staff: { id: reservation.staff.id },
-        offerings: reservation.offerings.map(({ duration }) => ({ duration })),
-      }));
+      return ok(
+        reservations.map((reservation) => ({
+          date: reservation.date,
+          startMinute: reservation.startMinute,
+          staff: { id: reservation.staff.id },
+          offerings: reservation.offerings.map(({ duration }) => ({ duration })),
+        })),
+      );
     } catch (e) {
       logger.error({ err: e }, "getOccupiedSlots failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async getTodayReservations(date: string, staffID: string): Promise<ReservationDTO[] | null> {
+  async getTodayReservations(
+    date: string,
+    staffID: string,
+  ): Promise<ServiceResult<ReservationDTO[], ReservationStorageError>> {
     try {
-      return await this.findReservations(
-        and(
-          eq(table.reservation.date, date),
-          eq(table.reservation.pending, false),
-          eq(table.staff.userID, staffID),
+      return ok(
+        await this.findReservations(
+          and(
+            eq(table.reservation.date, date),
+            eq(table.reservation.pending, false),
+            eq(table.staff.userID, staffID),
+          ),
         ),
       );
-    } catch (err) {
-      logger.error({ err, date, staffId: staffID }, "getTodayReservations failed");
-      return null;
+    } catch (error) {
+      logger.error({ err: error, date, staffId: staffID }, "getTodayReservations failed");
+      return err({ type: "storage-error" });
     }
   }
 
@@ -310,19 +397,28 @@ export class ReservationService extends Service {
       .where(and(...conditions));
   }
 
-  async getByUser(userID: string, email: string): Promise<ReservationDTO[] | null> {
+  async getByUser(
+    userID: string,
+    email: string,
+  ): Promise<ServiceResult<ReservationDTO[], ReservationStorageError>> {
     try {
       await this.claimLegacyReservations(userID, email);
-      return await this.findReservations(
-        and(eq(table.reservation.ownerUserID, userID), this.visibleToCustomerCondition()),
+      return ok(
+        await this.findReservations(
+          and(eq(table.reservation.ownerUserID, userID), this.visibleToCustomerCondition()),
+        ),
       );
     } catch (e) {
       logger.error({ err: e, userId: userID }, "getByUser failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async getByIDForUser(id: string, userID: string, email: string): Promise<ReservationDTO | null> {
+  async getByIDForUser(
+    id: string,
+    userID: string,
+    email: string,
+  ): Promise<ServiceResult<ReservationDTO, ReservationLookupError>> {
     try {
       await this.claimLegacyReservations(userID, email, id);
       const reservations = await this.findReservations(
@@ -332,140 +428,154 @@ export class ReservationService extends Service {
           this.visibleToCustomerCondition(),
         ),
       );
-      return reservations[0] ?? null;
+      return reservations[0] ? ok(reservations[0]) : err({ type: "not-found" });
     } catch (e) {
       logger.error({ err: e, reservationId: id, userId: userID }, "getByIDForUser failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async getByID(id: string): Promise<ReservationDTO | null> {
+  async getByID(id: string): Promise<ServiceResult<ReservationDTO, ReservationLookupError>> {
     try {
       const reservations = await this.findReservations(eq(table.reservation.id, id));
-      return reservations[0] ?? null;
+      return reservations[0] ? ok(reservations[0]) : err({ type: "not-found" });
     } catch (e) {
       logger.error({ err: e, reservationId: id }, "getByID failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async delete(id: string) {
+  private async deleteWhere(
+    where: SQL,
+    context: Record<string, unknown>,
+  ): Promise<ServiceResult<AffectedRows, ReservationLookupError>> {
     try {
-      return await this.database
+      const deleted = await this.database
         .delete(table.reservation)
-        .where(eq(table.reservation.id, id))
-        .returning();
+        .where(where)
+        .returning({ id: table.reservation.id });
+      return deleted.length === 1 ? ok({ affectedRows: 1 }) : err({ type: "not-found" });
     } catch (e) {
-      logger.error({ err: e, reservationId: id }, "delete failed");
-      return null;
+      logger.error({ err: e, ...context }, "reservation deletion failed");
+      return err({ type: "storage-error" });
     }
   }
 
-  async deleteByStaff(id: string, staffID: string) {
-    try {
-      return await this.database
-        .delete(table.reservation)
-        .where(and(eq(table.reservation.id, id), eq(table.reservation.staffID, staffID)))
-        .returning();
-    } catch (e) {
-      logger.error({ err: e, reservationId: id, staffId: staffID }, "deleteByStaff failed");
-      return null;
-    }
+  async delete(id: string): Promise<ServiceResult<AffectedRows, ReservationLookupError>> {
+    return this.deleteWhere(eq(table.reservation.id, id), { reservationId: id });
   }
 
-  async deleteByUser(id: string, userID: string, email: string) {
+  async deleteByStaff(
+    id: string,
+    staffID: string,
+  ): Promise<ServiceResult<AffectedRows, ReservationLookupError>> {
+    return this.deleteWhere(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      and(eq(table.reservation.id, id), eq(table.reservation.staffID, staffID))!,
+      { reservationId: id, staffId: staffID },
+    );
+  }
+
+  async deleteByUser(
+    id: string,
+    userID: string,
+    email: string,
+  ): Promise<ServiceResult<AffectedRows, ReservationLookupError>> {
     try {
       await this.claimLegacyReservations(userID, email, id);
-      return await this.database
-        .delete(table.reservation)
-        .where(and(eq(table.reservation.id, id), eq(table.reservation.ownerUserID, userID)))
-        .returning();
+      return await this.deleteWhere(
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        and(eq(table.reservation.id, id), eq(table.reservation.ownerUserID, userID))!,
+        { reservationId: id, userId: userID },
+      );
     } catch (e) {
       logger.error({ err: e, reservationId: id, userId: userID }, "deleteByUser failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async deleteManyByUser(ids: string[], userID: string, email: string) {
+  async deleteManyByUser(
+    ids: string[],
+    userID: string,
+    email: string,
+  ): Promise<ServiceResult<ReservationBatchDeleteResult, ReservationStorageError>> {
     try {
-      if (ids.length === 0) return [];
+      if (ids.length === 0) return ok({ requestedRows: 0, affectedRows: 0 });
       await this.claimLegacyReservations(userID, email);
-      return await this.database
+      const deleted = await this.database
         .delete(table.reservation)
         .where(and(inArray(table.reservation.id, ids), eq(table.reservation.ownerUserID, userID)))
-        .returning();
+        .returning({ id: table.reservation.id });
+      return ok({ requestedRows: ids.length, affectedRows: deleted.length });
     } catch (e) {
       logger.error({ err: e, reservationIds: ids, userId: userID }, "deleteManyByUser failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 
-  async deleteAllByUser(userID: string, email: string) {
+  async deleteAllByUser(
+    userID: string,
+    email: string,
+  ): Promise<ServiceResult<AffectedRows, ReservationStorageError>> {
     try {
       await this.claimLegacyReservations(userID, email);
-      return await this.database
+      const deleted = await this.database
         .delete(table.reservation)
-        .where(eq(table.reservation.ownerUserID, userID));
+        .where(eq(table.reservation.ownerUserID, userID))
+        .returning({ id: table.reservation.id });
+      return ok({ affectedRows: deleted.length });
     } catch (e) {
       logger.error({ err: e, userId: userID }, "deleteAllByUser failed");
+      return err({ type: "storage-error" });
+    }
+  }
+
+  private createOccupancyMask(
+    startMinutes: number,
+    durationMinutes: number,
+    slotDurationMinutes: number,
+  ): OccupancyMask | null {
+    if (
+      !Number.isInteger(slotDurationMinutes) ||
+      slotDurationMinutes < 15 ||
+      1440 % slotDurationMinutes !== 0 ||
+      startMinutes % slotDurationMinutes !== 0
+    ) {
       return null;
     }
-  }
 
-  async deleteAllExpired() {
-    try {
-      return await this.database
-        .delete(table.reservation)
-        .where(lt(table.reservation.expiresAt, new Date()));
-    } catch (err) {
-      logger.error({ err }, "deleteAllExpired failed");
+    const slotStart = startMinutes / slotDurationMinutes;
+    const slotCount = Math.ceil(durationMinutes / slotDurationMinutes);
+    const totalSlots = 1440 / slotDurationMinutes;
+    if (slotCount <= 0 || slotStart + slotCount > totalSlots || totalSlots > 96) return null;
+
+    let bitsLow = 0n;
+    let bitsHigh = 0n;
+    for (let slot = slotStart; slot < slotStart + slotCount; slot++) {
+      if (slot < 48) bitsLow |= 1n << BigInt(slot);
+      else bitsHigh |= 1n << BigInt(slot - 48);
     }
+
+    return {
+      slotDurationMinutes,
+      slotStart,
+      slotCount,
+      bitsLow: Number(bitsLow),
+      bitsHigh: Number(bitsHigh),
+    };
   }
 
-  async updateExpiration(id: string): Promise<ReservationDTO | null> {
-    try {
-      const existing = await this.database
-        .select({ date: table.reservation.date })
-        .from(table.reservation)
-        .where(eq(table.reservation.id, id))
-        .get();
-      if (!existing) return null;
-
-      const updated = await this.database
-        .update(table.reservation)
-        .set({
-          pending: false,
-          // SQLite's date modifier is UTC-based; compute the DST-aware Rome boundary in JS.
-          expiresAt: this.nextRomeMidnight(existing.date),
-        })
-        .where(eq(table.reservation.id, id))
-        .returning()
-        .get();
-      const fullReservation = await this.getByID(updated.id);
-      if (!fullReservation) {
-        logger.error({ reservationId: id }, "updateExpiration post-update fetch failed");
-        return null;
-      }
-      return fullReservation;
-    } catch (e) {
-      logger.error({ err: e, reservationId: id }, "updateExpiration failed");
-      return null;
-    }
-  }
-
-  private minutesFromMidnight(hour: string): number {
-    const [hours, minutes] = hour.split(":").map(Number);
-    return hours * 60 + minutes;
-  }
-
-  private parseAppointment(date: string, hour: string): { startsAt: Date; day: number } | null {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(hour)) {
-      return null;
-    }
+  private parseAppointment(
+    date: string,
+    startMinute: MinuteOfDay,
+  ): { startsAt: Date; day: number } | null {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
 
     try {
       const calendarDate = parseDate(date);
-      const startsAt = parseDateTime(`${date}T${hour}`).toDate(BUSINESS_TIME_ZONE);
+      const startsAt = parseDateTime(`${date}T${formatMinuteOfDay(startMinute)}`).toDate(
+        BUSINESS_TIME_ZONE,
+      );
       // Database weekdays are Monday=0 through Sunday=6.
       const day =
         (new Date(
@@ -479,144 +589,259 @@ export class ReservationService extends Service {
     }
   }
 
+  private isDatabaseContention(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return /SQLITE_BUSY|database is locked|transaction conflict/i.test(message);
+  }
+
+  private rejectInvalidReservation<E extends InvalidReservationInsertError>(
+    reservation: InsertReservation,
+    error: E,
+  ): Result<table.ReservationRow, E> {
+    logger.warn(
+      {
+        error,
+        reservationId: reservation.id,
+        staffId: reservation.staffID,
+        date: reservation.date,
+        startMinute: reservation.startMinute,
+      },
+      "reservation rejected by availability validation",
+    );
+    return err(error);
+  }
+
   private async insertWithAvailabilityCheck(
     reservation: InsertReservation,
     offeringIDs: string[],
-  ): Promise<Result<table.ReservationRow, InsertError>> {
-    try {
-      return await this.database.transaction(async (tx) => {
-        const appointment = this.parseAppointment(reservation.date, reservation.hour);
-        if (!appointment || appointment.startsAt.getTime() <= Date.now())
-          return err("invalid-data");
+  ): Promise<Result<table.ReservationRow, ReservationInsertError>> {
+    const maximumAttempts = 10;
+    for (let attempt = 1; attempt <= maximumAttempts; attempt++) {
+      try {
+        return await this.database.transaction(async (tx) => {
+          const requestedStart = createMinuteOfDay(reservation.startMinute);
+          const appointment = this.parseAppointment(reservation.date, requestedStart);
+          if (!appointment) {
+            return this.rejectInvalidReservation(reservation, {
+              type: "invalid-data",
+              reason: "invalid-appointment-format",
+            });
+          }
+          if (appointment.startsAt.getTime() <= Date.now()) {
+            return this.rejectInvalidReservation(reservation, {
+              type: "invalid-data",
+              reason: "appointment-not-in-future",
+            });
+          }
 
-        const [activeStaff] = await tx
-          .select({ id: table.staff.userID })
-          .from(table.staff)
-          .where(and(eq(table.staff.userID, reservation.staffID), eq(table.staff.isActive, true)))
-          .limit(1);
-        if (!activeStaff) return err("invalid-data");
+          const [activeStaff] = await tx
+            .select({ id: table.staff.userID })
+            .from(table.staff)
+            .where(and(eq(table.staff.userID, reservation.staffID), eq(table.staff.isActive, true)))
+            .limit(1);
+          if (!activeStaff) {
+            return this.rejectInvalidReservation(reservation, {
+              type: "invalid-data",
+              reason: "staff-not-active",
+            });
+          }
 
-        const requestedOfferings = await tx
-          .select({
-            id: table.offering.id,
-            duration: table.offering.duration,
-          })
-          .from(table.offering)
-          .where(
-            and(
-              inArray(table.offering.id, offeringIDs),
-              eq(table.offering.staffID, reservation.staffID),
-              eq(table.offering.active, true),
-            ),
+          const requestedOfferings = await tx
+            .select({
+              id: table.offering.id,
+              duration: table.offering.duration,
+            })
+            .from(table.offering)
+            .where(
+              and(
+                inArray(table.offering.id, offeringIDs),
+                eq(table.offering.staffID, reservation.staffID),
+                eq(table.offering.active, true),
+              ),
+            );
+
+          if (requestedOfferings.length !== offeringIDs.length) {
+            return this.rejectInvalidReservation(reservation, {
+              type: "invalid-data",
+              reason: "offerings-unavailable-for-staff",
+              requestedOfferingIDs: offeringIDs,
+              availableOfferingIDs: requestedOfferings.map(({ id }) => id),
+            });
+          }
+
+          const requestedDuration = requestedOfferings.reduce(
+            (sum, offering) => sum + offering.duration,
+            0,
           );
+          const requestedEnd = requestedStart + requestedDuration;
+          if (
+            requestedOfferings.some(
+              (offering) => !Number.isInteger(offering.duration) || offering.duration <= 0,
+            )
+          ) {
+            return this.rejectInvalidReservation(reservation, {
+              type: "invalid-data",
+              reason: "invalid-offering-duration",
+              offerings: requestedOfferings.map(({ id, duration }) => ({ id, duration })),
+            });
+          }
 
-        if (requestedOfferings.length !== offeringIDs.length) return err("invalid-data");
+          const scheduleRanges = await tx
+            .select({
+              startHour: table.schedule.startHour,
+              startMinute: table.schedule.startMinute,
+              endHour: table.schedule.endHour,
+              endMinute: table.schedule.endMinute,
+            })
+            .from(table.schedule)
+            .where(
+              and(
+                eq(table.schedule.staffID, reservation.staffID),
+                eq(table.schedule.day, appointment.day),
+              ),
+            );
+          const containedBySchedule = scheduleRanges.some((range) => {
+            const rangeStart = range.startHour * 60 + range.startMinute;
+            const rangeEnd = range.endHour * 60 + range.endMinute;
+            return requestedStart >= rangeStart && requestedEnd <= rangeEnd;
+          });
+          if (!containedBySchedule) {
+            return this.rejectInvalidReservation(reservation, {
+              type: "invalid-data",
+              reason: "outside-staff-schedule",
+              requestedStartMinutes: requestedStart,
+              requestedEndMinutes: requestedEnd,
+              scheduleRanges,
+            });
+          }
 
-        const requestedDuration = requestedOfferings.reduce(
-          (sum, offering) => sum + offering.duration,
-          0,
-        );
-        const requestedStart = this.minutesFromMidnight(reservation.hour);
-        const requestedEnd = requestedStart + requestedDuration;
-        if (
-          requestedOfferings.some(
-            (offering) => !Number.isInteger(offering.duration) || offering.duration <= 0,
-          )
-        ) {
-          return err("invalid-data");
-        }
+          const [shutdown] = await tx
+            .select({ id: table.shutdowns.id })
+            .from(table.shutdowns)
+            .where(
+              and(
+                eq(table.shutdowns.staffID, reservation.staffID),
+                sql`${table.shutdowns.start} <= ${reservation.date}`,
+                sql`${table.shutdowns.end} >= ${reservation.date}`,
+              ),
+            )
+            .limit(1);
+          if (shutdown) {
+            return this.rejectInvalidReservation(reservation, {
+              type: "invalid-data",
+              reason: "staff-shutdown",
+              shutdownID: shutdown.id,
+            });
+          }
 
-        const scheduleRanges = await tx
-          .select({
-            startHour: table.schedule.startHour,
-            startMinute: table.schedule.startMinute,
-            endHour: table.schedule.endHour,
-            endMinute: table.schedule.endMinute,
-          })
-          .from(table.schedule)
-          .where(
-            and(
-              eq(table.schedule.staffID, reservation.staffID),
-              eq(table.schedule.day, appointment.day),
-            ),
+          const existingOccupancy = await tx
+            .select({ slotDurationMinutes: table.reservationDayOccupancy.slotDurationMinutes })
+            .from(table.reservationDayOccupancy)
+            .where(
+              and(
+                eq(table.reservationDayOccupancy.staffID, reservation.staffID),
+                eq(table.reservationDayOccupancy.date, reservation.date),
+              ),
+            )
+            .get();
+          const policy = existingOccupancy
+            ? null
+            : await tx
+                .select({ slotDurationMinutes: table.reservationSlotPolicy.slotDurationMinutes })
+                .from(table.reservationSlotPolicy)
+                .where(sql`${table.reservationSlotPolicy.effectiveFromDate} <= ${reservation.date}`)
+                .orderBy(sql`${table.reservationSlotPolicy.effectiveFromDate} DESC`)
+                .limit(1)
+                .get();
+          const slotDurationMinutes =
+            existingOccupancy?.slotDurationMinutes ?? policy?.slotDurationMinutes;
+          if (!slotDurationMinutes) {
+            return this.rejectInvalidReservation(reservation, {
+              type: "invalid-data",
+              reason: "slot-policy-not-configured",
+            });
+          }
+
+          const occupancy = this.createOccupancyMask(
+            requestedStart,
+            requestedDuration,
+            slotDurationMinutes,
           );
-        const containedBySchedule = scheduleRanges.some((range) => {
-          const rangeStart = range.startHour * 60 + range.startMinute;
-          const rangeEnd = range.endHour * 60 + range.endMinute;
-          return requestedStart >= rangeStart && requestedEnd <= rangeEnd;
+          if (!occupancy) {
+            return this.rejectInvalidReservation(reservation, {
+              type: "invalid-data",
+              reason: "appointment-not-slot-aligned",
+              requestedStartMinutes: requestedStart,
+              requestedDurationMinutes: requestedDuration,
+              slotDurationMinutes,
+            });
+          }
+
+          await tx
+            .delete(table.reservation)
+            .where(
+              and(
+                eq(table.reservation.staffID, reservation.staffID),
+                eq(table.reservation.date, reservation.date),
+                lt(table.reservation.expiresAt, new Date()),
+              ),
+            );
+
+          await tx
+            .insert(table.reservationDayOccupancy)
+            .values({
+              staffID: reservation.staffID,
+              date: reservation.date,
+              slotDurationMinutes,
+            })
+            .onConflictDoNothing();
+
+          const claimed = await tx.all<{ staffID: string }>(sql`
+          UPDATE reservation_day_occupancy
+          SET
+            bits_low = bits_low | ${occupancy.bitsLow},
+            bits_high = bits_high | ${occupancy.bitsHigh},
+            updated_at = unixepoch()
+          WHERE staff_id = ${reservation.staffID}
+            AND date = ${reservation.date}
+            AND slot_duration_minutes = ${occupancy.slotDurationMinutes}
+            AND (bits_low & ${occupancy.bitsLow}) = 0
+            AND (bits_high & ${occupancy.bitsHigh}) = 0
+          RETURNING staff_id AS staffID
+        `);
+          if (claimed.length !== 1) {
+            return err({ type: "conflict", reason: "slots-occupied" });
+          }
+
+          const [inserted] = await tx
+            .insert(table.reservation)
+            .values({
+              ...reservation,
+              slotDurationMinutes: occupancy.slotDurationMinutes,
+              slotStart: occupancy.slotStart,
+              slotCount: occupancy.slotCount,
+              occupancyBitsLow: occupancy.bitsLow,
+              occupancyBitsHigh: occupancy.bitsHigh,
+            })
+            .returning();
+          await tx.insert(table.reservationOffering).values(
+            offeringIDs.map((offeringID, position) => ({
+              reservationID: reservation.id,
+              offeringID,
+              position,
+            })),
+          );
+          return ok(inserted);
         });
-        if (!containedBySchedule) return err("invalid-data");
-
-        const [shutdown] = await tx
-          .select({ id: table.shutdowns.id })
-          .from(table.shutdowns)
-          .where(
-            and(
-              eq(table.shutdowns.staffID, reservation.staffID),
-              sql`${table.shutdowns.start} <= ${reservation.date}`,
-              sql`${table.shutdowns.end} >= ${reservation.date}`,
-            ),
-          )
-          .limit(1);
-        if (shutdown) return err("invalid-data");
-
-        const existingStart = sql<number>`
-          cast(substr(${table.reservation.hour}, 1, 2) as integer) * 60
-          + cast(substr(${table.reservation.hour}, 4, 2) as integer)
-        `;
-        const [conflict] = await tx
-          .select({ id: table.reservation.id })
-          .from(table.reservation)
-          .innerJoin(
-            table.reservationOffering,
-            eq(table.reservation.id, table.reservationOffering.reservationID),
-          )
-          .innerJoin(table.offering, eq(table.reservationOffering.offeringID, table.offering.id))
-          .where(
-            and(
-              eq(table.reservation.date, reservation.date),
-              eq(table.reservation.staffID, reservation.staffID),
-              gt(table.reservation.expiresAt, new Date()),
-            ),
-          )
-          .groupBy(table.reservation.id, table.reservation.hour)
-          .having(
-            and(
-              sql`${requestedStart} < ${existingStart} + sum(${table.offering.duration})`,
-              sql`${existingStart} < ${requestedEnd}`,
-            ),
-          )
-          .limit(1);
-
-        if (conflict) return err("conflict");
-
-        const [inserted] = await tx.insert(table.reservation).values(reservation).returning();
-        await tx.insert(table.reservationOffering).values(
-          offeringIDs.map((offeringID, position) => ({
-            reservationID: reservation.id,
-            offeringID,
-            position,
-          })),
-        );
-        return ok(inserted);
-      });
-    } catch (e) {
-      logger.error({ err: e, reservationId: reservation.id }, "transactional insert failed");
-      return err("server-err");
+      } catch (e) {
+        if (this.isDatabaseContention(e) && attempt < maximumAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, attempt * 25));
+          continue;
+        }
+        logger.error({ err: e, reservationId: reservation.id }, "transactional insert failed");
+        return err({ type: "server-error" });
+      }
     }
-  }
-
-  async countExpired() {
-    try {
-      const entries = await this.database
-        .select({ count: count() })
-        .from(table.reservation)
-        .where(lt(table.reservation.expiresAt, new Date()))
-        .get();
-      return entries?.count;
-    } catch (e) {
-      logger.error({ err: e }, "countExpired failed");
-      return null;
-    }
+    return err({ type: "server-error" });
   }
 }

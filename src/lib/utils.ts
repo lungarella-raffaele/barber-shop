@@ -159,3 +159,7 @@ export function formatDuration(amount: number): string {
 export function getInitials(name: string) {
   return name.toUpperCase().substring(0, 2);
 }
+
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};

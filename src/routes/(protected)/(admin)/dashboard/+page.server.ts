@@ -1,6 +1,6 @@
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { ReservationService } from "@service/reservation.service";
-import { fail, redirect } from "@sveltejs/kit";
+import { error, fail, redirect } from "@sveltejs/kit";
 
 import type { Actions, PageServerLoad } from "./$types";
 
@@ -18,8 +18,10 @@ export const load: PageServerLoad = async ({ depends, url, locals }) => {
     locals.user?.account.id,
   );
 
+  if (reservations.isErr()) return error(503);
+
   return {
-    reservations,
+    reservations: reservations.value,
     date,
     title: "Admin -",
   };
@@ -37,8 +39,10 @@ export const actions: Actions = {
     if (!id) return fail(400, { success: false });
 
     const res = await ReservationService.get().deleteByStaff(id, locals.user.account.id);
-    if (!res?.length) return fail(404, { success: false });
+    if (res.isErr()) {
+      return fail(res.error.type === "not-found" ? 404 : 503, { success: false });
+    }
 
-    return { res };
+    return { res: res.value };
   },
 };

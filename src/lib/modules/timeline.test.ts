@@ -1,3 +1,4 @@
+import { parseMinuteOfDay } from "$lib/domain/minute-of-day";
 import type { ReservationDTO } from "$lib/dto";
 import { describe, expect, it } from "vitest";
 
@@ -7,7 +8,6 @@ import {
   DEFAULT_TIMELINE_CONFIG,
   formatMinute,
   layoutReservations,
-  parseTimeToMinute,
   type TimelineConfig,
 } from "./timeline";
 
@@ -22,7 +22,11 @@ function reservation(id: string, hour: string, duration: number): ReservationDTO
   return {
     id,
     date: "2026-07-21",
-    hour,
+    startMinute:
+      parseMinuteOfDay(hour) ??
+      (() => {
+        throw new Error("Invalid fixture time");
+      })(),
     name: id,
     email: `${id}@example.com`,
     phoneNumber: null,
@@ -35,19 +39,6 @@ function reservation(id: string, hour: string, duration: number): ReservationDTO
 }
 
 describe("timeline time values", () => {
-  it.each([
-    ["9:00", 540],
-    ["09:30", 570],
-    ["19:30:00", 1170],
-  ])("parses %s", (value, expected) => {
-    expect(parseTimeToMinute(value)).toBe(expected);
-  });
-
-  it("rejects malformed and out-of-range times", () => {
-    expect(() => parseTimeToMinute("09:70")).toThrow("Invalid time");
-    expect(() => parseTimeToMinute("nine")).toThrow("Invalid time");
-  });
-
   it("formats minute values", () => {
     expect(formatMinute(570)).toBe("09:30");
   });

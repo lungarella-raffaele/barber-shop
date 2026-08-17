@@ -1,5 +1,6 @@
+import type { AccountDTO, StaffDTO, UserDTO } from "$lib/dto";
 import type { StaffRow, UserRow } from "$lib/server/db/schema";
-import type { Account, StaffProfile, User } from "$lib/server/domain";
+import type { Account, Staff, User } from "$lib/server/domain";
 
 function toAccount(row: UserRow): Account {
   return {
@@ -15,7 +16,7 @@ function toAccount(row: UserRow): Account {
   };
 }
 
-function toStaffProfile(row: StaffRow): StaffProfile {
+function toStaffProfile(row: StaffRow): Staff["staff"] {
   return {
     avatar: row.avatar,
     avatarOriginal: row.avatarOriginal,
@@ -35,4 +36,34 @@ export function toUserDomain(accountRow: UserRow, staffRow: StaffRow | null): Us
     account,
     staff: toStaffProfile(staffRow),
   };
+}
+
+function toSessionAccountDTO(user: User): AccountDTO {
+  return {
+    id: user.account.id,
+    name: user.account.name,
+    phoneNumber: user.account.phoneNumber,
+    email: user.account.email,
+    verifiedEmail: user.account.verifiedEmail,
+  };
+}
+
+/** Maps a complete server-side user to the explicit subset safe to serialize to clients. */
+export function toSessionUserDTO(user: Staff): StaffDTO;
+export function toSessionUserDTO(user: User): UserDTO;
+export function toSessionUserDTO(user: User): UserDTO {
+  const account = toSessionAccountDTO(user);
+
+  if (user.role === "staff") {
+    return {
+      role: "staff",
+      account,
+      staff: {
+        avatar: user.staff.avatar,
+        isActive: user.staff.isActive,
+      },
+    };
+  }
+
+  return { role: "customer", account };
 }

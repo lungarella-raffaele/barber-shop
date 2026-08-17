@@ -1,14 +1,12 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 
-import type { SessionRow } from "$lib/server/db/schema";
-import type { User } from "$lib/server/domain";
+import type { SessionDTO, UserDTO } from "$lib/dto";
 
-// for information about these interfaces
 declare global {
   namespace App {
     interface Locals {
-      user: User | null;
-      session: SessionRow | null;
+      user: UserDTO | null;
+      session: SessionDTO | null;
     }
   }
 }

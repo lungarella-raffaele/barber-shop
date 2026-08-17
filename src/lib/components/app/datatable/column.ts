@@ -1,6 +1,7 @@
 import { renderComponent, renderSnippet } from "$lib/components/ui/data-table";
+import { formatMinuteOfDay } from "$lib/domain/minute-of-day";
 import type { ReservationDTO } from "$lib/dto";
-import { formatDate, formatTime } from "$lib/utils";
+import { formatDate } from "$lib/utils";
 import type { ColumnDef } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
 
@@ -26,10 +27,10 @@ export const columns: ColumnDef<ReservationDTO>[] = [
     },
   },
   {
-    accessorKey: "hour",
+    accessorKey: "startMinute",
     header: "Ora",
     cell: ({ row }) => {
-      return formatTime(row.original.hour);
+      return formatMinuteOfDay(row.original.startMinute);
     },
   },
   {

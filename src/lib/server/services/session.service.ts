@@ -1,3 +1,4 @@
+import { err, ok } from "$lib/modules/result";
 import type { Database } from "$lib/server/db/client";
 import { getProductionDatabase } from "$lib/server/db/production";
 import * as table from "$lib/server/db/schema";
@@ -5,6 +6,7 @@ import { and, eq, ne } from "drizzle-orm";
 
 import { createLogger } from "../logger";
 import { Service } from "./service";
+import type { ServiceResult } from "./service-result";
 
 const logger = createLogger("SessionService");
 
@@ -22,16 +24,20 @@ export class SessionService extends Service {
     }
   }
 
-  async getByID(sessionID: string) {
+  async getByID(
+    sessionID: string,
+  ): Promise<ServiceResult<table.SessionRow, { type: "not-found" } | { type: "storage-error" }>> {
     try {
-      return await this.database
+      const session = await this.database
         .select()
         .from(table.session)
         .where(eq(table.session.id, sessionID))
         .get();
+      if (!session) return err({ type: "not-found" });
+      return ok(session);
     } catch (e) {
       logger.error({ err: e, sessionId: sessionID }, "getByID failed");
-      return null;
+      return err({ type: "storage-error" });
     }
   }
 

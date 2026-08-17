@@ -1,3 +1,5 @@
+import type { MinuteOfDay } from "$lib/domain/minute-of-day";
+
 export type Data = AnonymousData | UsualData | StaffData;
 
 export type AnonymousData = {
@@ -5,7 +7,7 @@ export type AnonymousData = {
   name: string;
   email: string;
   date: string;
-  hour: string;
+  startMinute: MinuteOfDay;
   offerings: string[];
   staff: string;
   phone?: string;
@@ -14,7 +16,7 @@ export type AnonymousData = {
 export type UsualData = {
   who: "usual";
   date: string;
-  hour: string;
+  startMinute: MinuteOfDay;
   offerings: string[];
   staff: string;
 };
@@ -24,7 +26,7 @@ export type StaffData = {
   name?: string;
   phone?: string;
   date: string;
-  hour: string;
+  startMinute: MinuteOfDay;
   offerings: string[];
   staff: string;
 };

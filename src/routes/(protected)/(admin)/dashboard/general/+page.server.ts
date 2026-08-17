@@ -1,4 +1,5 @@
 import { logger } from "$lib/server/logger";
+import type { ServiceError } from "$lib/server/services/service-result";
 import { offeringSchema, updateOfferingSchema } from "@schema";
 import { BannerService } from "@service/banner.service";
 import { CleanupService } from "@service/clean-up.service";
@@ -36,6 +37,21 @@ function getStrictBoolean(data: FormData, key: string): boolean | null {
   if (value === "true" || value === "on") return true;
   if (value === "false" || value === "off") return false;
   return null;
+}
+
+function serviceErrorStatus(error: ServiceError): 400 | 403 | 404 | 409 | 500 {
+  switch (error.type) {
+    case "invalid-input":
+      return 400;
+    case "forbidden":
+      return 403;
+    case "not-found":
+      return 404;
+    case "conflict":
+      return 409;
+    case "storage-error":
+      return 500;
+  }
 }
 
 function isValidDate(value: string): boolean {
@@ -92,11 +108,14 @@ export const load: PageServerLoad = async ({ locals }) => {
   const staffID = getStaffID(locals);
   if (!staffID) return error(403);
 
-  const offerings = await OfferingService.get().getByStaff(staffID);
-  if (!offerings) return error(500);
+  const [banner, offerings] = await Promise.all([
+    BannerService.get().get(),
+    OfferingService.get().getByStaff(staffID),
+  ]);
+  if (banner === null || offerings === null) return error(500);
 
   return {
-    banner: await BannerService.get().get(),
+    banner,
     offerings,
     shutdown: ShutdownService.get().getStaffShutdown(staffID),
     schedule: ScheduleService.get().getByStaff(staffID),
@@ -118,7 +137,9 @@ export const actions: Actions = {
     }
 
     const result = await ShutdownService.get().insert(start, end, staffID);
-    return result ? { success: true } : fail(500, { success: false });
+    return result.isOk()
+      ? { success: true }
+      : fail(serviceErrorStatus(result.error), { success: false });
   },
   deleteShutdown: async ({ request, locals }) => {
     const staffID = getStaffID(locals);
@@ -128,7 +149,9 @@ export const actions: Actions = {
     if (!id) return fail(400, { success: false });
 
     const deleted = await ShutdownService.get().delete(id, staffID);
-    return deleted?.length === 1 ? { success: true } : fail(404, { success: false });
+    return deleted.isOk()
+      ? { success: true }
+      : fail(serviceErrorStatus(deleted.error), { success: false });
   },
   addSchedule: async ({ request, locals }) => {
     const staffID = getStaffID(locals);
@@ -138,7 +161,10 @@ export const actions: Actions = {
     const schedule = parseSchedule(data.get("data"), staffID);
     if (!schedule) return fail(400, { success: false });
 
-    return { success: await ScheduleService.get().update(schedule, staffID) };
+    const result = await ScheduleService.get().update(schedule, staffID);
+    return result.isOk()
+      ? { success: true }
+      : fail(serviceErrorStatus(result.error), { success: false });
   },
   deleteSchedule: async ({ request, locals }) => {
     const staffID = getStaffID(locals);
@@ -149,7 +175,9 @@ export const actions: Actions = {
     if (!Number.isSafeInteger(id) || id <= 0) return fail(400, { success: false });
 
     const deleted = await ScheduleService.get().delete(id, staffID);
-    return deleted ? { success: true } : fail(404, { success: false });
+    return deleted.isOk()
+      ? { success: true }
+      : fail(serviceErrorStatus(deleted.error), { success: false });
   },
   updateBanner: async ({ request, locals }) => {
     if (!getStaffID(locals)) return fail(401, { updatedBanner: false });
@@ -160,7 +188,9 @@ export const actions: Actions = {
     if (!message || visible === null) return fail(400, { updatedBanner: false });
 
     const result = await BannerService.get().update(message, visible);
-    return result.isOk() ? { updatedBanner: true } : fail(500, { updatedBanner: false });
+    return result.isOk()
+      ? { updatedBanner: true }
+      : fail(serviceErrorStatus(result.error), { updatedBanner: false });
   },
   updateOffering: async ({ request, locals }) => {
     const form = await superValidate(request, zod(updateOfferingSchema), { id: "updateOffering" });
@@ -170,9 +200,11 @@ export const actions: Actions = {
     if (!staffID) return fail(401, { updateOfferingForm: form });
 
     const response = await OfferingService.get().update({ ...form.data, staffID });
-    if (!response) {
-      logger.warn({ offeringID: form.data.id, staffID }, "Offering update denied or not found");
-      return fail(404, { updateOfferingForm: form });
+    if (response.isErr()) {
+      if (response.error.type !== "storage-error") {
+        logger.warn({ offeringID: form.data.id, staffID }, "Offering update denied or not found");
+      }
+      return fail(serviceErrorStatus(response.error), { updateOfferingForm: form });
     }
     return { updateOfferingForm: form };
   },
@@ -189,8 +221,8 @@ export const actions: Actions = {
       staffID,
     });
     if (response.isErr()) {
-      logger.error({ staffID }, "Could not add service");
-      return fail(500, { addOfferingForm: form });
+      logger.error({ staffID, errorType: response.error.type }, "Could not add service");
+      return fail(serviceErrorStatus(response.error), { addOfferingForm: form });
     }
     return { addOfferingForm: form };
   },
@@ -202,9 +234,14 @@ export const actions: Actions = {
     if (!id) return fail(400, { isDeletingOffering: true, success: false });
 
     const response = await OfferingService.get().delete(id, staffID);
-    if (!response) return fail(404, { isDeletingOffering: true, success: false });
+    if (response.isErr()) {
+      return fail(serviceErrorStatus(response.error), {
+        isDeletingOffering: true,
+        success: false,
+      });
+    }
 
-    logger.info({ offeringID: response.id, staffID }, "Offering deleted");
+    logger.info({ offeringID: id, staffID }, "Offering deleted");
     return { isDeletingOffering: true, success: true };
   },
   toggleStaff: async ({ request, locals }) => {
@@ -214,8 +251,10 @@ export const actions: Actions = {
     const active = getStrictBoolean(await request.formData(), "active");
     if (active === null) return fail(400, { success: false });
 
-    const success = await StaffService.get().toggleActive(active, staffID);
-    return success ? { success: true } : fail(404, { success: false });
+    const result = await StaffService.get().toggleActive(active, staffID);
+    return result.isOk()
+      ? { success: true }
+      : fail(serviceErrorStatus(result.error), { success: false });
   },
   clean: async ({ locals }) => {
     if (!getStaffID(locals)) return fail(401, { success: false });
@@ -227,6 +266,8 @@ export const actions: Actions = {
     if (!staffID) return fail(401, { avatarSuccess: false });
 
     const result = await StaffService.get().deleteAvatar(staffID);
-    return result ? { avatarSuccess: true } : fail(404, { avatarSuccess: false });
+    return result.isOk()
+      ? { avatarSuccess: true }
+      : fail(serviceErrorStatus(result.error), { avatarSuccess: false });
   },
 };

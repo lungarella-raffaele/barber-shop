@@ -1,7 +1,7 @@
 import type { User } from "$lib/server/domain";
 import { describe, expect, it } from "vitest";
 
-import { toSessionUserDTO } from "./session-user.mapper";
+import { toSessionUserDTO } from "./user.mapper";
 
 const sensitiveAccountData = {
   passwordHash: "argon2-hash",

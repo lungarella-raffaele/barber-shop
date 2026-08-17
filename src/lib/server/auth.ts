@@ -41,21 +41,30 @@ export async function validateSessionToken(
   token: string,
 ): Promise<UserSession | { session: null; user: null }> {
   const sessionID = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-  const sessionData = await SessionService.get().getByID(sessionID);
+  const sessionResult = await SessionService.get().getByID(sessionID);
 
-  if (!sessionData) {
-    log.debug({ sessionID }, "session not found");
-    return { session: null, user: null };
+  if (sessionResult.isErr()) {
+    if (sessionResult.error.type === "not-found") {
+      log.debug({ sessionID }, "session not found");
+      return { session: null, user: null };
+    }
+    log.error({ sessionID }, "session lookup failed");
+    throw new Error("Could not validate session");
   }
 
-  const userService = UserService.get();
-  const userData = await userService.getByID(sessionData.userID);
+  const sessionData = sessionResult.value;
+  const userResult = await UserService.get().getByID(sessionData.userID);
 
-  if (!userData) {
-    log.warn({ sessionID, userID: sessionData.userID }, "session valid but user not found");
-    return { session: null, user: null };
+  if (userResult.isErr()) {
+    if (userResult.error.type === "not-found") {
+      log.warn({ sessionID, userID: sessionData.userID }, "session valid but user not found");
+      return { session: null, user: null };
+    }
+    log.error({ sessionID, userID: sessionData.userID }, "session user lookup failed");
+    throw new Error("Could not validate session");
   }
 
+  const userData = userResult.value;
   const result: UserSession = {
     session: sessionData,
     user: userData,

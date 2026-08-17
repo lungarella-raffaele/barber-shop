@@ -99,13 +99,28 @@ export const load: PageServerLoad = async () => {
   const passwordRecoverService = PasswordRecoverService.get();
   const userService = UserService.get();
 
-  const reservations = (await reservationService.getAll()) ?? [];
+  const reservationsResult = await reservationService.getAll();
+  if (reservationsResult.isErr()) error(503, "Unable to load showcase reservations");
+  const reservations = reservationsResult.value;
   const pendingReservation = reservations.find((reservation) => reservation.pending);
   const confirmedReservation = reservations.find((reservation) => !reservation.pending);
-  const expiredPendingReservation = await reservationService.getByID(
+  const expiredPendingReservationResult = await reservationService.getByID(
     "seed-reservation-expired-pending",
   );
-  const pendingUser = await userService.getByID("seed-pending-user-sofia");
+  if (
+    expiredPendingReservationResult.isErr() &&
+    expiredPendingReservationResult.error.type === "storage-error"
+  ) {
+    error(503, "Unable to load showcase reservation");
+  }
+  const expiredPendingReservation = expiredPendingReservationResult.isOk()
+    ? expiredPendingReservationResult.value
+    : null;
+  const pendingUserResult = await userService.getByID("seed-pending-user-sofia");
+  if (pendingUserResult.isErr() && pendingUserResult.error.type === "storage-error") {
+    error(503, "Unable to load showcase user");
+  }
+  const pendingUser = pendingUserResult.isOk() ? pendingUserResult.value : null;
   const validRecover = await passwordRecoverService.getByID("seed-password-recover-valid");
   const expiredRecover = await passwordRecoverService.getByID("seed-password-recover-expired");
   const anyReservation = reservations[0];

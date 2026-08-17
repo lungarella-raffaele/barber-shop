@@ -1,5 +1,9 @@
 import * as table from "$lib/server/db/schema";
-import { hashPublicToken, PublicTokenService } from "$lib/server/services/public-token.service";
+import {
+  hashPublicToken,
+  PublicTokenService,
+  type IssuePublicTokenInput,
+} from "$lib/server/services/public-token.service";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -56,8 +60,14 @@ describe("PublicTokenService", () => {
     });
     if (issued.isErr()) throw new Error(`Token issuance failed: ${issued.error}`);
 
-    expect(await service.consume(issued.value, "account_verification")).toBe(true);
-    expect(await service.consume(issued.value, "account_verification")).toBe(false);
+    expect(await service.consume(issued.value, "account_verification")).toMatchObject({
+      kind: "ok",
+      value: { affectedRows: 1 },
+    });
+    expect(await service.consume(issued.value, "account_verification")).toMatchObject({
+      kind: "err",
+      error: { type: "invalid-input" },
+    });
     expect(await service.inspect(issued.value, "account_verification")).toEqual({
       status: "consumed",
     });
@@ -72,11 +82,13 @@ describe("PublicTokenService", () => {
     if (issued.isErr()) throw new Error(`Token issuance failed: ${issued.error}`);
 
     expect(await service.verifyAccount(issued.value)).toMatchObject({
-      id: "user-1",
-      verifiedEmail: true,
-      expiresAt: null,
+      kind: "ok",
+      value: { id: "user-1", verifiedEmail: true, expiresAt: null },
     });
-    expect(await service.verifyAccount(issued.value)).toBeNull();
+    expect(await service.verifyAccount(issued.value)).toMatchObject({
+      kind: "err",
+      error: { type: "invalid-input" },
+    });
     expect(await service.inspect(issued.value, "account_verification")).toEqual({
       status: "consumed",
     });
@@ -95,8 +107,14 @@ describe("PublicTokenService", () => {
     });
     if (issued.isErr()) throw new Error(`Token issuance failed: ${issued.error}`);
 
-    expect(await service.resetPassword(issued.value, "replacement-hash")).toBe("user-1");
-    expect(await service.resetPassword(issued.value, "replayed-hash")).toBeNull();
+    expect(await service.resetPassword(issued.value, "replacement-hash")).toMatchObject({
+      kind: "ok",
+      value: "user-1",
+    });
+    expect(await service.resetPassword(issued.value, "replayed-hash")).toMatchObject({
+      kind: "err",
+      error: { type: "invalid-input" },
+    });
 
     const user = await testDatabase.database
       .select()
@@ -123,10 +141,10 @@ describe("PublicTokenService", () => {
 
     expect(
       await service.confirmEmailChange(issued.value, "wrong-user", "current-session"),
-    ).toBeNull();
+    ).toMatchObject({ kind: "err", error: { type: "invalid-input" } });
     expect(
       await service.confirmEmailChange(issued.value, "user-1", "current-session"),
-    ).toMatchObject({ email: "new@example.com" });
+    ).toMatchObject({ kind: "ok", value: { email: "new@example.com" } });
     expect(await testDatabase.database.select().from(table.session)).toMatchObject([
       { id: "current-session" },
     ]);
@@ -151,8 +169,14 @@ describe("PublicTokenService", () => {
     });
     if (issued.isErr()) throw new Error(`Token issuance failed: ${issued.error}`);
 
-    expect(await service.confirmReservation(issued.value)).toBe("reservation-1");
-    expect(await service.confirmReservation(issued.value)).toBeNull();
+    expect(await service.confirmReservation(issued.value)).toMatchObject({
+      kind: "ok",
+      value: "reservation-1",
+    });
+    expect(await service.confirmReservation(issued.value)).toMatchObject({
+      kind: "err",
+      error: { type: "invalid-input" },
+    });
     expect(await service.inspect(issued.value, "reservation_confirmation")).toEqual({
       status: "consumed",
     });
@@ -199,16 +223,23 @@ describe("PublicTokenService", () => {
     const emailChange = await service.issue({
       purpose: "email_change",
       userID: "user-1",
+      pendingEmail: "new@example.com",
       expiresAt: new Date("2099-06-15T12:00:00.000Z"),
     });
     if (passwordReset.isErr() || emailChange.isErr()) throw new Error("Token issuance failed");
 
-    expect(await service.revoke(passwordReset.value, "password_reset")).toBe(true);
+    expect(await service.revoke(passwordReset.value, "password_reset")).toMatchObject({
+      kind: "ok",
+      value: { affectedRows: 1 },
+    });
     expect(await service.inspect(passwordReset.value, "password_reset")).toEqual({
       status: "invalid",
     });
 
-    await service.deleteByUserID("user-1");
+    expect(await service.deleteByUserID("user-1")).toMatchObject({
+      kind: "ok",
+      value: { affectedRows: 1 },
+    });
     expect(await testDatabase.database.select().from(table.publicToken)).toEqual([]);
   });
 
@@ -223,15 +254,36 @@ describe("PublicTokenService", () => {
     expect(await service.inspect(expired.value, "password_reset")).toEqual({
       status: "expired",
     });
-    expect(await service.consume(expired.value, "password_reset")).toBe(false);
+    expect(await service.consume(expired.value, "password_reset")).toMatchObject({
+      kind: "err",
+      error: { type: "invalid-input" },
+    });
 
-    await service.deleteAllExpired();
+    expect(await service.deleteAllExpired()).toMatchObject({
+      kind: "ok",
+      value: { affectedRows: 1 },
+    });
     expect(
       await testDatabase.database
         .select()
         .from(table.publicToken)
         .where(eq(table.publicToken.tokenHash, hashPublicToken(expired.value))),
     ).toEqual([]);
+  });
+
+  it("rejects structurally invalid input before writing to storage", async () => {
+    const invalidInput = {
+      purpose: "email_change",
+      userID: "user-1",
+      expiresAt: new Date("2099-06-15T12:00:00.000Z"),
+    } as IssuePublicTokenInput;
+
+    const result = await service.issue(invalidInput);
+
+    expect(result.isErr()).toBe(true);
+    if (result.isOk()) throw new Error("Expected token issuance to fail");
+    expect(result.error).toBe("invalid-input");
+    expect(await testDatabase.database.select().from(table.publicToken)).toEqual([]);
   });
 
   it("returns a storage error for a token referencing a missing user", async () => {

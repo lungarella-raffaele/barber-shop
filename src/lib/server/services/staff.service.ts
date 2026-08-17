@@ -1,4 +1,5 @@
-import type { StaffDTO } from "$lib/dto";
+import type { StaffSummaryDTO } from "$lib/dto";
+import { err, ok } from "$lib/modules/result";
 import { avatarOriginalSchema, avatarSchema } from "$lib/modules/zod-schemas";
 import type { Database } from "$lib/server/db/client";
 import { getProductionDatabase } from "$lib/server/db/production";
@@ -7,6 +8,7 @@ import { eq } from "drizzle-orm";
 
 import { createLogger } from "../logger";
 import { Service } from "./service";
+import type { AffectedRows, ServiceResult } from "./service-result";
 
 const logger = createLogger("StaffService");
 
@@ -46,7 +48,7 @@ export class StaffService extends Service {
     }
   }
 
-  async getAll(): Promise<StaffDTO[] | null> {
+  async getAll(): Promise<StaffSummaryDTO[] | null> {
     try {
       const result = await this.database
         .select({
@@ -65,21 +67,23 @@ export class StaffService extends Service {
     }
   }
 
-  async toggleActive(isActive: boolean, userID: string): Promise<boolean> {
+  async toggleActive(isActive: boolean, userID: string): Promise<ServiceResult<AffectedRows>> {
+    if (typeof isActive !== "boolean" || !userID) return err({ type: "invalid-input" });
+
     try {
       const updated = await this.database
         .update(table.staff)
         .set({ isActive })
         .where(eq(table.staff.userID, userID))
         .returning({ userID: table.staff.userID });
-      return updated.length === 1;
+      return updated.length === 1 ? ok({ affectedRows: 1 }) : err({ type: "not-found" });
     } catch (e) {
       logger.error({ err: e, userId: userID, isActive }, "toggleActive failed");
-      return false;
+      return err({ type: "storage-error" });
     }
   }
 
-  async deleteAvatar(userID: string): Promise<boolean> {
+  async deleteAvatar(userID: string): Promise<ServiceResult<AffectedRows>> {
     try {
       const deleted = await this.database
         .update(table.staff)
@@ -92,10 +96,10 @@ export class StaffService extends Service {
         })
         .where(eq(table.staff.userID, userID))
         .returning({ userID: table.staff.userID });
-      return deleted.length === 1;
+      return deleted.length === 1 ? ok({ affectedRows: 1 }) : err({ type: "not-found" });
     } catch (e) {
       logger.error({ err: e, userId: userID }, "deleteAvatar failed");
-      return false;
+      return err({ type: "storage-error" });
     }
   }
 

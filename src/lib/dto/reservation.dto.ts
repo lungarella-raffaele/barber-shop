@@ -1,9 +1,10 @@
+import type { MinuteOfDay } from "$lib/domain/minute-of-day";
 import type { DateValue, Time } from "@internationalized/date";
 
 export type ReservationDTO = {
   id: string;
   date: string;
-  hour: string;
+  startMinute: MinuteOfDay;
   name: string;
   email: string;
   phoneNumber: string | null;
@@ -34,6 +35,6 @@ export type CreatedReservationDTO = {
 
 export type ReservedSlotDTO = {
   date: DateValue;
-  start: Time;
+  startMinute: MinuteOfDay;
   duration: Time;
 };

@@ -22,19 +22,18 @@ describe("BannerService", () => {
     const updated = await service.update("Appointments available", true);
 
     expect(updated.isOk()).toBe(true);
-    if (!updated.isOk()) throw new Error(updated.error);
-    expect(updated.value).toMatchObject({
+    if (!updated.isOk()) throw new Error(updated.error.type);
+    expect(updated.value).toEqual({ affectedRows: 1 });
+    expect(await service.get()).toMatchObject({
       id: 1,
       message: "Appointments available",
       visible: true,
     });
-    expect(await service.get()).toMatchObject(updated.value);
   });
 
   it("returns a useful validation error", async () => {
     const result = await service.update("", true);
 
-    expect(result.isErr()).toBe(true);
-    if (result.isErr()) expect(result.error).not.toBe("");
+    expect(result.isErr() && result.error.type).toBe("invalid-input");
   });
 });

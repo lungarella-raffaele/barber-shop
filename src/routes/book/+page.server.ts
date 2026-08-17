@@ -1,9 +1,9 @@
 import { BASE_URL } from "$env/static/private";
+import { formatMinuteOfDay } from "$lib/domain/minute-of-day";
 import { bookSchema } from "$lib/modules/zod-schemas.js";
 import { logger } from "$lib/server/logger.js";
 import { EmailService } from "$lib/server/mailer.js";
-import { toSessionUserDTO } from "$lib/server/mappers/session-user.mapper.js";
-import { formatDate, formatTime } from "$lib/utils.js";
+import { formatDate } from "$lib/utils.js";
 import { OfferingService } from "@service/offering.service.js";
 import { PublicTokenService } from "@service/public-token.service.js";
 import { ReservationService } from "@service/reservation.service.js";
@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ locals }) => {
         staff: "",
         offerings: [],
         date: "",
-        hour: "",
+        startMinute: 0,
         name: "",
         email: "",
         phone: "",
@@ -39,9 +39,8 @@ export const load: PageServerLoad = async ({ locals }) => {
     ScheduleService.get().getAll(),
   ]);
 
-  if (!currentReservations || !shutdown) {
-    return error(500);
-  }
+  if (currentReservations.isErr()) return error(503);
+  if (!shutdown) return error(500);
 
   const [offerings, staff] = await Promise.all([
     OfferingService.get().getAll(),
@@ -54,12 +53,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 
   return {
     form,
-    currentReservations,
+    currentReservations: currentReservations.value,
     shutdown,
     schedule,
     offerings,
     staff,
-    user: locals.user ? toSessionUserDTO(locals.user) : null,
+    user: locals.user,
     title: "Nuova prenotazione -",
   };
 };
@@ -74,7 +73,7 @@ export const actions: Actions = {
       return fail(400, { form });
     }
 
-    const { staff, offerings, date, hour, name, email, phone } = form.data;
+    const { staff, offerings, date, startMinute, name, email, phone } = form.data;
     const reservationService = ReservationService.get();
 
     let result: Awaited<ReturnType<typeof reservationService.insertByUser>> | undefined = undefined;
@@ -88,20 +87,20 @@ export const actions: Actions = {
         staff,
         offerings,
         date,
-        hour,
+        startMinute,
         name,
         email,
         phone,
       });
     } else if (user.role === "customer") {
       result = await reservationService.insertByUser(
-        { who: "usual", staff, offerings, date, hour },
+        { who: "usual", staff, offerings, date, startMinute },
         user.account,
       );
     } else {
       // staff
       result = await reservationService.insertByStaff(
-        { who: "staff", staff, offerings, date, hour, name, phone },
+        { who: "staff", staff, offerings, date, startMinute, name, phone },
         user.account,
         name,
       );
@@ -134,7 +133,7 @@ export const actions: Actions = {
           staffName: result.value.staff.name,
           serviceNames: result.value.offerings.map((offering) => offering.name),
           date: formatDate(result.value.date),
-          hour: formatTime(result.value.hour),
+          hour: formatMinuteOfDay(result.value.startMinute),
           to: email,
         });
 
@@ -156,12 +155,13 @@ export const actions: Actions = {
           }
         : { id: result.value.id, pending: result.value.pending };
     } else {
-      logger.error(result.error);
-      switch (result.error) {
+      switch (result.error.type) {
         case "conflict":
           return fail(409, { form });
-        default:
-          return fail(404, { form });
+        case "invalid-data":
+          return fail(400, { form });
+        case "server-error":
+          return fail(500, { form });
       }
     }
   },

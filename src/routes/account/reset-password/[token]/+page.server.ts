@@ -3,7 +3,7 @@ import * as auth from "$lib/server/auth";
 import { logger } from "$lib/server/logger";
 import { PublicTokenService } from "@service/public-token.service";
 import { UserService } from "@service/user.service";
-import { fail, redirect } from "@sveltejs/kit";
+import { error, fail, redirect } from "@sveltejs/kit";
 import { hash } from "argon2";
 import { message, superValidate } from "sveltekit-superforms";
 import { zod4 as zod } from "sveltekit-superforms/adapters";
@@ -13,6 +13,8 @@ import type { Actions, PageServerLoad } from "./$types";
 export const load: PageServerLoad = async ({ params }) => {
   const changePasswordForm = await superValidate(zod(changePasswordSchema));
   const resetToken = await PublicTokenService.get().inspect(params.token, "password_reset");
+
+  if (resetToken.status === "error") return error(503);
 
   if (resetToken.status !== "valid" || !resetToken.token.userID) {
     return {
@@ -41,7 +43,8 @@ export const actions: Actions = {
     });
     const userID = await PublicTokenService.get().resetPassword(event.params.token, passwordHash);
 
-    if (!userID) {
+    if (userID.isErr()) {
+      if (userID.error.type === "storage-error") return error(503);
       return message(
         form,
         { success: false, text: "La richiesta non è valida o è scaduta." },
@@ -49,20 +52,22 @@ export const actions: Actions = {
       );
     }
 
-    const user = await UserService.get().getByID(userID);
-    if (!user || !user.account.verifiedEmail) {
+    const user = await UserService.get().getByID(userID.value);
+    if (user.isErr()) {
+      if (user.error.type === "storage-error") return error(503);
       return redirect(303, "/login");
     }
+    if (!user.value.account.verifiedEmail) return redirect(303, "/login");
 
     const sessionToken = auth.generateSessionToken();
     try {
-      const session = await auth.createSession(sessionToken, user.account.id);
+      const session = await auth.createSession(sessionToken, user.value.account.id);
       auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
     } catch (error) {
-      logger.error({ err: error, userId: userID }, "Could not create post-reset session");
+      logger.error({ err: error, userId: userID.value }, "Could not create post-reset session");
       return redirect(303, "/login");
     }
 
-    redirect(303, user.role === "staff" ? "/dashboard" : "/");
+    redirect(303, user.value.role === "staff" ? "/dashboard" : "/");
   },
 };

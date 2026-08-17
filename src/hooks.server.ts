@@ -3,6 +3,7 @@ import { env } from "$env/dynamic/private";
 import * as auth from "$lib/server/auth.js";
 import { getLegacyRedirect } from "$lib/server/legacy-redirects";
 import { logger } from "$lib/server/logger";
+import { toSessionUserDTO } from "$lib/server/mappers/user.mapper";
 import { consumeRateLimit, getRateLimitPolicy } from "$lib/server/rate-limit";
 import { redirect, type Handle } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
@@ -56,8 +57,8 @@ const handleAuth: Handle = async ({ event, resolve }) => {
     auth.deleteSessionTokenCookie(event);
   }
 
-  event.locals.user = user;
-  event.locals.session = session;
+  event.locals.user = user ? toSessionUserDTO(user) : null;
+  event.locals.session = session ? { id: session.id } : null;
 
   if ((isProtected || isAdmin) && !user) {
     redirect(303, "/login");

@@ -1,3 +1,4 @@
+import { ok } from "$lib/modules/result";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const tokenService = vi.hoisted(() => ({
@@ -41,7 +42,7 @@ describe("email verification route", () => {
 
   it("verifies and creates a session on POST", async () => {
     const expiresAt = new Date("2030-01-01T00:00:00Z");
-    tokenService.verifyAccount.mockResolvedValue({ id: "user-1" });
+    tokenService.verifyAccount.mockResolvedValue(ok({ id: "user-1" }));
     auth.createSession.mockResolvedValue({ expiresAt });
 
     const postEvent = { ...event, cookies: {} };

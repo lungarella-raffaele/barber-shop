@@ -1,3 +1,4 @@
+import { createMinuteOfDay } from "$lib/domain/minute-of-day";
 import { z } from "zod";
 
 export const emailSchema = z.email({ error: "Inserisci una mail valida" });
@@ -65,7 +66,12 @@ export const signupSchema = z
 // Shared field schemas
 const nameSchema = z.string().min(1);
 const dateSchema = z.iso.date();
-const hourSchema = z.string().min(1);
+const startMinuteSchema = z.coerce
+  .number({ error: "Scegli un orario valido" })
+  .int({ error: "Scegli un orario valido" })
+  .min(0, { error: "Scegli un orario valido" })
+  .max(1439, { error: "Scegli un orario valido" })
+  .transform(createMinuteOfDay);
 export const offeringsFieldSchema = z
   .array(z.string().min(1))
   .min(1, { error: "Scegli almeno un servizio" });
@@ -75,7 +81,7 @@ const phoneSchema = z.string().optional();
 // Base schema with common fields
 const baseUserSchema = z.object({
   date: dateSchema,
-  hour: hourSchema,
+  startMinute: startMinuteSchema,
   offerings: offeringsFieldSchema,
   staff: staffSchema,
 });
@@ -98,7 +104,7 @@ const bookingFields = {
   staff: z.string().min(1, { error: "Scegli uno staff" }),
   offerings: offeringsFieldSchema,
   date: z.iso.date({ error: "Scegli una data" }),
-  hour: z.string().min(1, { error: "Scegli un orario" }),
+  startMinute: startMinuteSchema,
 };
 
 export const bookSchema = z.discriminatedUnion("who", [

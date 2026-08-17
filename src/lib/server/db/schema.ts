@@ -53,7 +53,9 @@ export const reservation = sqliteTable(
   {
     id: text("id").primaryKey(),
     date: text("date").notNull(),
+    // Legacy compatibility column; remove after all environments use start_minute.
     hour: text("hour").notNull(),
+    startMinute: integer("start_minute").notNull().default(0),
     phoneNumber: text("phone_number"),
 
     name: text("name").notNull(),
@@ -61,6 +63,11 @@ export const reservation = sqliteTable(
     ownerUserID: text("owner_user_id").references(() => user.id, { onDelete: "set null" }),
     expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
     pending: integer("pending", { mode: "boolean" }).notNull().default(false),
+    slotDurationMinutes: integer("slot_duration_minutes").notNull().default(15),
+    slotStart: integer("slot_start").notNull().default(0),
+    slotCount: integer("slot_count").notNull().default(1),
+    occupancyBitsLow: integer("occupancy_bits_low").notNull().default(0),
+    occupancyBitsHigh: integer("occupancy_bits_high").notNull().default(0),
     staffID: text("staff_id")
       .notNull()
       .references(() => staff.userID, { onDelete: "restrict" }),
@@ -68,9 +75,60 @@ export const reservation = sqliteTable(
   },
   (entry) => [
     index("reservation_owner_user_idx").on(entry.ownerUserID),
-    index("reservation_availability_idx").on(entry.staffID, entry.date, entry.hour),
+    index("reservation_availability_idx").on(entry.staffID, entry.date, entry.startMinute),
     index("reservation_expires_at_idx").on(entry.expiresAt),
     index("reservation_pending_idx").on(entry.pending),
+    check("reservation_start_minute_check", sql`${entry.startMinute} BETWEEN 0 AND 1439`),
+    check(
+      "reservation_slot_duration_check",
+      sql`${entry.slotDurationMinutes} >= 15 AND 1440 % ${entry.slotDurationMinutes} = 0`,
+    ),
+    check("reservation_slot_start_check", sql`${entry.slotStart} BETWEEN 0 AND 95`),
+    check("reservation_slot_count_check", sql`${entry.slotCount} > 0`),
+    check(
+      "reservation_slot_range_check",
+      sql`${entry.slotStart} + ${entry.slotCount} <= 1440 / ${entry.slotDurationMinutes}`,
+    ),
+    check("reservation_occupancy_bits_low_check", sql`${entry.occupancyBitsLow} >= 0`),
+    check("reservation_occupancy_bits_high_check", sql`${entry.occupancyBitsHigh} >= 0`),
+  ],
+);
+
+export const reservationSlotPolicy = sqliteTable(
+  "reservation_slot_policy",
+  {
+    effectiveFromDate: text("effective_from_date").primaryKey(),
+    slotDurationMinutes: integer("slot_duration_minutes").notNull(),
+    ...timestamps,
+  },
+  (policy) => [
+    check(
+      "reservation_slot_policy_duration_check",
+      sql`${policy.slotDurationMinutes} >= 15 AND 1440 % ${policy.slotDurationMinutes} = 0`,
+    ),
+  ],
+);
+
+export const reservationDayOccupancy = sqliteTable(
+  "reservation_day_occupancy",
+  {
+    staffID: text("staff_id")
+      .notNull()
+      .references(() => staff.userID, { onDelete: "cascade" }),
+    date: text("date").notNull(),
+    slotDurationMinutes: integer("slot_duration_minutes").notNull(),
+    bitsLow: integer("bits_low").notNull().default(0),
+    bitsHigh: integer("bits_high").notNull().default(0),
+    ...timestamps,
+  },
+  (occupancy) => [
+    primaryKey({ columns: [occupancy.staffID, occupancy.date] }),
+    check(
+      "reservation_day_occupancy_duration_check",
+      sql`${occupancy.slotDurationMinutes} >= 15 AND 1440 % ${occupancy.slotDurationMinutes} = 0`,
+    ),
+    check("reservation_day_occupancy_bits_low_check", sql`${occupancy.bitsLow} >= 0`),
+    check("reservation_day_occupancy_bits_high_check", sql`${occupancy.bitsHigh} >= 0`),
   ],
 );
 
@@ -252,6 +310,8 @@ export type NewSessionRow = typeof session.$inferInsert;
 export type UserRow = typeof user.$inferSelect;
 export type StaffRow = typeof staff.$inferSelect;
 export type ReservationRow = typeof reservation.$inferSelect;
+export type ReservationSlotPolicyRow = typeof reservationSlotPolicy.$inferSelect;
+export type ReservationDayOccupancyRow = typeof reservationDayOccupancy.$inferSelect;
 export type ReservationOfferingRow = typeof reservationOffering.$inferSelect;
 export type OfferingRow = typeof offering.$inferSelect;
 export type NewOfferingRow = typeof offering.$inferInsert;

@@ -3,8 +3,13 @@
   import { ChevronLeft, ChevronRight, Mail, Trash } from "$lib/components/icons";
   import { Button } from "$lib/components/ui/button";
   import * as Sheet from "$lib/components/ui/sheet";
+  import {
+    createMinuteOfDay,
+    formatMinuteOfDay,
+    type MinuteOfDay,
+  } from "$lib/domain/minute-of-day";
   import type { ReservationDTO } from "$lib/dto";
-  import { formatCurrency, formatDuration, formatTime } from "$lib/utils";
+  import { formatCurrency, formatDuration } from "$lib/utils";
   import ChevronsRight from "@lucide/svelte/icons/chevrons-right";
 
   let {
@@ -22,7 +27,7 @@
   const orderedReservations = $derived(
     [...reservations].sort((a, b) => {
       const byDate = a.date.localeCompare(b.date);
-      return byDate !== 0 ? byDate : a.hour.localeCompare(b.hour);
+      return byDate !== 0 ? byDate : a.startMinute - b.startMinute;
     }),
   );
   const currentIndex = $derived(
@@ -42,10 +47,8 @@
     if (nextReservation) reservation = nextReservation;
   }
 
-  function endTime(hour: string, duration: number) {
-    const [hours, minutes] = hour.split(":").map(Number);
-    const end = hours * 60 + minutes + duration;
-    return `${String(Math.floor(end / 60) % 24).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`;
+  function endTime(startMinute: MinuteOfDay, duration: number) {
+    return formatMinuteOfDay(createMinuteOfDay((startMinute + duration) % (24 * 60)));
   }
 
   function requestDelete() {
@@ -123,7 +126,9 @@
           </div>
         </div>
         <Sheet.Title class="truncate">{reservation.name}</Sheet.Title>
-        <Sheet.Description>Prenotazione delle {formatTime(reservation.hour)}</Sheet.Description>
+        <Sheet.Description
+          >Prenotazione delle {formatMinuteOfDay(reservation.startMinute)}</Sheet.Description
+        >
       </Sheet.Header>
 
       <Sheet.Body class="space-y-4 overflow-y-auto p-5">
@@ -133,7 +138,10 @@
           <div class="flex items-center justify-between gap-4 px-4 py-3">
             <dt class="text-muted-foreground typo-body-sm">Orario</dt>
             <dd class="text-right typo-label tabular-nums">
-              {formatTime(reservation.hour)}–{endTime(reservation.hour, totalDuration)}
+              {formatMinuteOfDay(reservation.startMinute)}–{endTime(
+                reservation.startMinute,
+                totalDuration,
+              )}
             </dd>
           </div>
           <div class="flex items-center justify-between gap-4 px-4 py-3">

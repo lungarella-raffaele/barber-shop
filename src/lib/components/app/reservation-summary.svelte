@@ -2,8 +2,9 @@
   import Duration from "$lib/components/app/duration.svelte";
   import * as Card from "$lib/components/ui/card";
   import { Separator } from "$lib/components/ui/separator";
+  import { formatMinuteOfDay } from "$lib/domain/minute-of-day";
   import type { ReservationDTO } from "$lib/dto";
-  import { formatCurrency, formatDate, formatTime } from "$lib/utils";
+  import { formatCurrency, formatDate } from "$lib/utils";
 
   const { reservation }: { reservation: ReservationDTO } = $props();
 
@@ -49,7 +50,7 @@
       <Separator />
       <div class="flex justify-between gap-4">
         <span class="text-muted-foreground">Ora</span>
-        <span class="text-right typo-label">{formatTime(reservation.hour)}</span>
+        <span class="text-right typo-label">{formatMinuteOfDay(reservation.startMinute)}</span>
       </div>
       <Separator />
       <div class="flex justify-between gap-4">
