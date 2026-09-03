@@ -32,7 +32,6 @@ export class Err<E> {
 export const ok = <T>(value: T): Ok<T> => new Ok(value);
 export const err = <E>(error: E): Err<E> => new Err(error);
 
-
 export function safeJsonParse(input: string) {
   try {
     return ok(JSON.parse(input) as unknown);

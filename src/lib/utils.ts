@@ -2,7 +2,7 @@ import { DateFormatter, getLocalTimeZone, parseDate, Time } from "@international
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { err, ok } from "./modules/result";
-import type { Result} from "./modules/result";
+import type { Result } from "./modules/result";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

@@ -10,11 +10,7 @@
   const { ...restProps }: SonnerProps = $props();
 </script>
 
-<Sonner
-  theme={mode.current}
-  class="toaster group"
-  {...restProps}
->
+<Sonner theme={mode.current} class="toaster group" {...restProps}>
   {#snippet loadingIcon()}
     <Loader2Icon class="text-muted-foreground size-4 animate-spin" />
   {/snippet}
