@@ -1,4 +1,3 @@
-import { dev } from "$app/environment";
 import {
   Calendar,
   CirclePlus,
@@ -96,8 +95,6 @@ export function getNavigationItems(user: UserDTO | null): NavigationItem[] {
         return user !== null;
       case "admin":
         return user?.role === "staff";
-      case "dev":
-        return dev;
     }
   });
 }
