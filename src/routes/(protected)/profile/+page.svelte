@@ -126,7 +126,7 @@
                 class="max-w-50"
                 name="phone"
                 value={data.user.account.phoneNumber}
-                placeholder="+39 333 444 55 66"
+                placeholder=""
                 disabled={!isEditingInfo}
               />
             </div>

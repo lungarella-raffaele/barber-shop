@@ -149,7 +149,7 @@ const TEMPLATE = (content: string) => `
     <h1>Emi Hair Club</h1>
     ${content}
     <div class="salon-info">
-      <p><strong>Emi Hair Club</strong><br />${escapeHtml(BARBER_SHOP_DETAILS.street ?? "")}<br />${escapeHtml(BARBER_SHOP_DETAILS.phone ?? "")}</p>
+      <p><strong>Emi Hair Club</strong><br />${escapeHtml(BARBER_SHOP_DETAILS.street ?? "")}</p>
       <div class="footer"><p>${new Date().getFullYear()} Emi Hair Club</p></div>
     </div>
   </body>

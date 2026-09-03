@@ -96,7 +96,7 @@ export const anonymousUserSchema = baseUserSchema.extend({
 export const usualUserSchema = baseUserSchema;
 
 export const staffUserSchema = baseUserSchema.extend({
-  name: z.string(),
+  name: nameSchema,
   phone: phoneSchema,
 });
 
@@ -129,7 +129,7 @@ export const bookSchema = z.discriminatedUnion("who", [
   z.object({
     who: z.literal("staff"),
     ...bookingFields,
-    name: z.string().optional(),
+    name: z.string().trim().min(1, { error: "Il nome è obbligatorio" }),
     email: z.string().optional(),
     phone: z.string().optional(),
   }),

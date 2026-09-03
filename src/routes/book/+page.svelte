@@ -38,8 +38,8 @@
           const res = result.data as CreatedReservationDTO;
           if (res?.confirmationToken) {
             goto(`/book/confirm/${res.confirmationToken}`);
-          } else if (res) {
-            goto(`/${res.id}`);
+          } else if (res?.accessToken) {
+            goto(`/book/pending/${res.accessToken}`);
           }
         } else if (result.type === "failure") {
           if (result.status === 500 && result.data?.email) {
@@ -239,7 +239,7 @@
           <Form.Field form={sForm} name="name">
             <Form.Control>
               {#snippet children({ props })}
-                <Form.Label>Nome</Form.Label>
+                <Form.Label required>Nome</Form.Label>
                 <Input {...props} bind:value={$formData.name} placeholder="Mario Rossi" />
               {/snippet}
             </Form.Control>
@@ -249,11 +249,11 @@
       {/if}
 
       <section class={stepClass}>
-        <h2 class="px-2 typo-subheading">StaffDTO</h2>
+        <h2 class="px-2 typo-subheading">Personale</h2>
         <Form.Field form={sForm} name="staff">
           <Form.Control>
             {#snippet children({ props })}
-              <Form.Label class="sr-only">StaffDTO</Form.Label>
+              <Form.Label class="sr-only">Personale</Form.Label>
               <input type="hidden" name={props.name} value={$formData.staff} />
               <StaffPicker
                 class="w-full"

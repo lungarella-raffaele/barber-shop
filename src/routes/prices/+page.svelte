@@ -60,8 +60,8 @@
 
 <div class="mx-auto w-full max-w-2xl">
   <PageHeader
-    title="Servizi"
-    description="Consulta i servizi e gli orari disponibili dello staff"
+    title="Catalogo"
+    description="Consulta i servizi e gli orari disponibili del personale"
   />
 
   <div class="space-y-8">
@@ -100,7 +100,7 @@
                 <div
                   class="border-border bg-card rounded-2xl border p-6 text-center text-muted-foreground"
                 >
-                  Nessun servizio disponibile per questo membro dello staff.
+                  Nessun servizio disponibile.
                 </div>
               {/each}
             </div>
@@ -148,7 +148,7 @@
       {:else}
         <Card.Root class="rounded-2xl">
           <Card.Content class="text-muted-foreground py-10 text-center">
-            Nessun membro dello staff disponibile.
+            Nessun personale disponibile.
           </Card.Content>
         </Card.Root>
       {/if}

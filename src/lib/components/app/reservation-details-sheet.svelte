@@ -149,7 +149,7 @@
             <dd class="text-right typo-label">{formatDuration(totalDuration)}</dd>
           </div>
           <div class="flex items-center justify-between gap-4 px-4 py-3">
-            <dt class="text-muted-foreground typo-body-sm">StaffDTO</dt>
+            <dt class="text-muted-foreground typo-body-sm">Personale</dt>
             <dd class="min-w-0 truncate text-right typo-label">{reservation.staff.name}</dd>
           </div>
           <div class="flex items-center justify-between gap-4 px-4 py-3">

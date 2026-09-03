@@ -72,14 +72,15 @@ export async function consumeRateLimit(
   const database = options.database ?? db;
   const nowMs = (options.now ?? new Date()).getTime();
   const windowStartMs = Math.floor(nowMs / policy.windowMs) * policy.windowMs;
-  const windowStart = new Date(windowStartMs);
+  const windowStartSeconds = Math.floor(windowStartMs / 1000);
   const windowEndMs = windowStartMs + policy.windowMs;
-  const expiresAt = new Date(windowEndMs + policy.windowMs);
+  const expiresAtSeconds = Math.floor((windowEndMs + policy.windowMs) / 1000);
   const keyHash = await hashKey(clientAddress, policy.id, options.hashSecret);
 
+  // This raw SQL bypasses Drizzle's timestamp encoder, so bind Unix seconds explicitly.
   const rows = await database.all<{ requestCount: number }>(sql`
     INSERT INTO rate_limit (key_hash, window_start, request_count, expires_at)
-    VALUES (${keyHash}, ${windowStart}, 1, ${expiresAt})
+    VALUES (${keyHash}, ${windowStartSeconds}, 1, ${expiresAtSeconds})
     ON CONFLICT (key_hash, window_start) DO UPDATE SET
       request_count = rate_limit.request_count + 1,
       expires_at = excluded.expires_at

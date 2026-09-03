@@ -166,7 +166,7 @@ export const actions: Actions = {
 
     return message(form, {
       success: true,
-      text: "Email inviata. Controlla la tua casella di posta.",
+      text: "Controlla la tua casella di posta.",
     });
   },
   deleteAccount: async (event) => {

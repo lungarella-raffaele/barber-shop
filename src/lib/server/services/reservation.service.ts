@@ -261,12 +261,10 @@ export class ReservationService extends Service {
   async insertByStaff(
     data: StaffData,
     user: Pick<UserRow, "id" | "email">,
-    alternativeName?: string,
   ): Promise<Result<ReservationDTO, ReservationInsertError>> {
     try {
       const schema = staffUserSchema.safeParse({
         ...data,
-        name: alternativeName ?? "Inserito da staff",
         date: data.date?.toString(),
       });
       if (!schema.success || !this.validateOfferingIDs(schema.data.offerings)) {

@@ -30,7 +30,7 @@
       </div>
       <Separator />
       <div class="flex justify-between gap-4">
-        <span class="text-muted-foreground">StaffDTO</span>
+        <span class="text-muted-foreground">Personale</span>
         <span class="text-right typo-label">{reservation.staff.name}</span>
       </div>
       <Separator />

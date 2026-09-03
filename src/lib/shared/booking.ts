@@ -23,7 +23,7 @@ export type UsualData = {
 
 export type StaffData = {
   who: "staff";
-  name?: string;
+  name: string;
   phone?: string;
   date: string;
   startMinute: MinuteOfDay;

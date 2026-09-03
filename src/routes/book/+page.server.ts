@@ -73,88 +73,27 @@ export const actions: Actions = {
       return fail(400, { form });
     }
 
-    const { staff, offerings, date, startMinute, name, email, phone } = form.data;
+    const data = form.data;
     const reservationService = ReservationService.get();
 
-    let result: Awaited<ReturnType<typeof reservationService.insertByUser>> | undefined = undefined;
+    let result: Awaited<ReturnType<typeof reservationService.insertByUser>>;
 
-    if (!user) {
-      if (!name || !email) {
-        return fail(400, { form });
-      }
-      result = await reservationService.insertByAnonymous({
-        who: "anonymous",
-        staff,
-        offerings,
-        date,
-        startMinute,
-        name,
-        email,
-        phone,
-      });
-    } else if (user.role === "customer") {
-      result = await reservationService.insertByUser(
-        { who: "usual", staff, offerings, date, startMinute },
-        user.account,
-      );
-    } else {
-      // staff
-      result = await reservationService.insertByStaff(
-        { who: "staff", staff, offerings, date, startMinute, name, phone },
-        user.account,
-        name,
-      );
+    switch (data.who) {
+      case "anonymous":
+        if (user) return fail(403, { form });
+        result = await reservationService.insertByAnonymous(data);
+        break;
+      case "usual":
+        if (!user || user.role !== "customer") return fail(403, { form });
+        result = await reservationService.insertByUser(data, user.account);
+        break;
+      case "staff":
+        if (!user || user.role !== "staff") return fail(403, { form });
+        result = await reservationService.insertByStaff(data, user.account);
+        break;
     }
 
-    if (!result) {
-      return fail(500, { form });
-    }
-
-    if (result.isOk()) {
-      const confirmationToken = await PublicTokenService.get().issue({
-        purpose: "reservation_confirmation",
-        reservationID: result.value.id,
-        expiresAt: result.value.expiresAt,
-      });
-
-      if (confirmationToken.isErr()) {
-        await reservationService.delete(result.value.id);
-        return fail(500, { form });
-      }
-
-      if (!user) {
-        if (!name || !email) {
-          return fail(400, { form });
-        }
-
-        const sent = await new EmailService().newReservation({
-          name,
-          link: `${BASE_URL.replace(/\/$/, "")}/book/confirm/${confirmationToken.value}`,
-          staffName: result.value.staff.name,
-          serviceNames: result.value.offerings.map((offering) => offering.name),
-          date: formatDate(result.value.date),
-          hour: formatMinuteOfDay(result.value.startMinute),
-          to: email,
-        });
-
-        logger.warn(sent);
-
-        if (sent.isErr()) {
-          logger.error("Could not send email");
-          await reservationService.delete(result.value.id);
-          return fail(500, { form, email: true });
-        }
-      }
-
-      // Anonymous confirmation credentials are delivered only by email, never serialized publicly.
-      return user
-        ? {
-            id: result.value.id,
-            pending: result.value.pending,
-            confirmationToken: confirmationToken.value,
-          }
-        : { id: result.value.id, pending: result.value.pending };
-    } else {
+    if (result.isErr()) {
       switch (result.error.type) {
         case "conflict":
           return fail(409, { form });
@@ -164,5 +103,62 @@ export const actions: Actions = {
           return fail(500, { form });
       }
     }
+
+    const reservation = result.value;
+    const confirmationToken = await PublicTokenService.get().issue({
+      purpose: "reservation_confirmation",
+      reservationID: reservation.id,
+      expiresAt: reservation.expiresAt,
+    });
+
+    if (confirmationToken.isErr()) {
+      await reservationService.delete(reservation.id);
+      return fail(500, { form });
+    }
+
+    if (data.who === "anonymous") {
+      const accessToken = await PublicTokenService.get().issue({
+        purpose: "reservation_access",
+        reservationID: reservation.id,
+        expiresAt: reservation.expiresAt,
+      });
+
+      if (accessToken.isErr()) {
+        await reservationService.delete(reservation.id);
+        return fail(500, { form });
+      }
+
+      const sent = await new EmailService().newReservation({
+        name: data.name,
+        link: `${BASE_URL.replace(/\/$/, "")}/book/confirm/${confirmationToken.value}`,
+        staffName: reservation.staff.name,
+        serviceNames: reservation.offerings.map((offering) => offering.name),
+        date: formatDate(reservation.date),
+        hour: formatMinuteOfDay(reservation.startMinute),
+        to: data.email,
+      });
+
+      logger.warn(sent);
+
+      if (sent.isErr()) {
+        logger.error("Could not send email");
+        await reservationService.delete(reservation.id);
+        return fail(500, { form, email: true });
+      }
+
+      // Confirmation credentials are delivered only by email. The access token only allows
+      // the browser that created the reservation to display its pending state.
+      return {
+        id: reservation.id,
+        pending: reservation.pending,
+        accessToken: accessToken.value,
+      };
+    }
+
+    return {
+      id: reservation.id,
+      pending: reservation.pending,
+      confirmationToken: confirmationToken.value,
+    };
   },
 };

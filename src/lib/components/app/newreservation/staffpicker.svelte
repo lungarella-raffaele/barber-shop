@@ -45,7 +45,7 @@
   {:then data}
     {#if !data || data.length === 0}
       <p class="text-muted-foreground">
-        Al momento non è specificato nessun membro dello staff. Riprova più tardi.
+        Al momento non è specificato nessun membro del personale. Riprova più tardi.
       </p>
     {:else}
       <ToggleGroup.Root

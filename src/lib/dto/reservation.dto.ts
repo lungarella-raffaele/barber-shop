@@ -31,6 +31,7 @@ export type CreatedReservationDTO = {
   id: string;
   pending: boolean;
   confirmationToken?: string;
+  accessToken?: string;
 };
 
 export type ReservedSlotDTO = {

@@ -1,6 +1,8 @@
 import { DateFormatter, getLocalTimeZone, parseDate, Time } from "@internationalized/date";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { err, ok } from "./modules/result";
+import type { Result} from "./modules/result";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -163,3 +165,11 @@ export function getInitials(name: string) {
 export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
+
+export function safeJsonParse(input: string): Result<unknown, "parse-error"> {
+  try {
+    return ok(JSON.parse(input));
+  } catch {
+    return err("parse-error");
+  }
+}

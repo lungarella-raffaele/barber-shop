@@ -6,7 +6,6 @@ import {
   Euro,
   Library,
   LogOut,
-  Puzzle,
   Settings,
 } from "$lib/components/icons/index";
 import type { UserDTO } from "$lib/dto";
@@ -39,14 +38,8 @@ export type NavigationItem = {
 };
 
 const navigation = [
-  {
-    title: "Showcase",
-    url: ROUTES.showcase,
-    icon: Puzzle,
-    visibility: "dev",
-  },
   { title: "Prenota", url: ROUTES.book, icon: Calendar, visibility: "public" },
-  { title: "Servizi", url: ROUTES.prices, icon: Euro, visibility: "public" },
+  { title: "Catalogo", url: ROUTES.prices, icon: Euro, visibility: "public" },
   {
     title: "Accedi",
     url: ROUTES.login,
