@@ -1,4 +1,5 @@
 node_modules
+.pnpm-store
 
 # Output
 .output
@@ -24,17 +25,13 @@ vite.config.ts.timestamp-*
 
 # SQLite
 *.db
-/migrations
-
-# Editors
-.zed
 
 # Playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/
-/migrations
 
 # Editors
 .zed
+local.db

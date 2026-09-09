@@ -1,30 +1,30 @@
 <script lang="ts">
-	import { cn } from '$lib/utils.js';
-	import { RadioGroup as RadioGroupPrimitive, type WithoutChildrenOrChild } from 'bits-ui';
-	import Circle from 'lucide-svelte/icons/circle';
+  import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
+  import { RadioGroup as RadioGroupPrimitive } from "bits-ui";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		...restProps
-	}: WithoutChildrenOrChild<RadioGroupPrimitive.ItemProps> & {
-		value: string;
-	} = $props();
+  let {
+    ref = $bindable(null),
+    class: className,
+    ...restProps
+  }: WithoutChildrenOrChild<RadioGroupPrimitive.ItemProps> = $props();
 </script>
 
 <RadioGroupPrimitive.Item
-	bind:ref
-	class={cn(
-		'hover:border-dark-40 aspect-square size-4 rounded-full border border-primary text-primary shadow transition-all ease-in-out focus:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
-		className
-	)}
-	{...restProps}
+  bind:ref
+  data-slot="radio-group-item"
+  class={cn(
+    "border-input dark:bg-input/30 data-[state=checked]:border-accent aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 dark:aria-invalid:border-destructive/50 flex size-4 rounded-full transition-[background-color,border-color,box-shadow,transform] duration-150 ease-out focus-visible:ring-3 aria-invalid:ring-2 hover:data-[state=unchecked]:border-gray-7 hover:data-[state=checked]:border-accent enabled:active:scale-95 group/radio-group-item peer relative aspect-square shrink-0 border outline-none after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed disabled:opacity-50",
+    className,
+  )}
+  {...restProps}
 >
-	{#snippet children({ checked })}
-		<div class="flex items-center justify-center">
-			{#if checked}
-				<Circle class="size-3.5 fill-primary" />
-			{/if}
-		</div>
-	{/snippet}
+  {#snippet children({ checked })}
+    <div data-slot="radio-group-indicator" class="flex size-4 items-center justify-center">
+      {#if checked}
+        <span
+          class="bg-accent absolute top-1/2 left-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full transition-transform duration-150 ease-out group-active/radio-group-item:scale-90"
+        ></span>
+      {/if}
+    </div>
+  {/snippet}
 </RadioGroupPrimitive.Item>

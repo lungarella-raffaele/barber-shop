@@ -1,35 +1,39 @@
 <script lang="ts">
-	import { Checkbox as CheckboxPrimitive, type WithoutChildrenOrChild } from 'bits-ui';
-	import Check from 'lucide-svelte/icons/check';
-	import Minus from 'lucide-svelte/icons/minus';
-	import { cn } from '$lib/utils.js';
+  import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
+  import CheckIcon from "@lucide/svelte/icons/check";
+  import MinusIcon from "@lucide/svelte/icons/minus";
+  import { Checkbox as CheckboxPrimitive } from "bits-ui";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		checked = $bindable(false),
-		indeterminate = $bindable(false),
-		...restProps
-	}: WithoutChildrenOrChild<CheckboxPrimitive.RootProps> = $props();
+  let {
+    ref = $bindable(null),
+    checked = $bindable(false),
+    indeterminate = $bindable(false),
+    class: className,
+    ...restProps
+  }: WithoutChildrenOrChild<CheckboxPrimitive.RootProps> = $props();
 </script>
 
 <CheckboxPrimitive.Root
-	class={cn(
-		'peer box-content size-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[disabled=true]:cursor-not-allowed data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[disabled=true]:opacity-50',
-		className
-	)}
-	bind:checked
-	bind:ref
-	bind:indeterminate
-	{...restProps}
+  bind:ref
+  data-slot="checkbox"
+  class={cn(
+    "border-gray-6 dark:bg-input/30 data-[state=checked]:bg-accent data-[state=checked]:text-white data-[state=checked]:border-accent data-[state=indeterminate]:bg-accent data-[state=indeterminate]:text-white data-[state=indeterminate]:border-accent aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 flex size-4 items-center justify-center rounded-lg border transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out group-has-disabled/field:opacity-50 focus-visible:ring-[3px] aria-invalid:ring-2 peer relative shrink-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 hover:border-accent enabled:active:scale-95",
+    className,
+  )}
+  bind:checked
+  bind:indeterminate
+  {...restProps}
 >
-	{#snippet children({ checked, indeterminate })}
-		<span class="flex items-center justify-center text-current">
-			{#if indeterminate}
-				<Minus class="size-4" />
-			{:else}
-				<Check class={cn('size-4', !checked && 'text-transparent')} />
-			{/if}
-		</span>
-	{/snippet}
+  {#snippet children({ checked, indeterminate })}
+    <div
+      data-slot="checkbox-indicator"
+      class="[&>svg]:size-3 grid place-content-center text-current transition-transform duration-150 ease-out"
+    >
+      {#if checked}
+        <CheckIcon />
+      {:else if indeterminate}
+        <MinusIcon />
+      {/if}
+    </div>
+  {/snippet}
 </CheckboxPrimitive.Root>

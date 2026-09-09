@@ -1,23 +1,23 @@
 <script lang="ts">
-	import type { HTMLThAttributes } from 'svelte/elements';
-	import type { WithElementRef } from 'bits-ui';
-	import { cn } from '$lib/utils.js';
+  import { cn, type WithElementRef } from "$lib/utils.js";
+  import type { HTMLThAttributes } from "svelte/elements";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		children,
-		...restProps
-	}: WithElementRef<HTMLThAttributes> = $props();
+  let {
+    ref = $bindable(null),
+    class: className,
+    children,
+    ...restProps
+  }: WithElementRef<HTMLThAttributes> = $props();
 </script>
 
 <th
-	bind:this={ref}
-	class={cn(
-		'h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
-		className
-	)}
-	{...restProps}
+  bind:this={ref}
+  data-slot="table-head"
+  class={cn(
+    "text-foreground h-14 px-4 text-left align-middle typo-label whitespace-nowrap has-[[role=checkbox]]:pr-0",
+    className,
+  )}
+  {...restProps}
 >
-	{@render children?.()}
+  {@render children?.()}
 </th>

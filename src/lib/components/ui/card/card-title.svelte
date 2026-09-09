@@ -1,25 +1,15 @@
 <script lang="ts">
-	import type { WithElementRef } from 'bits-ui';
-	import type { HTMLAttributes } from 'svelte/elements';
-	import { cn } from '$lib/utils.js';
+  import { cn, type WithElementRef } from "$lib/utils.js";
+  import type { HTMLAttributes } from "svelte/elements";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		level = 3,
-		children,
-		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
-		level?: 1 | 2 | 3 | 4 | 5 | 6;
-	} = $props();
+  let {
+    ref = $bindable(null),
+    class: className,
+    children,
+    ...restProps
+  }: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
 </script>
 
-<div
-	role="heading"
-	aria-level={level}
-	bind:this={ref}
-	class={cn('font-semibold leading-none tracking-tight', className)}
-	{...restProps}
->
-	{@render children?.()}
+<div bind:this={ref} data-slot="card-title" class={cn("typo-subtitle", className)} {...restProps}>
+  {@render children?.()}
 </div>

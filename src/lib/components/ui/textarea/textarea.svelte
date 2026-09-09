@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { cn } from '$lib/utils.js';
-	import type { WithElementRef, WithoutChildren } from 'bits-ui';
-	import type { HTMLTextareaAttributes } from 'svelte/elements';
+  import { cn, type WithElementRef, type WithoutChildren } from "$lib/utils.js";
+  import type { HTMLTextareaAttributes } from "svelte/elements";
 
-	let {
-		ref = $bindable(null),
-		value = $bindable(),
-		class: className,
-		...restProps
-	}: WithoutChildren<WithElementRef<HTMLTextareaAttributes>> = $props();
+  let {
+    ref = $bindable(null),
+    value = $bindable(),
+    class: className,
+    "data-slot": dataSlot = "textarea",
+    ...restProps
+  }: WithoutChildren<WithElementRef<HTMLTextareaAttributes>> = $props();
 </script>
 
 <textarea
-	bind:this={ref}
-	bind:value
-	class={cn(
-		'mt-1 flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
-		className
-	)}
-	{...restProps}
-></textarea>
+  bind:this={ref}
+  data-slot={dataSlot}
+  class={cn(
+    "border-input bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 resize-none rounded-xl border px-3 py-3 typo-body transition-colors focus-visible:ring-[3px] aria-invalid:ring-[3px] placeholder:text-muted-foreground flex field-sizing-content min-h-16 w-full outline-none disabled:cursor-not-allowed disabled:opacity-50",
+    className,
+  )}
+  bind:value
+  {...restProps}></textarea>

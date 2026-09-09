@@ -1,30 +1,37 @@
 <script lang="ts">
-	import { Menubar as MenubarPrimitive, type WithoutChild } from 'bits-ui';
-	import Circle from 'lucide-svelte/icons/circle';
-	import { cn } from '$lib/utils.js';
+  import { cn, type WithoutChild } from "$lib/utils.js";
+  import CheckIcon from "@lucide/svelte/icons/check";
+  import { Menubar as MenubarPrimitive } from "bits-ui";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		children: childrenProp,
-		...restProps
-	}: WithoutChild<MenubarPrimitive.RadioItemProps> = $props();
+  let {
+    ref = $bindable(null),
+    class: className,
+    inset,
+    children: childrenProp,
+    ...restProps
+  }: WithoutChild<MenubarPrimitive.RadioItemProps> & {
+    inset?: boolean;
+  } = $props();
 </script>
 
 <MenubarPrimitive.RadioItem
-	bind:ref
-	class={cn(
-		'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:opacity-50',
-		className
-	)}
-	{...restProps}
+  bind:ref
+  data-slot="menubar-radio-item"
+  data-inset={inset}
+  class={cn(
+    "focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground gap-2.5 rounded-xl py-2 pr-3 pl-9.5 typo-label data-disabled:opacity-50 data-inset:pl-9.5 [&_svg:not([class*='size-'])]:size-4 relative flex cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
+    className,
+  )}
+  {...restProps}
 >
-	{#snippet children({ checked })}
-		<span class="absolute left-2 flex size-3.5 items-center justify-center">
-			{#if checked}
-				<Circle class="size-2 fill-current" />
-			{/if}
-		</span>
-		{@render childrenProp?.({ checked })}
-	{/snippet}
+  {#snippet children({ checked })}
+    <span
+      class="left-3 size-4 [&_svg:not([class*='size-'])]:size-4 pointer-events-none absolute flex items-center justify-center"
+    >
+      {#if checked}
+        <CheckIcon />
+      {/if}
+    </span>
+    {@render childrenProp?.({ checked })}
+  {/snippet}
 </MenubarPrimitive.RadioItem>

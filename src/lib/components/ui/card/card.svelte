@@ -1,20 +1,25 @@
 <script lang="ts">
-	import type { WithElementRef } from 'bits-ui';
-	import type { HTMLAttributes } from 'svelte/elements';
-	import { cn } from '$lib/utils.js';
+  import { cn, type WithElementRef } from "$lib/utils.js";
+  import type { HTMLAttributes } from "svelte/elements";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		children,
-		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
+  let {
+    ref = $bindable(null),
+    class: className,
+    children,
+    size = "default",
+    ...restProps
+  }: WithElementRef<HTMLAttributes<HTMLDivElement>> & { size?: "default" | "sm" } = $props();
 </script>
 
 <div
-	bind:this={ref}
-	class={cn('rounded-xl border bg-card text-card-foreground shadow', className)}
-	{...restProps}
+  bind:this={ref}
+  data-slot="card"
+  data-size={size}
+  class={cn(
+    "ring-foreground/10 bg-card text-card-foreground group/card flex flex-col gap-6 overflow-hidden rounded-xl py-6 typo-body-sm ring-1 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+    className,
+  )}
+  {...restProps}
 >
-	{@render children?.()}
+  {@render children?.()}
 </div>

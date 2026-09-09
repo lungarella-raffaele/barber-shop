@@ -1,26 +1,33 @@
 <script lang="ts">
-	import { AlertDialog as AlertDialogPrimitive, type WithoutChild } from 'bits-ui';
-	import AlertDialogOverlay from './alert-dialog-overlay.svelte';
-	import { cn } from '$lib/utils.js';
+  import { cn, type WithoutChild, type WithoutChildrenOrChild } from "$lib/utils.js";
+  import { AlertDialog as AlertDialogPrimitive } from "bits-ui";
+  import type { ComponentProps } from "svelte";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		portalProps,
-		...restProps
-	}: WithoutChild<AlertDialogPrimitive.ContentProps> & {
-		portalProps?: AlertDialogPrimitive.PortalProps;
-	} = $props();
+  import AlertDialogOverlay from "./alert-dialog-overlay.svelte";
+  import AlertDialogPortal from "./alert-dialog-portal.svelte";
+
+  let {
+    ref = $bindable(null),
+    class: className,
+    size = "default",
+    portalProps,
+    ...restProps
+  }: WithoutChild<AlertDialogPrimitive.ContentProps> & {
+    size?: "default" | "sm";
+    portalProps?: WithoutChildrenOrChild<ComponentProps<typeof AlertDialogPortal>>;
+  } = $props();
 </script>
 
-<AlertDialogPrimitive.Portal {...portalProps}>
-	<AlertDialogOverlay />
-	<AlertDialogPrimitive.Content
-		bind:ref
-		class={cn(
-			'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg',
-			className
-		)}
-		{...restProps}
-	/>
-</AlertDialogPrimitive.Portal>
+<AlertDialogPortal {...portalProps}>
+  <AlertDialogOverlay />
+  <AlertDialogPrimitive.Content
+    bind:ref
+    data-slot="alert-dialog-content"
+    data-size={size}
+    class={cn(
+      "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-98 data-[state=open]:zoom-in-98 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-98 data-open:zoom-in-98 ring-foreground/5 group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-6 rounded-xl p-6 ring-1 duration-150 outline-none data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-md border-border border",
+      className,
+    )}
+    {...restProps}
+  />
+</AlertDialogPortal>
